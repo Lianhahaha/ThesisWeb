@@ -139,8 +139,6 @@ export function Header() {
         })}
       </div>
 
-      {/* Push content above mobile tab bar */}
-      <div className="sm:hidden h-[56px]" aria-hidden="true" />
     </>
   );
 }

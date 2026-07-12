@@ -23,7 +23,7 @@ export default function RootLayout({
           {/* GitHub-style top header bar */}
           <Header />
           {/* Page content */}
-          <main className="mx-auto w-full max-w-[1280px] px-3 sm:px-6 lg:px-8 py-4 sm:py-6 pb-6">
+          <main className="mx-auto w-full max-w-[1280px] px-3 sm:px-6 lg:px-8 py-4 sm:py-6 pb-24 sm:pb-6">
             {children}
           </main>
           <Toaster />
