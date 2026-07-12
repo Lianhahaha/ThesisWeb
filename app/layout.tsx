@@ -3,6 +3,7 @@ import "./globals.css";
 import { Header } from "@/components/Header";
 import { Providers } from "@/components/Providers";
 import { Toaster } from "@/components/Toaster";
+import { Analytics } from "@vercel/analytics/react";
 
 export const metadata: Metadata = {
   title: "ThesisWeb — RRL finder, reference manager & AI self-check",
@@ -27,6 +28,7 @@ export default function RootLayout({
           </main>
           <Toaster />
         </Providers>
+        <Analytics />
       </body>
     </html>
   );
