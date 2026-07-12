@@ -19,7 +19,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useLiveQuery } from "dexie-react-hooks";
-import { getDb, savePaper, unsavePaper, updatePaper, isSaved as checkSaved } from "@/lib/db";
+import { getDb, savePaper, unsavePaper, updatePaper, getPaper } from "@/lib/db";
 import { getRecentPaper } from "@/lib/recent-papers";
 import { formatCitation, inTextCitation, toBibtex, type CitationStyle } from "@/lib/citations";
 import { toast } from "@/components/Toaster";
@@ -56,7 +56,15 @@ export default function PaperDetailPage({ params }: { params: Promise<{ id: stri
 
   useEffect(() => {
     if (!user) { setCloudSaved(null); setCloudSavedData(null); return; }
-    checkSaved(decodedId).then(s => setCloudSaved(s));
+    getPaper(decodedId).then(p => {
+      if (p) {
+        setCloudSaved(true);
+        setCloudSavedData(p);
+      } else {
+        setCloudSaved(false);
+        setCloudSavedData(null);
+      }
+    });
   }, [user, decodedId]);
 
   // Merge saved state: prefer Firestore when logged in
