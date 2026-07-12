@@ -54,7 +54,7 @@ export default function DashboardPage() {
               </span>
             </div>
             <p className="mt-1 text-xs sm:text-sm" style={{ color: "rgb(var(--muted))" }}>
-              Search 280M+ global academic papers across 5 databases, manage references, and pre-check your thesis for AI-likeness.
+              Search 700M+ global academic papers across 10 databases, manage references, and pre-check your thesis for AI-likeness.
             </p>
 
             {/* CTA buttons */}
@@ -83,7 +83,7 @@ export default function DashboardPage() {
         >
           <Globe className="h-3.5 w-3.5 shrink-0" style={{ color: "rgb(var(--subtle))" }} />
           <span className="text-xs" style={{ color: "rgb(var(--subtle))" }}>Sources:</span>
-          {["OpenAlex", "Crossref", "Semantic Scholar", "DOAJ", "Europe PMC", "PubMed", "arXiv"].map((db) => (
+          {["OpenAlex", "Crossref", "Semantic Scholar", "DOAJ", "Europe PMC", "PubMed", "arXiv", "CORE", "BASE", "Google Scholar"].map((db) => (
             <span
               key={db}
               className="rounded-full px-2.5 py-0.5 text-[11px] font-medium"
@@ -104,7 +104,7 @@ export default function DashboardPage() {
         <FeatureCard
           icon={Search}
           title="Multi-source search"
-          desc="OpenAlex, Crossref, Semantic Scholar, DOAJ & Europe PMC — merged into one ranked list with 5-year recency."
+          desc="OpenAlex, Crossref, Semantic Scholar, DOAJ, Europe PMC, PubMed, arXiv, CORE, BASE & Google Scholar — merged into one ranked list with 5-year recency."
           href="/search"
           count={null}
           label="Find RRLs"
