@@ -297,7 +297,7 @@ function LibraryItem({
           )}
         </div>
 
-        <div className="flex items-center gap-2 ml-auto">
+        <div className="flex items-center gap-2">
           <span className="badge bg-bg text-muted capitalize">
             {paper.readingStatus.replace("-", " ")}
           </span>
