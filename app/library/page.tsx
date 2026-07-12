@@ -254,54 +254,58 @@ function LibraryItem({
     <div className="relative">
       <PaperCard paper={paper} />
       {/* Library-specific actions below the card */}
-      <div className="mt-1.5 flex flex-wrap items-center gap-2 px-1 text-xs">
-        <select
-          value={paper.collection || ""}
-          onChange={(e) => onAssign(paper.id, e.target.value)}
-          className="input !w-auto !py-1 !text-xs"
-        >
-          <option value="">No collection</option>
-          {collections.map((c) => (
-            <option key={c} value={c}>
-              {c}
-            </option>
-          ))}
-        </select>
-
-        {showCollectionInput ? (
-          <div className="flex items-center gap-1">
-            <input
-              autoFocus
-              value={newColl}
-              onChange={(e) => setNewColl(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && newColl.trim()) {
-                  onAssign(paper.id, newColl.trim());
-                  setNewColl("");
-                  setShowCollectionInput(false);
-                }
-              }}
-              placeholder="New collection name…"
-              className="input !py-1 !text-xs !w-40"
-            />
-          </div>
-        ) : (
-          <button
-            onClick={() => setShowCollectionInput(true)}
-            className="btn-ghost !py-1 !text-xs"
+      <div className="mt-1.5 flex flex-wrap items-center justify-between gap-2 px-1 text-xs">
+        <div className="flex flex-wrap items-center gap-2">
+          <select
+            value={paper.collection || ""}
+            onChange={(e) => onAssign(paper.id, e.target.value)}
+            className="input !w-auto !py-1 !text-xs"
           >
-            <FolderPlus className="h-3 w-3" />
-            New collection
-          </button>
-        )}
+            <option value="">No collection</option>
+            {collections.map((c) => (
+              <option key={c} value={c}>
+                {c}
+              </option>
+            ))}
+          </select>
 
-        <span className="badge bg-bg text-muted ml-auto capitalize">
-          {paper.readingStatus.replace("-", " ")}
-        </span>
-        <button onClick={() => onRemove(paper.id)} className="btn-ghost !py-1 !text-xs text-red-600 hover:text-red-700">
-          <Trash2 className="h-3 w-3" />
-          Remove
-        </button>
+          {showCollectionInput ? (
+            <div className="flex items-center gap-1">
+              <input
+                autoFocus
+                value={newColl}
+                onChange={(e) => setNewColl(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && newColl.trim()) {
+                    onAssign(paper.id, newColl.trim());
+                    setNewColl("");
+                    setShowCollectionInput(false);
+                  }
+                }}
+                placeholder="New collection name…"
+                className="input !py-1 !text-xs !w-40"
+              />
+            </div>
+          ) : (
+            <button
+              onClick={() => setShowCollectionInput(true)}
+              className="btn-ghost !py-1 !text-xs"
+            >
+              <FolderPlus className="h-3 w-3" />
+              New collection
+            </button>
+          )}
+        </div>
+
+        <div className="flex items-center gap-2 ml-auto">
+          <span className="badge bg-bg text-muted capitalize">
+            {paper.readingStatus.replace("-", " ")}
+          </span>
+          <button onClick={() => onRemove(paper.id)} className="btn-ghost !py-1 !text-xs text-red-600 hover:text-red-700">
+            <Trash2 className="h-3 w-3" />
+            Remove
+          </button>
+        </div>
       </div>
     </div>
   );
