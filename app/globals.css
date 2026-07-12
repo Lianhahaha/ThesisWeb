@@ -1,0 +1,165 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ─── GitHub dark — exact color tokens ──────────────────────────────────── */
+@layer base {
+  :root {
+    /* Canvas — GitHub's actual dark values */
+    --bg:        13  17  23;      /* #0d1117  canvas-default         */
+    --surface:   22  27  34;      /* #161b22  canvas-subtle          */
+    --surface2:  33  38  45;      /* #21262d  canvas-inset           */
+    --surface3:  48  54  61;      /* #30363d  hover                  */
+
+    /* Borders */
+    --border:    48  54  61;      /* #30363d  border-default         */
+    --border2:   68  76  86;      /* #444c56  border-muted           */
+
+    /* Text */
+    --text:      230 237 243;     /* #e6edf3  fg-default             */
+    --muted:     139 148 158;     /* #8b949e  fg-muted               */
+    --subtle:    110 118 129;     /* #6e7681  fg-subtle              */
+
+    /* Accent — warm amber (used sparingly, only for active/links) */
+    --accent:    210 153  34;     /* #d29922  warm amber             */
+    --accent-dim: 72  52  16;     /* #483410  amber dim bg           */
+
+    /* Status colors */
+    --green:      46 160  67;     /* #2ea043  success / OA           */
+    --green-bg:   18  54  24;     /* #123618  green bg               */
+    --red:       248  81  73;     /* #f85149  error                  */
+    --red-bg:    103  15   7;     /* #670f07  red bg                 */
+  }
+
+  html { color-scheme: dark; }
+
+  body {
+    background-color: rgb(var(--bg));
+    color: rgb(var(--text));
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans",
+      Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+    font-size: 14px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: rgb(var(--border2)); border-radius: 6px; }
+  ::-webkit-scrollbar-thumb:hover { background: rgb(var(--muted)); }
+
+  *:focus-visible {
+    outline: 2px solid rgb(var(--accent));
+    outline-offset: 2px;
+    border-radius: 6px;
+  }
+
+  h1, h2, h3, h4, h5, h6 { font-weight: 600; line-height: 1.25; }
+  a { color: rgb(var(--accent)); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  code, kbd, pre, samp {
+    font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas,
+      "Liberation Mono", monospace;
+    font-size: 85%;
+  }
+}
+
+/* ─── Components ─────────────────────────────────────────────────────────── */
+@layer components {
+
+  .card {
+    background-color: rgb(var(--surface));
+    border: 1px solid rgb(var(--border));
+    border-radius: 6px;
+  }
+
+  /* ── Buttons — GitHub's exact style ── */
+  .btn {
+    @apply inline-flex items-center justify-center gap-1.5 rounded-md px-4 py-1.5
+           text-sm font-medium transition-all border cursor-pointer select-none
+           disabled:cursor-not-allowed disabled:opacity-50;
+    line-height: 20px;
+    white-space: nowrap;
+  }
+
+  /* Primary — GitHub green */
+  .btn-primary {
+    @apply btn;
+    color: #ffffff;
+    background-color: #238636;
+    border-color: rgba(240,246,252,0.1);
+    box-shadow: 0 0 transparent, 0 0 transparent, 0 1px 0 rgba(20,70,32,0.1);
+  }
+  .btn-primary:hover:not(:disabled) {
+    background-color: #2ea043;
+    border-color: rgba(240,246,252,0.1);
+  }
+  .btn-primary:active:not(:disabled) { background-color: #238636; }
+
+  /* Secondary — GitHub gray button */
+  .btn-secondary {
+    @apply btn;
+    color: rgb(var(--text));
+    background-color: rgb(var(--surface2));
+    border-color: rgba(240,246,252,0.1);
+  }
+  .btn-secondary:hover:not(:disabled) {
+    background-color: rgb(var(--surface3));
+    border-color: rgba(240,246,252,0.1);
+  }
+
+  /* Ghost / text link */
+  .btn-ghost {
+    @apply btn border-transparent;
+    color: rgb(var(--muted));
+    background-color: transparent;
+  }
+  .btn-ghost:hover:not(:disabled) {
+    color: rgb(var(--text));
+    background-color: rgb(var(--surface2));
+    border-color: transparent;
+  }
+
+  /* Danger */
+  .btn-danger {
+    @apply btn;
+    color: rgb(var(--red));
+    background-color: rgb(var(--surface2));
+    border-color: rgba(240,246,252,0.1);
+  }
+  .btn-danger:hover:not(:disabled) {
+    background-color: rgba(248,81,73,0.1);
+    border-color: rgba(248,81,73,0.4);
+  }
+
+  /* ── Input ── */
+  .input {
+    @apply w-full rounded-md px-3 py-1.5 text-sm transition-colors;
+    color: rgb(var(--text));
+    background-color: rgb(var(--bg));
+    border: 1px solid rgb(var(--border2));
+    outline: none;
+    line-height: 20px;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.04);
+  }
+  .input::placeholder { color: rgb(var(--subtle)); }
+  .input:focus {
+    border-color: #388bfd;
+    box-shadow: 0 0 0 3px rgba(56,139,253,0.3), inset 0 1px 0 rgba(255,255,255,0.04);
+  }
+
+  /* ── Badge ── */
+  .badge {
+    @apply inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium;
+    border: 1px solid rgb(var(--border));
+  }
+
+  /* ── Counter ── */
+  .counter {
+    @apply inline-flex items-center justify-center rounded-full px-2 min-w-[20px] h-5 text-xs font-medium;
+    background-color: rgba(139,148,158,0.1);
+    color: rgb(var(--muted));
+    border: 1px solid rgb(var(--border));
+  }
+}
