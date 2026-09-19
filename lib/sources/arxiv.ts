@@ -22,7 +22,7 @@ export async function searchArxiv(
   
   // Format query: replace spaces with +
   const formattedQuery = encodeURIComponent(`all:${query}`);
-  const url = `http://export.arxiv.org/api/query?search_query=${formattedQuery}&start=0&max_results=${fetchCount}&sortBy=relevance&sortOrder=descending`;
+  const url = `https://export.arxiv.org/api/query?search_query=${formattedQuery}&start=0&max_results=${fetchCount}&sortBy=relevance&sortOrder=descending`;
 
   const res = await fetchWithTimeout(url);
   if (!res.ok) throw new Error(`arXiv search failed: ${res.status}`);
