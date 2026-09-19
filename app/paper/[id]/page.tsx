@@ -192,7 +192,10 @@ export default function PaperDetailPage({ params }: { params: Promise<{ id: stri
 
   async function saveNotes() {
     if (!isSavedData && paper) {
-      await savePaper(toSaved(paper, { notes }));
+      const sp = toSaved(paper, { notes });
+      await savePaper(sp);
+      setCloudSaved(true);
+      setCloudSavedData(sp);
     } else {
       await updatePaper(decodedId, { notes });
     }
