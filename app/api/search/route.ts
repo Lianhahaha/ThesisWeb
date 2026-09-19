@@ -28,7 +28,10 @@ export async function GET(req: NextRequest) {
 
   // Default recency: last 5 years.
   const currentYear = new Date().getFullYear();
-  const year = fromYear ? Number(fromYear) : currentYear - 5;
+  const parsedYear = fromYear ? Number(fromYear) : currentYear - 5;
+  const year = Number.isFinite(parsedYear) && parsedYear >= 0 && parsedYear <= currentYear + 1
+    ? parsedYear
+    : currentYear - 5;
 
   try {
     const result = await metaSearch(query, {
