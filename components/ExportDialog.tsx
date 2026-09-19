@@ -22,7 +22,7 @@ const STYLES: { id: CitationStyle; label: string }[] = [
 
 export function ExportDialog({ papers, onClose }: { papers: SavedPaper[]; onClose: () => void }) {
   const [style, setStyle] = useState<CitationStyle>("apa");
-  const [copied, setCopied] = useState(false);
+  const [copiedField, setCopiedField] = useState<string | null>(null);
 
   // Sort saved papers by first-author surname for a cleaner bibliography.
   const sorted = [...papers].sort((a, b) =>
@@ -47,10 +47,10 @@ export function ExportDialog({ papers, onClose }: { papers: SavedPaper[]; onClos
     URL.revokeObjectURL(url);
   }
 
-  function copy(text: string) {
+  function copy(text: string, field: string) {
     navigator.clipboard.writeText(text);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 1500);
+    setCopiedField(field);
+    setTimeout(() => setCopiedField(null), 1500);
   }
 
   return (
@@ -86,9 +86,9 @@ export function ExportDialog({ papers, onClose }: { papers: SavedPaper[]; onClos
           {/* Reference list */}
           <div className="mb-3 flex items-center justify-between">
             <h3 className="text-sm font-medium">Reference list ({sorted.length})</h3>
-            <button onClick={() => copy(refList)} className="btn-ghost !py-1 !text-xs">
-              {copied ? <Check className="h-3.5 w-3.5 text-green-600" /> : <Copy className="h-3.5 w-3.5" />}
-              {copied ? "Copied" : "Copy"}
+            <button onClick={() => copy(refList, "refList")} className="btn-ghost !py-1 !text-xs">
+              {copiedField === "refList" ? <Check className="h-3.5 w-3.5 text-green-600" /> : <Copy className="h-3.5 w-3.5" />}
+              {copiedField === "refList" ? "Copied" : "Copy"}
             </button>
           </div>
           <pre className="card p-3 text-xs font-serif whitespace-pre-wrap break-words max-h-48 overflow-y-auto leading-relaxed">
