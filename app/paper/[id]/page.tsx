@@ -346,8 +346,9 @@ export default function PaperDetailPage({ params }: { params: Promise<{ id: stri
         <div className="mt-2 flex gap-2">
           <button
             onClick={() => {
-              navigator.clipboard.writeText(toBibtex(p));
-              toast("BibTeX copied", "success");
+              navigator.clipboard.writeText(toBibtex(p))
+                .then(() => toast("BibTeX copied", "success"))
+                .catch(() => toast("Failed to copy — try again", "error"));
             }}
             className="btn-ghost !py-1.5 !text-xs"
           >
