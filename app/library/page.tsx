@@ -69,7 +69,6 @@ export default function LibraryPage() {
   const [filter, setFilter] = useState("");
   const [collectionFilter, setCollectionFilter] = useState<string>("");
   const [exportOpen, setExportOpen] = useState(false);
-  const [newCollection, setNewCollection] = useState("");
 
   // Derive distinct collections from the saved papers.
   const collections = useMemo(() => {
