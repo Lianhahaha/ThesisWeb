@@ -95,8 +95,12 @@ export default function ForgotPasswordPage() {
       await updateDoc(doc(db, "users", uid, "profile", "main"), { storedPw: newPwLower });
       localStorage.setItem(`tw_pw_${uid}`, newPwLower);
 
-      toast("Password reset successfully! Redirecting to library…", "success");
-      setTimeout(() => router.push("/library"), 1500);
+      // Sign out so the user can log in with the new password
+      const { signOut } = await import("firebase/auth");
+      await signOut(auth);
+
+      toast("Password reset successfully! Redirecting to login…", "success");
+      setTimeout(() => router.push("/login"), 1500);
     } catch (err: any) {
       toast(err.message || "Reset failed", "error");
     } finally {
