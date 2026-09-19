@@ -9,7 +9,6 @@ import {
   updatePassword,
   reauthenticateWithCredential,
   EmailAuthProvider,
-  deleteUser,
   sendPasswordResetEmail,
   verifyBeforeUpdateEmail,
 } from "firebase/auth";
