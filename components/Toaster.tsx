@@ -3,19 +3,19 @@
 import { useEffect, useState } from "react";
 import { CheckCircle2, AlertCircle, Info, X } from "lucide-react";
 
-type Toast = { id: number; type: "success" | "error" | "info"; message: string };
+type Toast = { id: number; type: "success" | "error" | "info"; message: string; timer: ReturnType<typeof setTimeout> };
 let _id = 0;
 const listeners = new Set<(t: Toast[]) => void>();
 let queue: Toast[] = [];
 
 export function toast(message: string, type: Toast["type"] = "info") {
-  const t: Toast = { id: ++_id, type, message };
-  queue = [...queue, t];
-  listeners.forEach((l) => l(queue));
-  setTimeout(() => {
+  const timer = setTimeout(() => {
     queue = queue.filter((x) => x.id !== t.id);
     listeners.forEach((l) => l(queue));
   }, 3500);
+  const t: Toast = { id: ++_id, type, message, timer };
+  queue = [...queue, t];
+  listeners.forEach((l) => l(queue));
 }
 
 const STYLES = {
@@ -51,6 +51,7 @@ export function Toaster() {
             <span className="flex-1 text-xs leading-relaxed">{t.message}</span>
             <button
               onClick={() => {
+                clearTimeout(t.timer);
                 queue = queue.filter((x) => x.id !== t.id);
                 listeners.forEach((l) => l(queue));
               }}
