@@ -123,11 +123,15 @@ export default function SettingsPage() {
     if (!user || !username.trim()) return;
     setSavingUsername(true);
     try {
-      const timeout = new Promise((_, reject) => setTimeout(() => reject(new Error("Request timed out. Is Firestore enabled in your Firebase console?")), 5000));
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 5000);
       await Promise.race([
         setDoc(doc(db, "users", user.uid, "profile", "main"), { username: username.trim(), createdAt: Date.now() }, { merge: true }),
-        timeout
+        new Promise<never>((_, reject) => {
+          controller.signal.addEventListener("abort", () => reject(new Error("Request timed out. Is Firestore enabled in your Firebase console?")));
+        })
       ]);
+      clearTimeout(timeout);
       localStorage.setItem(`tw_username_${user.uid}`, username.trim());
       // Notify header to re-read the username
       window.dispatchEvent(new CustomEvent("tw:usernameChanged", { detail: username.trim() }));
