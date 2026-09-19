@@ -42,16 +42,6 @@ export interface SavedPaper extends Paper {
   };
 }
 
-export interface SearchFilters {
-  query: string;
-  /** Only papers from this year onward. Default: current year - 5. */
-  fromYear?: number;
-  /** Cap results per source. */
-  perSource?: number;
-  /** Optional field filter — title/abstract vs. full text. */
-  openAccessOnly?: boolean;
-}
-
 export interface SearchResult {
   papers: Paper[];
   /** Per-source status for the UI. */
