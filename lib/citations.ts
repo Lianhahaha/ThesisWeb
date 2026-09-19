@@ -125,14 +125,19 @@ export function inTextCitation(p: Paper, style: CitationStyle, refNum?: number):
   return style === "apa" ? `(${authors}, ${yr(p, "n.d.")})` : `(${authors} ${yr(p, "")})`;
 }
 
+/** Escape special BibTeX characters in field values. */
+function bibtexEscape(s: string): string {
+  return s.replace(/[&%#_{}\\]/g, (c) => `\\${c}`);
+}
+
 /** Make a BibTeX entry. */
 export function toBibtex(p: Paper): string {
   const key = (p.authors[0]?.split(/\s+/).pop() || "anon").toLowerCase() + (p.year || "nd") + (p.title.split(/\s+/)[0]?.toLowerCase() || "");
   const fields = [
-    `  author = {${p.authors.join(" and ") || "Anonymous"}}`,
-    `  title = {${p.title}}`,
+    `  author = {${bibtexEscape(p.authors.join(" and ") || "Anonymous")}}`,
+    `  title = {${bibtexEscape(p.title)}}`,
     p.year ? `  year = {${p.year}}` : null,
-    p.venue ? `  journal = {${p.venue}}` : null,
+    p.venue ? `  journal = {${bibtexEscape(p.venue)}}` : null,
     p.doi ? `  doi = {${p.doi}}` : null,
     p.openAccessUrl ? `  url = {${p.openAccessUrl}}` : null,
   ]
