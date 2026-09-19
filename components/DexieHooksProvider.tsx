@@ -10,15 +10,25 @@ import { getDb } from "@/lib/db";
  */
 export function DexieHooksProvider({ children }: { children: React.ReactNode }) {
   const [ready, setReady] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   useEffect(() => {
     try {
       getDb();
       setReady(true);
-    } catch {
-      // Shouldn't happen in a browser, but guard anyway.
+    } catch (e) {
+      console.error("Failed to initialize IndexedDB:", e);
+      setError(e instanceof Error ? e.message : "Failed to initialize local database");
+      // Still render children so the app isn't completely broken
       setReady(true);
     }
   }, []);
   if (!ready) return null;
+  if (error) {
+    return (
+      <div className="p-4 text-sm text-amber-600 bg-amber-50 dark:bg-amber-950/30 dark:text-amber-400 rounded-lg m-4">
+        <strong>Warning:</strong> Local storage unavailable. Library features may not work. {error}
+      </div>
+    );
+  }
   return <>{children}</>;
 }
