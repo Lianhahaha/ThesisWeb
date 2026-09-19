@@ -102,6 +102,7 @@ export default function LibraryPage() {
   }
 
   async function remove(id: string) {
+    if (!confirm("Remove this paper from your library?")) return;
     await unsavePaper(id);
     toast("Removed from library", "info");
     if (user) refreshCloud();
