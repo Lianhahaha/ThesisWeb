@@ -130,8 +130,9 @@ export function PaperCard({ paper, showScore, refNum }: Props) {
           )}
           <button
             onClick={() => {
-              navigator.clipboard.writeText(truncate(paper.title + ". " + (paper.authors[0] || "") + ` (${paper.year || "n.d."})`, 300));
-              toast("Citation snippet copied", "success");
+              navigator.clipboard.writeText(truncate(paper.title + ". " + (paper.authors[0] || "") + ` (${paper.year || "n.d."})`, 300))
+                .then(() => toast("Citation snippet copied", "success"))
+                .catch(() => toast("Failed to copy — try again", "error"));
             }}
             className="btn-ghost !py-1 !px-2 !text-xs"
           >
