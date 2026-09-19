@@ -56,6 +56,7 @@ export function Toaster() {
               }}
               className="opacity-50 hover:opacity-100 transition-opacity shrink-0"
               style={{ color: "rgb(var(--muted))" }}
+              aria-label="Dismiss notification"
             >
               <X className="h-3.5 w-3.5" />
             </button>

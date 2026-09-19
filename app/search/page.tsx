@@ -300,6 +300,7 @@ export default function SearchPage() {
                 type="button"
                 onClick={() => setCountry(null)}
                 className="ml-1 hover:text-red-400 transition-colors"
+                aria-label="Remove country filter"
               >
                 <X className="h-3 w-3" />
               </button>

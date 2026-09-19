@@ -61,7 +61,7 @@ export function ExportDialog({ papers, onClose }: { papers: SavedPaper[]; onClos
       >
         <header className="flex items-center justify-between p-4 border-b border-border">
           <h2 className="font-semibold">Export references</h2>
-          <button onClick={onClose} className="btn-ghost !p-1.5">
+          <button onClick={onClose} className="btn-ghost !p-1.5" aria-label="Close dialog">
             <X className="h-4 w-4" />
           </button>
         </header>
