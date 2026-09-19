@@ -1,5 +1,10 @@
 import type { Paper } from "@/lib/types";
 
+/** Escape HTML special characters to prevent XSS in citation rendering. */
+function esc(s: string): string {
+  return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+}
+
 /**
  * Citation formatting for the styles thesis students actually use.
  * APA 7, MLA 9, IEEE, Chicago (notes), plus BibTeX and RIS for reference managers.
@@ -74,32 +79,32 @@ function authorsIeee(authors: string[]): string {
 }
 
 export function formatCitation(p: Paper, style: CitationStyle, refNum?: number): string {
-  const title = p.title || "Untitled";
+  const title = esc(p.title || "Untitled");
   const venue = p.venue || "";
-  const doi = p.doi ? `https://doi.org/${p.doi}` : "";
+  const doi = p.doi ? `https://doi.org/${esc(p.doi)}` : "";
 
   switch (style) {
     case "apa": {
-      const a = authorsApa(p.authors) || "Anonymous";
-      const v = venue ? ` <i>${venue}</i>` : "";
+      const a = esc(authorsApa(p.authors) || "Anonymous");
+      const v = venue ? ` <i>${esc(venue)}</i>` : "";
       const doiPart = doi ? ` ${doi}` : "";
       return `${a} (${yr(p)}). ${title}.${v}.${doiPart}`.replace(/\s+\./g, ".").trim();
     }
     case "mla": {
-      const a = authorsMla(p.authors, "mla");
-      const v = venue ? ` <i>${venue},</i>` : "";
+      const a = esc(authorsMla(p.authors, "mla"));
+      const v = venue ? ` <i>${esc(venue)},</i>` : "";
       return `${a} "${title}." ${v} ${yr(p, "")}.`.replace(/\s+\./g, ".").replace(/\s+/g, " ").trim();
     }
     case "ieee": {
       const n = refNum ?? 1;
-      const a = authorsIeee(p.authors);
-      const v = venue ? `, <i>${venue}</i>` : "";
-      const doiPart = doi ? `, doi: ${p.doi}` : "";
+      const a = esc(authorsIeee(p.authors));
+      const v = venue ? `, <i>${esc(venue)}</i>` : "";
+      const doiPart = doi ? `, doi: ${esc(p.doi || "")}` : "";
       return `[${n}] ${a}, "${title}"${v}, ${yr(p, "")}${doiPart}.`;
     }
     case "chicago": {
-      const a = authorsMla(p.authors, "chicago");
-      const v = venue ? ` <i>${venue},</i>` : "";
+      const a = esc(authorsMla(p.authors, "chicago"));
+      const v = venue ? ` <i>${esc(venue)},</i>` : "";
       return `${a} "${title}."${v} ${yr(p, "")}.`.replace(/\s+\./g, ".").replace(/\s+/g, " ").trim();
     }
   }
