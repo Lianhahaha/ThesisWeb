@@ -17,14 +17,7 @@ import { signOut } from "firebase/auth";
 import Link from "next/link";
 import { toast } from "@/components/Toaster";
 import { Eye, EyeOff, Loader2, User, Lock, Hash, LogOut, Trash2, Mail, AtSign } from "lucide-react";
-
-async function hashMPIN(mpin: string): Promise<string> {
-  const msgUint8 = new TextEncoder().encode(mpin);
-  const hashBuffer = await crypto.subtle.digest("SHA-256", msgUint8);
-  return Array.from(new Uint8Array(hashBuffer))
-    .map(b => b.toString(16).padStart(2, "0"))
-    .join("");
-}
+import { hashMPIN } from "@/lib/utils";
 
 function Section({ title, icon: Icon, children }: { title: string; icon: React.ElementType; children: React.ReactNode }) {
   return (

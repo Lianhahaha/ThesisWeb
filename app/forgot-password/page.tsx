@@ -8,14 +8,7 @@ import { signInWithEmailAndPassword, updatePassword } from "firebase/auth";
 import { toast } from "@/components/Toaster";
 import { Loader2, ArrowLeft, Eye, EyeOff } from "lucide-react";
 import Link from "next/link";
-
-async function hashMPIN(mpin: string): Promise<string> {
-  const msgUint8 = new TextEncoder().encode(mpin);
-  const hashBuffer = await crypto.subtle.digest("SHA-256", msgUint8);
-  return Array.from(new Uint8Array(hashBuffer))
-    .map(b => b.toString(16).padStart(2, "0"))
-    .join("");
-}
+import { hashMPIN } from "@/lib/utils";
 
 type Step = "email" | "mpin" | "newpw";
 

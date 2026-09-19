@@ -11,16 +11,9 @@ import { auth, db } from "@/lib/firebase";
 import { useAuth } from "@/lib/auth-store";
 import { toast } from "@/components/Toaster";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
+import { hashMPIN } from "@/lib/utils";
 
 const DEFAULT_MPIN = "0000";
-
-async function hashMPIN(mpin: string): Promise<string> {
-  const msgUint8 = new TextEncoder().encode(mpin);
-  const hashBuffer = await crypto.subtle.digest("SHA-256", msgUint8);
-  return Array.from(new Uint8Array(hashBuffer))
-    .map(b => b.toString(16).padStart(2, "0"))
-    .join("");
-}
 
 export default function LoginPage() {
   const router = useRouter();
