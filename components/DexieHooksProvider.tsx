@@ -18,8 +18,7 @@ export function DexieHooksProvider({ children }: { children: React.ReactNode }) 
     } catch (e) {
       console.error("Failed to initialize IndexedDB:", e);
       setError(e instanceof Error ? e.message : "Failed to initialize local database");
-      // Still render children so the app isn't completely broken
-      setReady(true);
+      // Don't set ready=true — children won't mount, preventing silent useLiveQuery failures
     }
   }, []);
   if (!ready) return null;
