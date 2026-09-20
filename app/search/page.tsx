@@ -29,6 +29,9 @@ const SOURCE_COLORS: Record<string, { bg: string; color: string; border: string 
   europepmc:       { bg: "rgba(100,196,196,0.1)", color: "#64c4c4", border: "rgba(100,196,196,0.3)" },
   pubmed:          { bg: "rgba(248,129,74,0.1)",  color: "#f8814a", border: "rgba(248,129,74,0.3)"  },
   arxiv:           { bg: "rgba(224,96,96,0.1)",   color: "#e06060", border: "rgba(224,96,96,0.3)"  },
+  core:            { bg: "rgba(160,120,255,0.1)", color: "#a078ff", border: "rgba(160,120,255,0.3)" },
+  base:            { bg: "rgba(255,166,77,0.1)",  color: "#ffa64d", border: "rgba(255,166,77,0.3)" },
+  google_scholar:  { bg: "rgba(66,133,244,0.1)",  color: "#4285f4", border: "rgba(66,133,244,0.3)" },
 };
 
 // ─── Country Combobox ────────────────────────────────────────────────────────

@@ -6,6 +6,9 @@ import { searchDoaj } from "@/lib/sources/doaj";
 import { searchEuropePMC } from "@/lib/sources/europepmc";
 import { searchPubMed } from "@/lib/sources/pubmed";
 import { searchArxiv } from "@/lib/sources/arxiv";
+import { searchCore } from "@/lib/sources/core";
+import { searchBase } from "@/lib/sources/base";
+import { searchGoogleScholar } from "@/lib/sources/googlescholar";
 import { dedupePapers, scoreRelevance } from "@/lib/dedupe";
 
 export interface SearchOpts {
@@ -105,6 +108,9 @@ export async function metaSearch(
     europepmc:       searchEuropePMC(effectiveQuery, opts),
     pubmed:          searchPubMed(effectiveQuery, opts),
     arxiv:           searchArxiv(effectiveQuery, opts),
+    core:            searchCore(effectiveQuery, opts),
+    base:            searchBase(effectiveQuery, opts),
+    google_scholar:  searchGoogleScholar(effectiveQuery, opts),
   };
 
   const entries = await Promise.all(
