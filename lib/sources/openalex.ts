@@ -100,7 +100,7 @@ export async function getOpenAlexByDoi(doi: string): Promise<Paper | null> {
   return {
     id: paperId(doi, title),
     title,
-    authors: (w.authorships || []).map((a) => a.author.display_name),
+    authors: (w.authorships || []).map((a) => a.author.display_name).slice(0, 10),
     year: w.publication_year ?? null,
     publishedDate: w.publication_date ?? null,
     venue: w.primary_location?.source?.display_name ?? null,
