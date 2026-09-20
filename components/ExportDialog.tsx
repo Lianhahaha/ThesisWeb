@@ -34,7 +34,7 @@ export function ExportDialog({ papers, onClose }: { papers: SavedPaper[]; onClos
     .join("\n\n");
 
   const inTextList = sorted
-    .map((p, i) => `${inTextCitation(p, style, i + 1)} — ${p.title.slice(0, 60)}…`)
+    .map((p, i) => `${inTextCitation(p, style, i + 1)} — ${p.title.length > 60 ? p.title.slice(0, 60) + "…" : p.title}`)
     .join("\n");
 
   function download(content: string, filename: string, mime: string) {
