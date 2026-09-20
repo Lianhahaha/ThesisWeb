@@ -208,11 +208,8 @@ export default function SettingsPage() {
         handleCodeInApp: false,
       });
 
-      // Pre-stage the Firestore email_map
-      const oldKey = user.email.toLowerCase().replace(/\./g, "_");
+      // Stage the new Firestore email_map (don't delete old one until verification confirmed)
       const newKey = newEmail.toLowerCase().replace(/\./g, "_");
-      const { deleteDoc } = await import("firebase/firestore");
-      await deleteDoc(doc(db, "email_map", oldKey));
       await setDoc(doc(db, "email_map", newKey), { uid: user.uid, email: newEmail.toLowerCase() });
 
       setPendingEmail(newEmail.toLowerCase());
@@ -234,6 +231,10 @@ export default function SettingsPage() {
       // user.email is now updated if the link was clicked
       const freshUser = auth.currentUser;
       if (freshUser?.email && freshUser.email !== email) {
+        // Email verified — now safe to delete old email_map
+        const oldKey = email.toLowerCase().replace(/\./g, "_");
+        const { deleteDoc } = await import("firebase/firestore");
+        await deleteDoc(doc(db, "email_map", oldKey)).catch(() => {});
         setEmail(freshUser.email);
         setPendingEmail("");
         toast("Email updated successfully!", "success");
