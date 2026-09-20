@@ -223,7 +223,7 @@ export default function SearchPage() {
           Find related literature
         </h1>
         <p className="mt-0.5 text-xs sm:text-sm" style={{ color: "rgb(var(--muted))" }}>
-          Search 280M+ papers across 7 databases — global, free, ranked by relevance.
+          Search 700M+ papers across 10 databases — global, free, ranked by relevance.
         </p>
       </div>
 

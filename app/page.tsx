@@ -152,7 +152,7 @@ export default function DashboardPage() {
             {
               icon: FileText,
               title: "Hard to find RRLs?",
-              body: "Type your topic — we pull recent papers from 6 global databases, dedupe, and rank by relevance. Defaults to last 5 years.",
+              body: "Type your topic — we pull recent papers from 10 global databases, dedupe, and rank by relevance. Defaults to last 5 years.",
             },
             {
               icon: Database,
