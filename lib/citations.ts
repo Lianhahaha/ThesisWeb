@@ -88,7 +88,7 @@ export function formatCitation(p: Paper, style: CitationStyle, refNum?: number):
       const a = esc(authorsApa(p.authors) || "Anonymous");
       const v = venue ? ` <i>${esc(venue)}</i>` : "";
       const doiPart = doi ? ` ${doi}` : "";
-      return `${a} (${yr(p)}). ${title}.${v}.${doiPart}`.replace(/\s+\./g, ".").trim();
+      return `${a} (${yr(p)}). ${title}.${v}.${doiPart}`.replace(/\.\./g, ".").replace(/\s+\./g, ".").trim();
     }
     case "mla": {
       const a = esc(authorsMla(p.authors, "mla"));
