@@ -83,7 +83,7 @@ export async function searchPubMed(
       id: paperId(doi, title),
       title,
       authors,
-      year: isNaN(year as number) ? null : year,
+      year: year === null || isNaN(year as number) ? null : year,
       publishedDate: year ? `${year}-01-01` : null,
       venue: journal,
       doi,
