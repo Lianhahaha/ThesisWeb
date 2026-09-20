@@ -66,7 +66,7 @@ export function summarize(text: string, opts?: { sentences?: number; ratio?: num
 
   const sentences = splitSentences(cleaned);
   if (sentences.length === 0) {
-    return { text: cleaned, ranked: [cleaned], totalSentences: 1, compression: 1 };
+    return { text: "", ranked: [], totalSentences: 0, compression: 0 };
   }
 
   // Word frequency map
