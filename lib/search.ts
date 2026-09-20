@@ -117,6 +117,13 @@ export async function metaSearch(
   }
 
   // Score relevance against the *original* user query (not the country-injected one)
-  const papers = scoreRelevance(dedupePapers(all), query);
+  let deduped = dedupePapers(all);
+
+  // Client-side year filter safety net: APIs sometimes return out-of-range results
+  if (opts.fromYear && opts.fromYear > 0) {
+    deduped = deduped.filter((p) => !p.year || p.year >= opts.fromYear!);
+  }
+
+  const papers = scoreRelevance(deduped, query);
   return { papers, sources: status, tookMs: Date.now() - start };
 }
