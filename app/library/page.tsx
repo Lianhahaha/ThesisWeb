@@ -230,7 +230,7 @@ export default function LibraryPage() {
       )}
 
       {exportOpen && papers && (
-        <ExportDialog papers={papers as SavedPaper[]} onClose={() => setExportOpen(false)} />
+        <ExportDialog papers={filtered as SavedPaper[]} onClose={() => setExportOpen(false)} />
       )}
     </div>
   );
