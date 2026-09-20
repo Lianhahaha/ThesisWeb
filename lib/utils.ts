@@ -70,7 +70,8 @@ export function paperId(doi?: string | null, title?: string | null): string {
 export function truncate(s: string, n = 200): string {
   if (s.length <= n) return s;
   const cut = s.slice(0, n);
-  return cut.slice(0, cut.lastIndexOf(" ")) + "…";
+  const lastSpace = cut.lastIndexOf(" ");
+  return (lastSpace > 0 ? cut.slice(0, lastSpace) : cut) + "…";
 }
 
 /** Hash an MPIN string using SHA-256. */
