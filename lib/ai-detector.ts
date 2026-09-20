@@ -85,6 +85,18 @@ export function checkAi(text: string): AiCheckResult {
 
   const wordCount = words.length;
   const sentenceCount = Math.max(1, sentences.length);
+
+  // Guard: too little text to meaningfully analyze
+  if (wordCount < 10 || sentenceCount < 2) {
+    return {
+      aiLikelihood: 0,
+      band: "low",
+      signals: { burstiness: 0, lexicalRichness: 0, transitionDensity: 0, formulaicDensity: 0, predictability: 0, aiVocab: 0 },
+      issues: [],
+      flaggedWords: [],
+      stats: { words: wordCount, sentences: sentenceCount, avgSentenceLen: wordCount / sentenceCount, sentenceLenStd: 0, uniqueWordsRatio: wordCount > 0 ? new Set(words.map(w => w.toLowerCase())).size / wordCount : 0, transitionCount: 0, aiVocabCount: 0 },
+    };
+  }
   const flaggedWords: FlaggedWord[] = [];
 
   // --- Signal 1: Burstiness ---
