@@ -15,15 +15,13 @@ export function Providers({ children }: { children: React.ReactNode }) {
   );
 
   // Always use dark mode (GitHub theme)
-  const [mounted, setMounted] = useState(false);
   useEffect(() => {
     document.documentElement.classList.add("dark");
-    setMounted(true);
   }, []);
 
   return (
     <QueryClientProvider client={queryClient}>
-      <DexieHooksProvider>{mounted && children}</DexieHooksProvider>
+      <DexieHooksProvider>{children}</DexieHooksProvider>
     </QueryClientProvider>
   );
 }
