@@ -295,8 +295,10 @@ export default function SettingsPage() {
             <label className="block text-xs font-medium text-muted mb-1">New MPIN (digits only, min 4)</label>
             <div className="flex gap-2">
               <input
-                type="number"
-                className="input flex-1 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                type="text"
+                inputMode="numeric"
+                pattern="[0-9]*"
+                className="input flex-1"
                 placeholder="e.g. 12345678"
                 value={mpin}
                 onChange={e => setMpin(e.target.value)}

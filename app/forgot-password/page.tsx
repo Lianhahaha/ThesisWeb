@@ -121,10 +121,12 @@ export default function ForgotPasswordPage() {
           <div>
             <label className="block text-xs font-medium text-text mb-1">Recovery MPIN</label>
             <input
-              type="number"
+              type="text"
+              inputMode="numeric"
+              pattern="[0-9]*"
               required
               autoFocus
-              className="input w-full [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+              className="input w-full"
               placeholder="e.g. 0000"
               value={mpin}
               onChange={e => setMpin(e.target.value)}
