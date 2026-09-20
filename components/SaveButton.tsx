@@ -2,10 +2,12 @@
 
 import { Bookmark, BookmarkCheck } from "lucide-react";
 import { useLiveQuery } from "dexie-react-hooks";
-import { getDb, savePaper, unsavePaper } from "@/lib/db";
+import { getDb, savePaper, unsavePaper, isSaved } from "@/lib/db";
 import type { Paper, SavedPaper } from "@/lib/types";
 import { toast } from "@/components/Toaster";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/lib/auth-store";
+import { useState, useEffect } from "react";
 
 interface Props {
   paper: Paper;
@@ -14,17 +16,33 @@ interface Props {
 
 /**
  * Toggle save/unsave a paper into the local library.
- * Uses a live query so the bookmark icon updates instantly across the app.
+ * Uses a live query (IndexedDB) for logged-out users,
+ * and a polled check (Firestore) for logged-in users.
  */
 export function SaveButton({ paper, className }: Props) {
-  const saved = useLiveQuery(async () => {
+  const { user } = useAuth();
+
+  // IndexedDB live query (always runs — used by logged-out users)
+  const localSaved = useLiveQuery(async () => {
     if (typeof window === "undefined") return false;
     return (await getDb().papers.get(paper.id)) !== undefined;
   }, [paper.id]);
 
+  // Firestore check (for logged-in users)
+  const [cloudSaved, setCloudSaved] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    if (!user) { setCloudSaved(null); return; }
+    isSaved(paper.id).then(setCloudSaved);
+  }, [user, paper.id]);
+
+  // Merge: prefer Firestore when logged in
+  const saved = user ? (cloudSaved ?? false) : (localSaved ?? false);
+
   async function toggle() {
     if (saved) {
       await unsavePaper(paper.id);
+      if (user) setCloudSaved(false);
       toast("Removed from library", "info");
     } else {
       const entry: SavedPaper = {
@@ -34,6 +52,7 @@ export function SaveButton({ paper, className }: Props) {
         readingStatus: "to-read",
       };
       await savePaper(entry);
+      if (user) setCloudSaved(true);
       toast("Saved to library", "success");
     }
   }
