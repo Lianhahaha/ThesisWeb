@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Table2 } from "lucide-react";
 import type { SavedPaper } from "@/lib/types";
 import { updatePaper } from "@/lib/db";
@@ -78,6 +78,11 @@ export function SynthesisMatrix({ papers }: { papers: SavedPaper[] }) {
 function Cell({ paper, field }: { paper: SavedPaper; field: { key: Field; label: string; placeholder: string } }) {
   const [value, setValue] = useState(paper.matrix?.[field.key] || "");
   const [dirty, setDirty] = useState(false);
+
+  // Sync state when paper prop changes (e.g. after auto-save re-render)
+  useEffect(() => {
+    if (!dirty) setValue(paper.matrix?.[field.key] || "");
+  }, [paper.matrix?.[field.key], dirty]);
 
   async function commit() {
     if (!dirty) return;
