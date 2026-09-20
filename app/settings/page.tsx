@@ -15,7 +15,7 @@ import {
 import { signOut } from "firebase/auth";
 import Link from "next/link";
 import { toast } from "@/components/Toaster";
-import { Eye, EyeOff, Loader2, User, Lock, Hash, LogOut, Trash2, Mail, AtSign } from "lucide-react";
+import { Eye, EyeOff, Loader2, User, Lock, Hash, LogOut, Mail, AtSign } from "lucide-react";
 import { hashMPIN } from "@/lib/utils";
 
 function Section({ title, icon: Icon, children }: { title: string; icon: React.ElementType; children: React.ReactNode }) {
@@ -170,7 +170,7 @@ export default function SettingsPage() {
       const credential = EmailAuthProvider.credential(user.email, currentPass);
       await reauthenticateWithCredential(user, credential);
       await updatePassword(user, newPass);
-      setCurrentPass(newPass);
+      setCurrentPass("");
       setNewPass("");
       toast("Password updated", "success");
     } catch (err: any) {
