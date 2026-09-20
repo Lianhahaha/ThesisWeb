@@ -81,13 +81,6 @@ export default function SettingsPage() {
   const [pendingEmail, setPendingEmail] = useState(""); // set after verification link sent
   const [reloading, setReloading] = useState(false);
 
-  // Pre-fill current password from localStorage cache
-  useEffect(() => {
-    if (!user) return;
-    const cached = localStorage.getItem(`tw_pw_${user.uid}`);
-    if (cached) setCurrentPass(cached);
-  }, [user]);
-
   // Redirect if not logged in
   useEffect(() => {
     if (initialized && !user) router.replace("/login");
@@ -174,14 +167,10 @@ export default function SettingsPage() {
 
     setSavingPass(true);
     try {
-      const pwLower = newPass.toLowerCase();
-      const credential = EmailAuthProvider.credential(user.email, currentPass.toLowerCase());
+      const credential = EmailAuthProvider.credential(user.email, currentPass);
       await reauthenticateWithCredential(user, credential);
-      await updatePassword(user, pwLower);
-      // Update cached password everywhere
-      await setDoc(doc(db, "users", user.uid, "profile", "main"), { storedPw: pwLower }, { merge: true });
-      localStorage.setItem(`tw_pw_${user.uid}`, pwLower);
-      setCurrentPass(pwLower);
+      await updatePassword(user, newPass);
+      setCurrentPass(newPass);
       setNewPass("");
       toast("Password updated", "success");
     } catch (err: any) {
@@ -206,7 +195,7 @@ export default function SettingsPage() {
     if (!user || !user.email || !newEmail || !emailPass) return;
     setSavingEmail(true);
     try {
-      const credential = EmailAuthProvider.credential(user.email, emailPass.toLowerCase());
+      const credential = EmailAuthProvider.credential(user.email, emailPass);
       await reauthenticateWithCredential(user, credential);
 
       // Pass continueUrl so Firebase redirects back to /settings after verification
@@ -332,7 +321,7 @@ export default function SettingsPage() {
             placeholder="Your current password"
           />
           <PasswordField
-            label="New password (case insensitive, min 6 chars)"
+            label="New password (min 6 chars)"
             value={newPass}
             onChange={setNewPass}
             placeholder="New password"

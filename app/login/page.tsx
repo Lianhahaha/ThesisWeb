@@ -46,26 +46,22 @@ export default function LoginPage() {
     if (mode === "signup" && !username) return;
 
     setLoading(true);
-    const pw = password.toLowerCase(); // case-insensitive
 
     try {
       if (mode === "login") {
-        const cred = await signInWithEmailAndPassword(auth, email, pw);
-        // Cache password locally so settings can pre-fill it
-        localStorage.setItem(`tw_pw_${cred.user.uid}`, pw);
+        await signInWithEmailAndPassword(auth, email, password);
         toast("Welcome back!", "success");
         router.push("/library");
 
       } else {
-        const cred = await createUserWithEmailAndPassword(auth, email, pw);
+        const cred = await createUserWithEmailAndPassword(auth, email, password);
         const uid = cred.user.uid;
         const defaultMpinHash = await hashMPIN(DEFAULT_MPIN);
         const normalizedEmail = email.toLowerCase().replace(/\./g, "_");
 
-        // Save profile — includes stored password and default MPIN
+        // Save profile — default MPIN only, never store passwords
         await setDoc(doc(db, "users", uid, "profile", "main"), {
           username,
-          storedPw: pw,
           mpinHash: defaultMpinHash,
           createdAt: Date.now(),
         });
@@ -73,8 +69,6 @@ export default function LoginPage() {
         // Save email → uid lookup map (for forgot-password flow)
         await setDoc(doc(db, "email_map", normalizedEmail), { uid, email: email.toLowerCase() });
 
-        // Cache locally
-        localStorage.setItem(`tw_pw_${uid}`, pw);
         localStorage.setItem(`tw_username_${uid}`, username);
 
         toast("Account created successfully!", "success");
@@ -137,7 +131,7 @@ export default function LoginPage() {
 
         <div>
           <div className="flex justify-between items-end mb-1">
-            <label className="block text-xs font-medium text-text">Password (case insensitive)</label>
+            <label className="block text-xs font-medium text-text">Password</label>
             {mode === "login" && (
               <button
                 type="button"

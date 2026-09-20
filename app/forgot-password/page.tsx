@@ -3,14 +3,14 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { auth, db } from "@/lib/firebase";
-import { doc, getDoc, updateDoc } from "firebase/firestore";
-import { signInWithEmailAndPassword, updatePassword } from "firebase/auth";
+import { doc, getDoc } from "firebase/firestore";
+import { sendPasswordResetEmail } from "firebase/auth";
 import { toast } from "@/components/Toaster";
-import { Loader2, ArrowLeft, Eye, EyeOff } from "lucide-react";
+import { Loader2, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { hashMPIN } from "@/lib/utils";
 
-type Step = "email" | "mpin" | "newpw";
+type Step = "email" | "mpin" | "done";
 
 export default function ForgotPasswordPage() {
   const router = useRouter();
@@ -20,12 +20,9 @@ export default function ForgotPasswordPage() {
 
   const [email, setEmail] = useState("");
   const [mpin, setMpin] = useState("");
-  const [newPw, setNewPw] = useState("");
-  const [showPw, setShowPw] = useState(false);
 
   // Stored after successful MPIN verify
   const [uid, setUid] = useState("");
-  const [storedPw, setStoredPw] = useState("");
 
   async function handleEmailSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -63,46 +60,11 @@ export default function ForgotPasswordPage() {
         throw new Error("Incorrect MPIN. If you never set one, try the default: 0000");
       }
 
-      // MPIN matched — retrieve stored password so we can reauthenticate
-      const pw = data.storedPw || "";
-      if (!pw) throw new Error("No stored password found. Please use the email reset link instead.");
-
-      setStoredPw(pw);
-      setStep("newpw");
+      // MPIN verified — send a Firebase password reset email to the user's address
+      await sendPasswordResetEmail(auth, email.toLowerCase());
+      setStep("done");
     } catch (err: any) {
       toast(err.message, "error");
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  async function handleNewPwSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    if (!newPw || newPw.length < 6) {
-      toast("Password must be at least 6 characters", "error");
-      return;
-    }
-    setLoading(true);
-    try {
-      const lowEmail = email.toLowerCase();
-      const newPwLower = newPw.toLowerCase();
-
-      // Sign in with stored old password, then update to new one
-      const cred = await signInWithEmailAndPassword(auth, lowEmail, storedPw);
-      await updatePassword(cred.user, newPwLower);
-
-      // Update stored password in Firestore
-      await updateDoc(doc(db, "users", uid, "profile", "main"), { storedPw: newPwLower });
-      localStorage.setItem(`tw_pw_${uid}`, newPwLower);
-
-      // Sign out so the user can log in with the new password
-      const { signOut } = await import("firebase/auth");
-      await signOut(auth);
-
-      toast("Password reset successfully! Redirecting to login…", "success");
-      setTimeout(() => router.push("/login"), 1500);
-    } catch (err: any) {
-      toast(err.message || "Reset failed", "error");
     } finally {
       setLoading(false);
     }
@@ -118,7 +80,7 @@ export default function ForgotPasswordPage() {
 
       {/* Step indicators */}
       <div className="flex items-center gap-2 justify-center mb-6">
-        {(["email", "mpin", "newpw"] as Step[]).map((s, i) => (
+        {(["email", "mpin", "done"] as Step[]).map((s, i) => (
           <div key={s} className="flex items-center gap-2">
             <div
               className="h-2 w-2 rounded-full transition-colors"
@@ -178,36 +140,19 @@ export default function ForgotPasswordPage() {
         </form>
       )}
 
-      {step === "newpw" && (
-        <form onSubmit={handleNewPwSubmit} className="flex flex-col gap-4">
-          <p className="text-sm text-muted text-center mb-2">MPIN verified! Set your new password.</p>
-          <div>
-            <label className="block text-xs font-medium text-text mb-1">New Password (case insensitive)</label>
-            <div className="relative">
-              <input
-                type={showPw ? "text" : "password"}
-                required
-                minLength={6}
-                autoFocus
-                className="input w-full pr-9"
-                placeholder="Min 6 characters"
-                value={newPw}
-                onChange={e => setNewPw(e.target.value)}
-              />
-              <button
-                type="button"
-                className="absolute right-2 top-1/2 -translate-y-1/2 text-muted hover:text-text p-1"
-                onClick={() => setShowPw(s => !s)}
-              >
-                {showPw ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-              </button>
-            </div>
-          </div>
-          <button type="submit" disabled={loading} className="btn-primary w-full justify-center">
-            {loading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-            Reset Password
+      {step === "done" && (
+        <div className="text-center space-y-4">
+          <p className="text-sm text-muted">
+            A password reset link has been sent to <strong className="text-text">{email}</strong>.
+            Check your inbox and follow the link to set a new password.
+          </p>
+          <button
+            onClick={() => router.push("/login")}
+            className="btn-primary w-full justify-center"
+          >
+            Back to login
           </button>
-        </form>
+        </div>
       )}
     </div>
   );
