@@ -26,7 +26,7 @@ export function ExportDialog({ papers, onClose }: { papers: SavedPaper[]; onClos
 
   // Sort saved papers by first-author surname for a cleaner bibliography.
   const sorted = [...papers].sort((a, b) =>
-    (a.authors[0] || "").localeCompare(b.authors[0] || "")
+    (a.authors?.[0] || "ZZZ").localeCompare(b.authors?.[0] || "ZZZ")
   );
 
   const refList = sorted
