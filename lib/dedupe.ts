@@ -50,6 +50,7 @@ function mergeInto(dest: Paper, src: Paper): void {
   if (!dest.doi && src.doi) dest.doi = src.doi;
   if (dest.authors.length === 0 && src.authors.length) dest.authors = src.authors;
   if ((dest.keywords?.length ?? 0) < (src.keywords?.length ?? 0)) dest.keywords = src.keywords;
+  else if (dest.keywords && src.keywords) dest.keywords = Array.from(new Set([...dest.keywords, ...src.keywords])).slice(0, 10);
 }
 
 // ─── Stop words ─────────────────────────────────────────────────────────────
