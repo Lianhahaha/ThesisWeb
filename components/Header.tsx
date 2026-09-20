@@ -19,10 +19,24 @@ const NAV = [
 
 export function Header() {
   const pathname = usePathname();
-  const count = useLiveQuery(async () => {
+  const { user } = useAuth();
+
+  // IndexedDB count (for logged-out users)
+  const localCount = useLiveQuery(async () => {
     if (typeof window === "undefined") return 0;
     return getDb().papers.count();
   }, []);
+
+  // Firestore count (for logged-in users)
+  const [cloudCount, setCloudCount] = useState<number | null>(null);
+  useEffect(() => {
+    if (!user) { setCloudCount(null); return; }
+    import("@/lib/db").then(({ allPapers }) => {
+      allPapers().then((p) => setCloudCount(p.length));
+    });
+  }, [user]);
+
+  const count = user ? (cloudCount ?? 0) : (localCount ?? 0);
 
   return (
     <>
