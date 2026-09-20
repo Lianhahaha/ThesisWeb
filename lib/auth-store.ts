@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { User, onAuthStateChanged } from "firebase/auth";
+import { User, onAuthStateChanged, Unsubscribe } from "firebase/auth";
 import { auth } from "./firebase";
 
 interface AuthState {
@@ -14,9 +14,10 @@ export const useAuth = create<AuthState>(() => ({
   initialized: false,
 }));
 
-// Setup listener (runs once on the client)
-if (typeof window !== "undefined") {
-  onAuthStateChanged(auth, (user) => {
+// Setup listener (runs once on the client, guarded against HMR re-registration)
+let _authUnsub: Unsubscribe | null = null;
+if (typeof window !== "undefined" && !_authUnsub) {
+  _authUnsub = onAuthStateChanged(auth, (user) => {
     useAuth.setState({ user, loading: false, initialized: true });
   });
 }
