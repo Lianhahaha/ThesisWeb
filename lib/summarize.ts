@@ -42,7 +42,7 @@ export function splitSentences(text: string): string[] {
   return protected_
     .split(/(?<=[.!?])\s+(?=[A-Z(])/)
     .map((s) => s.replace(/§/g, ".").trim())
-    .filter((s) => s.length > 30 && s.split(/\s+/).length >= 5);
+    .filter((s) => s.length > 15 && s.split(/\s+/).length >= 3);
 }
 
 export interface SummaryResult {
