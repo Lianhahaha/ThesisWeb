@@ -57,13 +57,18 @@ export function formatYear(iso?: string | null): string {
 export function paperId(doi?: string | null, title?: string | null): string {
   if (doi) return "doi:" + doi.toLowerCase();
   // FNV-1a hash of normalized title — fast, good enough for keying
-  let h = 0x811c9dc5;
+  let h1 = 0x811c9dc5;
+  let h2 = 0x01000193;
   const s = normalizeTitle(title || "");
   for (let i = 0; i < s.length; i++) {
-    h ^= s.charCodeAt(i);
-    h = Math.imul(h, 0x01000193);
+    h1 ^= s.charCodeAt(i);
+    h1 = Math.imul(h1, 0x01000193);
+    h2 ^= s.charCodeAt(i);
+    h2 = Math.imul(h2, 0x811c9dc5);
   }
-  return "tit:" + (h >>> 0).toString(16);
+  const hex1 = (h1 >>> 0).toString(16).padStart(8, "0");
+  const hex2 = (h2 >>> 0).toString(16).padStart(8, "0");
+  return "tit:" + hex1 + hex2;
 }
 
 /** Truncate text to `n` chars on a word boundary. */
