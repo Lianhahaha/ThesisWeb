@@ -73,6 +73,15 @@ function buildCountryQuery(baseQuery: string, country: string): string {
 }
 
 /**
+ * Extract just the base query without country clause, for adapters that
+ * don't support boolean AND/OR (e.g. CORE). Returns the original query
+ * unchanged if no country clause is present.
+ */
+export function stripCountryClause(query: string): string {
+  return query.replace(/\s+AND\s+\([^)]+\)/i, "").trim();
+}
+
+/**
  * Run all enabled sources in parallel, tolerate individual failures,
  * dedupe + score, and return a single ranked list.
  */
