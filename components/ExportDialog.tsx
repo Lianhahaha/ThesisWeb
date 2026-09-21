@@ -26,9 +26,15 @@ export function ExportDialog({ papers, onClose }: { papers: SavedPaper[]; onClos
   const [copiedField, setCopiedField] = useState<string | null>(null);
 
   // Sort saved papers by first-author surname for a cleaner bibliography.
-  const sorted = [...papers].sort((a, b) =>
-    (a.authors?.[0] || "ZZZ").localeCompare(b.authors?.[0] || "ZZZ")
-  );
+  // Author names are stored "Given Family", so compare the last word — comparing
+  // the whole string ordered the list by first name. Author-less papers go last.
+  const surname = (p: SavedPaper) => p.authors?.[0]?.trim().split(/\s+/).pop() || "";
+  const sorted = [...papers].sort((a, b) => {
+    const sa = surname(a);
+    const sb = surname(b);
+    if (!sa || !sb) return sa ? -1 : sb ? 1 : 0;
+    return sa.localeCompare(sb, undefined, { sensitivity: "base" });
+  });
 
   const refList = sorted
     // formatCitation() returns HTML; this list is shown in a <pre> and copied
