@@ -9,6 +9,7 @@ import { searchArxiv } from "@/lib/sources/arxiv";
 import { searchCore } from "@/lib/sources/core";
 import { searchBase } from "@/lib/sources/base";
 import { searchGoogleScholar } from "@/lib/sources/googlescholar";
+import { searchEric } from "@/lib/sources/eric";
 import { dedupePapers, scoreRelevance } from "@/lib/dedupe";
 
 export interface SearchOpts {
@@ -104,6 +105,7 @@ const ADAPTERS: { id: string; run: SourceSearch; boolean: boolean }[] = [
   { id: "core",            run: searchCore,            boolean: true },
   { id: "base",            run: searchBase,            boolean: true },
   { id: "google_scholar",  run: searchGoogleScholar,   boolean: true },
+  { id: "eric",             run: searchEric,             boolean: false },
 ];
 
 /**
