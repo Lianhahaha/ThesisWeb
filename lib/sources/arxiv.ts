@@ -39,7 +39,9 @@ export async function searchArxiv(
     
     const idMatch = entryXml.match(/<id>(.*?)<\/id>/);
     const arxivUrl = idMatch ? idMatch[1].trim() : null;
-    const arxivId = arxivUrl ? arxivUrl.split("/abs/")[1]?.split("v")[0] : null;
+    // Strip only the trailing version suffix. Splitting on "v" truncated
+    // old-style IDs whose archive name contains one (e.g. "solv-int/9901001v1").
+    const arxivId = arxivUrl ? arxivUrl.split("/abs/")[1]?.replace(/v\d+$/, "") : null;
     
     const titleMatch = entryXml.match(/<title>([\s\S]*?)<\/title>/);
     const title = titleMatch ? titleMatch[1].replace(/\s+/g, ' ').trim() : "Untitled";
