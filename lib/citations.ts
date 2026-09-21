@@ -101,9 +101,16 @@ export function formatCitation(p: Paper, style: CitationStyle, refNum?: number):
     case "ieee": {
       const n = refNum ?? 1;
       const a = esc(authorsIeee(p.authors));
-      const v = venue ? `, <i>${esc(venue)}</i>` : "";
-      const doiPart = doi ? `, doi: ${esc(p.doi || "")}` : "";
-      return `[${n}] ${a}, "${title}"${v}, ${yr(p, "")}${doiPart}.`;
+      // Join only the parts that exist — a missing author or year used to
+      // leave stray commas ('[1] , "Title", .').
+      const parts = [
+        a,
+        `"${title}"`,
+        venue ? `<i>${esc(venue)}</i>` : "",
+        yr(p, ""),
+        doi ? `doi: ${esc(p.doi || "")}` : "",
+      ].filter(Boolean);
+      return `[${n}] ${parts.join(", ")}.`;
     }
     case "chicago": {
       const a = esc(authorsMla(p.authors, "chicago"));
