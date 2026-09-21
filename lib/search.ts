@@ -84,6 +84,28 @@ export function stripCountryClause(query: string): string {
   return query.replace(/\s+AND\s+\([^)]+\)/i, "").trim();
 }
 
+type SourceSearch = (query: string, opts: SearchOpts) => Promise<Paper[]>;
+
+/**
+ * Every search source. `boolean: true` means the API understands
+ * `AND (a OR b)` clauses (used for country scoping); the others get the plain
+ * query with the country name appended as an extra term instead.
+ *
+ * Keep ids in sync with lib/sources/meta.ts.
+ */
+const ADAPTERS: { id: string; run: SourceSearch; boolean: boolean }[] = [
+  { id: "openalex",        run: searchOpenAlex,        boolean: true },
+  { id: "crossref",        run: searchCrossref,        boolean: true },
+  { id: "semanticscholar", run: searchSemanticScholar, boolean: true },
+  { id: "doaj",            run: searchDoaj,            boolean: true },
+  { id: "europepmc",       run: searchEuropePMC,       boolean: true },
+  { id: "pubmed",          run: searchPubMed,          boolean: true },
+  { id: "arxiv",           run: searchArxiv,           boolean: true },
+  { id: "core",            run: searchCore,            boolean: true },
+  { id: "base",            run: searchBase,            boolean: true },
+  { id: "google_scholar",  run: searchGoogleScholar,   boolean: true },
+];
+
 /**
  * Run all enabled sources in parallel, tolerate individual failures,
  * dedupe + score, and return a single ranked list.
@@ -94,32 +116,17 @@ export async function metaSearch(
 ): Promise<SearchResult> {
   const start = Date.now();
 
-  // Apply country scoping to the query string before sending to all adapters
-  const effectiveQuery = opts.country
-    ? buildCountryQuery(query, opts.country)
-    : query;
-
-  // Each adapter receives the country-scoped query
-  const sources: Record<string, Promise<Paper[]>> = {
-    openalex:        searchOpenAlex(effectiveQuery, opts),
-    crossref:        searchCrossref(effectiveQuery, opts),
-    semanticscholar: searchSemanticScholar(effectiveQuery, opts),
-    doaj:            searchDoaj(effectiveQuery, opts),
-    europepmc:       searchEuropePMC(effectiveQuery, opts),
-    pubmed:          searchPubMed(effectiveQuery, opts),
-    arxiv:           searchArxiv(effectiveQuery, opts),
-    core:            searchCore(effectiveQuery, opts),
-    base:            searchBase(effectiveQuery, opts),
-    google_scholar:  searchGoogleScholar(effectiveQuery, opts),
-  };
+  // Country-scoped variants of the query, per adapter capability.
+  const booleanQuery = opts.country ? buildCountryQuery(query, opts.country) : query;
+  const plainQuery = opts.country ? `${query} ${opts.country}` : query;
 
   const entries = await Promise.all(
-    Object.entries(sources).map(async ([name, p]) => {
+    ADAPTERS.map(async ({ id, run, boolean }) => {
       try {
-        const r = await p;
-        return [name, { ok: r.length > 0 ? "ok" : "empty" as const, papers: r }] as const;
+        const papers = await run(boolean ? booleanQuery : plainQuery, opts);
+        return [id, { ok: papers.length > 0 ? ("ok" as const) : ("empty" as const), papers }] as const;
       } catch {
-        return [name, { ok: "error" as const, papers: [] }] as const;
+        return [id, { ok: "error" as const, papers: [] as Paper[] }] as const;
       }
     })
   );
@@ -131,7 +138,6 @@ export async function metaSearch(
     all = all.concat(papers);
   }
 
-  // Score relevance against the *original* user query (not the country-injected one)
   let deduped = dedupePapers(all);
 
   // Client-side year filter safety net: APIs sometimes return out-of-range results
@@ -139,6 +145,7 @@ export async function metaSearch(
     deduped = deduped.filter((p) => !p.year || p.year >= opts.fromYear!);
   }
 
+  // Score relevance against the *original* user query (not the country-injected one)
   const papers = scoreRelevance(deduped, query);
   return { papers, sources: status, tookMs: Date.now() - start };
 }
