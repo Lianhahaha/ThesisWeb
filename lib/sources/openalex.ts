@@ -1,5 +1,6 @@
 import { fetchWithTimeout, safeJson, paperId } from "@/lib/utils";
 import type { Paper } from "@/lib/types";
+import { CONTACT_EMAIL } from "@/lib/config";
 
 /**
  * OpenAlex adapter — the primary discovery source.
@@ -9,7 +10,7 @@ import type { Paper } from "@/lib/types";
  * Docs: https://docs.openalex.org/
  */
 
-const MAILTO = "thesisweb-researcher@example.com"; // polite pool
+const MAILTO = CONTACT_EMAIL; // polite pool
 const BASE = "https://api.openalex.org/works";
 
 interface OpenAlexWork {

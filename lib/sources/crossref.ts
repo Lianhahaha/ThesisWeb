@@ -1,5 +1,6 @@
 import { fetchWithTimeout, safeJson, paperId } from "@/lib/utils";
 import type { Paper } from "@/lib/types";
+import { CONTACT_EMAIL } from "@/lib/config";
 
 /**
  * Crossref adapter — metadata, DOIs, reference lists.
@@ -9,7 +10,7 @@ import type { Paper } from "@/lib/types";
  * Docs: https://api.crossref.org
  */
 
-const MAILTO = "thesisweb-researcher@example.com";
+const MAILTO = CONTACT_EMAIL;
 const BASE = "https://api.crossref.org/works";
 
 interface CrossrefItem {

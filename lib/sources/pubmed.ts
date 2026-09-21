@@ -1,5 +1,6 @@
 import { fetchWithTimeout, safeJson, paperId } from "@/lib/utils";
 import type { Paper } from "@/lib/types";
+import { CONTACT_EMAIL } from "@/lib/config";
 
 /**
  * PubMed / NCBI E-utilities adapter.
@@ -10,7 +11,7 @@ import type { Paper } from "@/lib/types";
  */
 
 const TOOL   = "ThesisWeb";
-const EMAIL  = "thesisweb-researcher@example.com";
+const EMAIL  = CONTACT_EMAIL;
 const BASE   = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils";
 
 export async function searchPubMed(
