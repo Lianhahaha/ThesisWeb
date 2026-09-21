@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import { useMutation } from "@tanstack/react-query";
 import {
   Search as SearchIcon, Loader2, AlertTriangle,
@@ -12,6 +12,7 @@ import { storeRecentPapers } from "@/lib/recent-papers";
 import type { Paper, SearchResult } from "@/lib/types";
 import { ALL_COUNTRIES, filterCountries } from "@/lib/countries";
 import { KEYLESS_SOURCE_COUNT, sourceLabel, sourceStyle, SOURCE_META } from "@/lib/sources/meta";
+import { SORT_OPTIONS, countBySource, filterBySources, sortPapers, type SortKey } from "@/lib/result-view";
 
 const CURRENT_YEAR = new Date().getFullYear();
 
@@ -173,6 +174,24 @@ export default function SearchPage() {
   const [openAccessOnly, setOpenAccessOnly] = useState(false);
   const [country, setCountry] = useState<string | null>(null);
   const [result, setResult] = useState<SearchResult | null>(null);
+  const [sortKey, setSortKey] = useState<SortKey>("relevance");
+  // Sources the user narrowed the results to. Empty = show everything.
+  const [selectedSources, setSelectedSources] = useState<Set<string>>(new Set());
+
+  const sourceCounts = useMemo(() => countBySource(result?.papers ?? []), [result]);
+  const visible = useMemo(
+    () => sortPapers(filterBySources(result?.papers ?? [], selectedSources), sortKey),
+    [result, selectedSources, sortKey]
+  );
+
+  function toggleSource(name: string) {
+    setSelectedSources((prev) => {
+      const next = new Set(prev);
+      if (next.has(name)) next.delete(name);
+      else next.add(name);
+      return next;
+    });
+  }
 
   const search = useMutation({
     mutationFn: async () => {
@@ -188,6 +207,7 @@ export default function SearchPage() {
     },
     onSuccess: (data) => {
       setResult(data);
+      setSelectedSources(new Set()); // a new search starts unfiltered
       storeRecentPapers(data.papers);
       const okSources = Object.values(data.sources).filter((s) => s === "ok").length;
       const locationNote = country ? ` (${country})` : "";
@@ -361,7 +381,8 @@ export default function SearchPage() {
           style={{ backgroundColor: "rgb(var(--surface2))", borderColor: "rgb(var(--border))" }}
         >
           <span className="text-sm font-semibold" style={{ color: "rgb(var(--text))" }}>
-            {result.papers.length} results
+            {visible.length}
+            {visible.length !== result.papers.length && ` of ${result.papers.length}`} results
           </span>
           <span className="text-xs" style={{ color: "rgb(var(--subtle))" }}>
             {(result.tookMs / 1000).toFixed(1)}s
@@ -371,25 +392,61 @@ export default function SearchPage() {
               · filtered to <strong>{country}</strong>
             </span>
           )}
+          <label className="flex items-center gap-1.5 text-xs" style={{ color: "rgb(var(--muted))" }}>
+            Sort
+            <select
+              value={sortKey}
+              onChange={(e) => setSortKey(e.target.value as SortKey)}
+              className="input !w-auto !py-0.5 !text-xs"
+            >
+              {SORT_OPTIONS.map((o) => (
+                <option key={o.key} value={o.key}>{o.label}</option>
+              ))}
+            </select>
+          </label>
           <div className="flex flex-wrap gap-1.5 ml-0 xs:ml-auto">
             {Object.entries(result.sources).map(([name, status]) => {
               const c = sourceStyle(name);
               const failed = status === "error";
+              const count = sourceCounts[name] ?? 0;
+              const active = selectedSources.has(name);
+              // Sources with no results (or that errored) have nothing to filter to.
+              const clickable = !failed && count > 0;
               return (
-                <span
+                <button
+                  type="button"
                   key={name}
-                  title={SOURCE_META[name]?.blurb}
-                  className="badge text-[11px]"
+                  disabled={!clickable}
+                  onClick={() => toggleSource(name)}
+                  aria-pressed={active}
+                  title={
+                    failed
+                      ? `${sourceLabel(name)} failed or timed out`
+                      : `${SOURCE_META[name]?.blurb ?? name}${clickable ? " — click to filter" : ""}`
+                  }
+                  className="badge text-[11px] disabled:cursor-default"
                   style={{
                     backgroundColor: failed ? "rgba(248,81,73,0.1)" : c.bg,
                     color: failed ? "#f85149" : c.color,
-                    borderColor: failed ? "rgba(248,81,73,0.3)" : c.border,
+                    borderColor: failed ? "rgba(248,81,73,0.3)" : active ? c.color : c.border,
+                    fontWeight: active ? 700 : undefined,
+                    opacity: !failed && count === 0 ? 0.55 : 1,
                   }}
                 >
-                  {sourceLabel(name)}{status === "ok" ? " ✓" : status === "error" ? " ✕" : ""}
-                </span>
+                  {sourceLabel(name)}{failed ? " ✕" : ` ${count}`}
+                </button>
               );
             })}
+            {selectedSources.size > 0 && (
+              <button
+                type="button"
+                onClick={() => setSelectedSources(new Set())}
+                className="badge text-[11px]"
+                style={{ color: "rgb(var(--muted))", borderColor: "rgb(var(--border))" }}
+              >
+                Clear filter
+              </button>
+            )}
           </div>
         </div>
       )}
@@ -418,9 +475,9 @@ export default function SearchPage() {
       )}
 
       {/* Results list */}
-      {result && result.papers.length > 0 && (
+      {result && visible.length > 0 && (
         <div className="rounded-b-lg border overflow-hidden" style={{ borderColor: "rgb(var(--border))" }}>
-          {result.papers.map((p, i) => (
+          {visible.map((p, i) => (
             <PaperCard key={p.id} paper={p} showScore refNum={i + 1} />
           ))}
         </div>
