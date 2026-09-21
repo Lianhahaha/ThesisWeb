@@ -5,6 +5,7 @@ import { X, Copy, Download, Check } from "lucide-react";
 import type { SavedPaper } from "@/lib/types";
 import {
   formatCitation,
+  citationToText,
   inTextCitation,
   toBibtex,
   toRis,
@@ -30,7 +31,9 @@ export function ExportDialog({ papers, onClose }: { papers: SavedPaper[]; onClos
   );
 
   const refList = sorted
-    .map((p, i) => formatCitation(p, style, i + 1))
+    // formatCitation() returns HTML; this list is shown in a <pre> and copied
+    // to the clipboard, so it must be plain text.
+    .map((p, i) => citationToText(formatCitation(p, style, i + 1)))
     .join("\n\n");
 
   const inTextList = sorted

@@ -6,6 +6,20 @@ function esc(s: string): string {
 }
 
 /**
+ * Plain-text version of a formatCitation() result, for the clipboard and
+ * anywhere the citation is rendered as text rather than as HTML.
+ * Drops the <i> markup and reverses esc().
+ */
+export function citationToText(html: string): string {
+  return html
+    .replace(/<\/?i>/g, "")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&quot;/g, '"')
+    .replace(/&amp;/g, "&"); // last, mirroring esc() which escapes it first
+}
+
+/**
  * Citation formatting for the styles thesis students actually use.
  * APA 7, MLA 9, IEEE, Chicago (notes), plus BibTeX and RIS for reference managers.
  *
