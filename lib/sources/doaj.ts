@@ -14,9 +14,9 @@ export async function searchDoaj(
   opts: { fromYear?: number; perSource?: number } = {}
 ): Promise<Paper[]> {
   const { fromYear, perSource = 15 } = opts;
-  // Quote the query for better relevance if it contains spaces
-  const q = query.includes(" ") ? `"${query}"` : query;
-  const url = `${BASE}/${encodeURIComponent(q)}?pageSize=${perSource}`;
+  // Unquoted: DOAJ ANDs the terms by default, and a quoted phrase would both
+  // demand an exact match and swallow the country clause `AND ("A" OR "B")`.
+  const url = `${BASE}/${encodeURIComponent(query)}?pageSize=${perSource}`;
 
   const res = await fetchWithTimeout(url);
   if (!res.ok) throw new Error(`DOAJ ${res.status}`);
