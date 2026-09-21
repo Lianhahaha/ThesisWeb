@@ -84,9 +84,11 @@ export default function PaperDetailPage({ params }: { params: Promise<{ id: stri
   const [style, setStyle] = useState<CitationStyle>("apa");
   const [notes, setNotes] = useState("");
 
+  // Always mirror the stored notes (including "none"): the old truthy check left
+  // the previous paper's notes on screen when opening one without notes.
   useEffect(() => {
-    if (isSavedData?.notes) setNotes(isSavedData.notes);
-  }, [isSavedData?.notes]);
+    setNotes(isSavedData?.notes ?? "");
+  }, [decodedId, isSavedData?.notes]);
 
   // --- Loading state: only show spinner while IndexedDB is still booting ---
   // and we don't have a recent copy either.
@@ -198,6 +200,9 @@ export default function PaperDetailPage({ params }: { params: Promise<{ id: stri
       setCloudSavedData(sp);
     } else {
       await updatePaper(decodedId, { notes });
+      // Logged-in users read from cloudSavedData, which updatePaper doesn't
+      // touch — without this the "Save notes" button never disables again.
+      if (user) setCloudSavedData((prev) => (prev ? { ...prev, notes } : prev));
     }
     toast("Notes saved", "success");
   }
