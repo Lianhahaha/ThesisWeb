@@ -12,18 +12,25 @@ export const dynamic = "force-dynamic";
  * pattern is consistent with the other routes.)
  */
 export async function POST(req: NextRequest) {
-  let body: { text?: string; sentences?: number };
+  // Untrusted input: the body can be any JSON value (even null), not just our shape.
+  let body: { text?: unknown; sentences?: unknown };
   try {
-    body = await req.json();
+    body = (await req.json()) ?? {};
   } catch {
     return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
   }
   const { text, sentences } = body;
-  if (!text || text.trim().length < 50) {
+  if (typeof text !== "string" || text.trim().length < 50) {
     return NextResponse.json(
       { error: "Provide at least 50 characters of text." },
       { status: 400 }
     );
   }
-  return NextResponse.json(summarize(text, { sentences }));
+  // A negative or fractional count reaches Array.slice() and silently returns
+  // the wrong sentences; anything invalid falls back to the automatic length.
+  const count =
+    typeof sentences === "number" && Number.isInteger(sentences) && sentences >= 1
+      ? Math.min(sentences, 20)
+      : undefined;
+  return NextResponse.json(summarize(text, { sentences: count }));
 }
