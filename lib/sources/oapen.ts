@@ -45,7 +45,7 @@ export async function searchOapen(
   const res = await fetchWithTimeout(
     `${ORIGIN}/rest/search?${params}`,
     { headers: { "User-Agent": USER_AGENT, Accept: "application/json" } },
-    12000
+    11000
   );
   if (!res.ok) throw new Error(`OAPEN ${res.status}`);
   const items = await safeJson<OapenItem[]>(res);

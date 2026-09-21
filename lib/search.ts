@@ -101,7 +101,7 @@ type SourceSearch = (query: string, opts: SearchOpts) => Promise<Paper[]>;
  *
  * Keep ids in sync with lib/sources/meta.ts.
  */
-const ADAPTERS: { id: string; run: SourceSearch; boolean: boolean }[] = [
+const ADAPTERS: { id: string; run: SourceSearch; boolean: boolean; deadlineMs?: number }[] = [
   { id: "openalex",        run: searchOpenAlex,        boolean: true },
   { id: "crossref",        run: searchCrossref,        boolean: true },
   { id: "semanticscholar", run: searchSemanticScholar, boolean: true },
@@ -111,7 +111,8 @@ const ADAPTERS: { id: string; run: SourceSearch; boolean: boolean }[] = [
   { id: "arxiv",           run: searchArxiv,           boolean: true },
   { id: "core",            run: searchCore,            boolean: true },
   { id: "base",            run: searchBase,            boolean: true },
-  { id: "google_scholar",  run: searchGoogleScholar,   boolean: true },
+  // Scraped and frequently blocked, so it only gets a short window.
+  { id: "google_scholar",  run: searchGoogleScholar,   boolean: true, deadlineMs: 6000 },
   { id: "eric",             run: searchEric,             boolean: false },
   { id: "zenodo",           run: searchZenodo,           boolean: false },
   { id: "hal",              run: searchHal,              boolean: false },
@@ -121,6 +122,17 @@ const ADAPTERS: { id: string; run: SourceSearch; boolean: boolean }[] = [
   { id: "datacite",         run: searchDataCite,         boolean: false },
   { id: "oapen",            run: searchOapen,            boolean: false },
 ];
+
+/** Hard cap per source, so one slow or retrying API can't stall the whole search. */
+const DEFAULT_DEADLINE_MS = 12000;
+
+function withDeadline<T>(p: Promise<T>, ms: number): Promise<T> {
+  let timer: ReturnType<typeof setTimeout>;
+  const timeout = new Promise<never>((_, reject) => {
+    timer = setTimeout(() => reject(new Error("source timed out")), ms);
+  });
+  return Promise.race([p, timeout]).finally(() => clearTimeout(timer));
+}
 
 /**
  * Run all enabled sources in parallel, tolerate individual failures,
@@ -137,9 +149,9 @@ export async function metaSearch(
   const plainQuery = opts.country ? `${query} ${opts.country}` : query;
 
   const entries = await Promise.all(
-    ADAPTERS.map(async ({ id, run, boolean }) => {
+    ADAPTERS.map(async ({ id, run, boolean, deadlineMs }) => {
       try {
-        const papers = await run(boolean ? booleanQuery : plainQuery, opts);
+        const papers = await withDeadline(run(boolean ? booleanQuery : plainQuery, opts), deadlineMs ?? DEFAULT_DEADLINE_MS);
         return [id, { ok: papers.length > 0 ? ("ok" as const) : ("empty" as const), papers }] as const;
       } catch {
         return [id, { ok: "error" as const, papers: [] as Paper[] }] as const;

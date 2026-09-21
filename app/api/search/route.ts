@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { metaSearch } from "@/lib/search";
 
 export const dynamic = "force-dynamic";
+// Search fans out to ~20 external APIs; give the function room beyond the
+// platform default so the per-source deadline (not the platform) ends slow ones.
+export const maxDuration = 30;
 
 /**
  * GET /api/search?q=...&fromYear=...&openAccessOnly=...

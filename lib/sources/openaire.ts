@@ -68,7 +68,7 @@ export async function searchOpenAire(
   if (fromYear && fromYear > 0) params.set("fromDateAccepted", `${fromYear}-01-01`);
   if (openAccessOnly) params.set("OA", "true");
 
-  const res = await fetchWithTimeout(`${BASE}?${params}`, { headers: { "User-Agent": USER_AGENT } }, 12000);
+  const res = await fetchWithTimeout(`${BASE}?${params}`, { headers: { "User-Agent": USER_AGENT } }, 11000);
   if (!res.ok) throw new Error(`OpenAIRE ${res.status}`);
   const data = await safeJson<{ response?: { results?: { result?: unknown } | null } }>(res);
   const rows = asArray(data?.response?.results?.result as { metadata?: Record<string, { "oaf:result"?: OaResult }> }[]);
