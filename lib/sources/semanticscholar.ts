@@ -14,7 +14,8 @@ const BASE = "https://api.semanticscholar.org/graph/v1/paper/search";
 
 interface S2Paper {
   paperId: string;
-  doi?: string;
+  /** The Graph API has no top-level `doi` — it lives under externalIds. */
+  externalIds?: { DOI?: string } | null;
   title?: string;
   abstract?: string;
   year?: number;
@@ -47,7 +48,7 @@ export async function searchSemanticScholar(
   return data.data
     .filter((p) => (openAccessOnly ? !!p.openAccessPdf?.url : true))
     .map<Paper>((p) => {
-      const doi = p.doi || null;
+      const doi = p.externalIds?.DOI || null;
       const title = p.title || "Untitled";
       return {
         id: paperId(doi, title),
