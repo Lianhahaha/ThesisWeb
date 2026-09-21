@@ -13,26 +13,29 @@ export function dedupePapers(papers: Paper[]): Paper[] {
   const out: Paper[] = [];
 
   for (const p of papers) {
-    if (p.doi) {
-      const key = p.doi.toLowerCase();
-      const existing = byDoi.get(key);
-      if (existing) {
-        mergeInto(existing, p);
-        continue;
-      }
-      byDoi.set(key, p);
-      out.push(p);
+    const doiKey = p.doi ? p.doi.toLowerCase() : null;
+    const titleKey = normalizeTitle(p.title).slice(0, 80);
+    // Placeholder titles say nothing about identity — never match on them.
+    const tyKey = titleKey && titleKey !== "untitled" ? `${titleKey}|${p.year ?? ""}` : null;
+
+    // Title+year is checked for DOI'd papers too: the same work often arrives
+    // with a DOI from one source and without one from another.
+    let existing = doiKey ? byDoi.get(doiKey) : undefined;
+    if (!existing && tyKey) {
+      const candidate = byTitleYear.get(tyKey);
+      // Two different DOIs are two different records, even with equal titles.
+      const doiConflict = doiKey && candidate?.doi && candidate.doi.toLowerCase() !== doiKey;
+      if (candidate && !doiConflict) existing = candidate;
+    }
+
+    if (existing) {
+      mergeInto(existing, p);
+      if (existing.doi) byDoi.set(existing.doi.toLowerCase(), existing);
       continue;
     }
 
-    const titleKey = normalizeTitle(p.title).slice(0, 80);
-    const tyKey = `${titleKey}|${p.year ?? ""}`;
-    const existingTy = byTitleYear.get(tyKey);
-    if (existingTy) {
-      mergeInto(existingTy, p);
-      continue;
-    }
-    byTitleYear.set(tyKey, p);
+    if (doiKey) byDoi.set(doiKey, p);
+    if (tyKey && !byTitleYear.has(tyKey)) byTitleYear.set(tyKey, p);
     out.push(p);
   }
 
@@ -47,7 +50,12 @@ function mergeInto(dest: Paper, src: Paper): void {
   if (src.isOpenAccess) dest.isOpenAccess = true;
   if ((src.citedByCount ?? 0) > (dest.citedByCount ?? 0)) dest.citedByCount = src.citedByCount;
   if (!dest.venue && src.venue) dest.venue = src.venue;
-  if (!dest.doi && src.doi) dest.doi = src.doi;
+  if (!dest.doi && src.doi) {
+    dest.doi = src.doi;
+    // Keep the id in sync with paperId(): a DOI'd paper must use its "doi:" id,
+    // or the saved-state lookup misses it on the next search.
+    dest.id = src.id;
+  }
   if (dest.authors.length === 0 && src.authors.length) dest.authors = src.authors;
   if ((dest.keywords?.length ?? 0) < (src.keywords?.length ?? 0)) dest.keywords = src.keywords;
   else if (dest.keywords && src.keywords) dest.keywords = Array.from(new Set([...dest.keywords, ...src.keywords])).slice(0, 10);
