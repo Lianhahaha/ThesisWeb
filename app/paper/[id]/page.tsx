@@ -26,6 +26,7 @@ import { toast } from "@/components/Toaster";
 import type { Paper, SavedPaper } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/lib/auth-store";
+import { RelatedPapers } from "@/components/RelatedPapers";
 
 const STYLES: { id: CitationStyle; label: string }[] = [
   { id: "apa", label: "APA" },
@@ -379,6 +380,9 @@ export default function PaperDetailPage({ params }: { params: Promise<{ id: stri
           </button>
         </div>
       </section>
+
+      {/* Citation neighbourhood */}
+      {p.doi && <RelatedPapers key={p.doi} doi={p.doi} />}
 
       {/* Notes */}
       <section className="mt-6">

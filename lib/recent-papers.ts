@@ -29,6 +29,29 @@ export function storeRecentPapers(papers: Paper[]): void {
   }
 }
 
+/**
+ * Add papers to the ephemeral store without discarding what is already there
+ * (storeRecentPapers replaces it). Used when more papers are shown outside a
+ * search, e.g. the related-papers list, so their detail pages still resolve.
+ */
+export function mergeRecentPapers(papers: Paper[]): void {
+  if (typeof window === "undefined" || papers.length === 0) return;
+  try {
+    const raw = sessionStorage.getItem(KEY);
+    const map: Record<string, Paper> = raw ? JSON.parse(raw) : {};
+    // Re-insert so the papers just seen are the newest when trimming to MAX.
+    for (const p of papers) {
+      delete map[p.id];
+      map[p.id] = p;
+    }
+    const keys = Object.keys(map);
+    for (const k of keys.slice(0, Math.max(0, keys.length - MAX * 3))) delete map[k];
+    sessionStorage.setItem(KEY, JSON.stringify(map));
+  } catch {
+    // Quota exceeded, disabled storage or corrupt JSON — non-fatal.
+  }
+}
+
 export function getRecentPaper(id: string): Paper | null {
   if (typeof window === "undefined") return null;
   try {
