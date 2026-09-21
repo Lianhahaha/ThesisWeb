@@ -11,6 +11,7 @@ import { toast } from "@/components/Toaster";
 import { storeRecentPapers } from "@/lib/recent-papers";
 import type { Paper, SearchResult } from "@/lib/types";
 import { ALL_COUNTRIES, filterCountries } from "@/lib/countries";
+import { KEYLESS_SOURCE_COUNT, sourceLabel, sourceStyle, SOURCE_META } from "@/lib/sources/meta";
 
 const CURRENT_YEAR = new Date().getFullYear();
 
@@ -20,19 +21,6 @@ const EXAMPLE_TOPICS = [
   "microplastics freshwater ecosystems",
   "blockchain supply chain transparency",
 ];
-
-const SOURCE_COLORS: Record<string, { bg: string; color: string; border: string }> = {
-  openalex:        { bg: "rgba(56,139,253,0.1)",  color: "#388bfd", border: "rgba(56,139,253,0.3)" },
-  crossref:        { bg: "rgba(63,185,80,0.1)",   color: "#3fb950", border: "rgba(63,185,80,0.3)"  },
-  semanticscholar: { bg: "rgba(188,140,255,0.1)", color: "#bc8cff", border: "rgba(188,140,255,0.3)" },
-  doaj:            { bg: "rgba(210,153,34,0.1)",  color: "#d29922", border: "rgba(210,153,34,0.3)" },
-  europepmc:       { bg: "rgba(100,196,196,0.1)", color: "#64c4c4", border: "rgba(100,196,196,0.3)" },
-  pubmed:          { bg: "rgba(248,129,74,0.1)",  color: "#f8814a", border: "rgba(248,129,74,0.3)"  },
-  arxiv:           { bg: "rgba(224,96,96,0.1)",   color: "#e06060", border: "rgba(224,96,96,0.3)"  },
-  core:            { bg: "rgba(160,120,255,0.1)", color: "#a078ff", border: "rgba(160,120,255,0.3)" },
-  base:            { bg: "rgba(255,166,77,0.1)",  color: "#ffa64d", border: "rgba(255,166,77,0.3)" },
-  google_scholar:  { bg: "rgba(66,133,244,0.1)",  color: "#4285f4", border: "rgba(66,133,244,0.3)" },
-};
 
 // ─── Country Combobox ────────────────────────────────────────────────────────
 function CountryCombobox({
@@ -223,7 +211,7 @@ export default function SearchPage() {
           Find related literature
         </h1>
         <p className="mt-0.5 text-xs sm:text-sm" style={{ color: "rgb(var(--muted))" }}>
-          Search 700M+ papers across 10 databases — global, free, ranked by relevance.
+          Search {KEYLESS_SOURCE_COUNT} free databases at once — global, deduplicated, ranked by relevance.
         </p>
       </div>
 
@@ -385,11 +373,12 @@ export default function SearchPage() {
           )}
           <div className="flex flex-wrap gap-1.5 ml-0 xs:ml-auto">
             {Object.entries(result.sources).map(([name, status]) => {
-              const c = SOURCE_COLORS[name] ?? { bg: "rgba(139,148,158,0.1)", color: "rgb(var(--muted))", border: "rgb(var(--border))" };
+              const c = sourceStyle(name);
               const failed = status === "error";
               return (
                 <span
                   key={name}
+                  title={SOURCE_META[name]?.blurb}
                   className="badge text-[11px]"
                   style={{
                     backgroundColor: failed ? "rgba(248,81,73,0.1)" : c.bg,
@@ -397,7 +386,7 @@ export default function SearchPage() {
                     borderColor: failed ? "rgba(248,81,73,0.3)" : c.border,
                   }}
                 >
-                  {name}{status === "ok" ? " ✓" : status === "error" ? " ✕" : ""}
+                  {sourceLabel(name)}{status === "ok" ? " ✓" : status === "error" ? " ✕" : ""}
                 </span>
               );
             })}

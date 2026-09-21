@@ -7,6 +7,7 @@ import {
 } from "lucide-react";
 import { useLiveQuery } from "dexie-react-hooks";
 import { getDb } from "@/lib/db";
+import { KEYLESS_SOURCE_COUNT } from "@/lib/sources/meta";
 
 export default function DashboardPage() {
   const libraryCount = useLiveQuery(async () => {
@@ -54,7 +55,7 @@ export default function DashboardPage() {
               </span>
             </div>
             <p className="mt-1 text-xs sm:text-sm" style={{ color: "rgb(var(--muted))" }}>
-              Search 700M+ global academic papers across 10 databases, manage references, and pre-check your thesis for AI-likeness.
+              Search global academic papers across {KEYLESS_SOURCE_COUNT} free databases, manage references, and pre-check your thesis for AI-likeness.
             </p>
 
             {/* CTA buttons */}
@@ -152,7 +153,7 @@ export default function DashboardPage() {
             {
               icon: FileText,
               title: "Hard to find RRLs?",
-              body: "Type your topic — we pull recent papers from 10 global databases, dedupe, and rank by relevance. Defaults to last 5 years.",
+              body: "Type your topic — we pull recent papers from " + KEYLESS_SOURCE_COUNT + " free global databases, dedupe, and rank by relevance. Defaults to last 5 years.",
             },
             {
               icon: Database,
