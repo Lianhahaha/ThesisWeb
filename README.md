@@ -146,6 +146,7 @@ Copy `.env.example` to `.env.local`. Never commit `.env.local`; it is git-ignore
 | `CONTACT_EMAIL` | Recommended | A real email sent to OpenAlex, Crossref, PubMed, Zenodo and other free APIs. Identified requests get faster, more reliable limits. Falls back to `UNPAYWALL_EMAIL`. |
 | `UNPAYWALL_EMAIL` | Recommended | A real email for Unpaywall. Without it, **Find free PDF** is disabled. |
 | `SEMANTIC_SCHOLAR_API_KEY` | Recommended | Sent as the `x-api-key` header. Allows 1 request per second, and ThesisWeb paces itself to stay under that. Without a key you share a public pool that is often rate-limited. |
+| `OPENALEX_API_KEY` | Recommended | Free key from <https://openalex.org/settings/api>. OpenAlex pauses anonymous searches whenever it is under load, and OpenAlex is the biggest source, so set this for production. |
 | `CORE_API_KEY` | Optional | Enables CORE. |
 | `BASE_API_KEY` | Optional | Enables BASE. |
 

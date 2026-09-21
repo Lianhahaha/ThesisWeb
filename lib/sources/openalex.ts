@@ -11,6 +11,10 @@ import { CONTACT_EMAIL } from "@/lib/config";
  */
 
 const MAILTO = CONTACT_EMAIL; // polite pool
+// Optional free key (OPENALEX_API_KEY). Anonymous search is paused by OpenAlex
+// whenever its cluster is under load; a key is exempt.
+const API_KEY = process.env.OPENALEX_API_KEY?.trim() || "";
+const KEY_QUERY = API_KEY ? `&api_key=${encodeURIComponent(API_KEY)}` : "";
 const BASE = "https://api.openalex.org/works";
 
 interface OpenAlexWork {
@@ -56,6 +60,7 @@ export async function searchOpenAlex(
     search: query,
     per_page: String(perSource),
     mailto: MAILTO,
+    ...(API_KEY ? { api_key: API_KEY } : {}),
   });
   if (fromYear) params.set("filter", `from_publication_date:${fromYear}-01-01${openAccessOnly ? ",is_oa:true" : ""}`);
   else if (openAccessOnly) params.set("filter", "is_oa:true");
@@ -102,7 +107,7 @@ function doiPath(doi: string): string {
 
 /** Fetch one OpenAlex work by DOI (used to enrich a saved paper). */
 export async function getOpenAlexByDoi(doi: string): Promise<Paper | null> {
-  const res = await fetchWithTimeout(`${BASE}/doi:${doiPath(doi)}?mailto=${MAILTO}`);
+  const res = await fetchWithTimeout(`${BASE}/doi:${doiPath(doi)}?mailto=${MAILTO}${KEY_QUERY}`);
   if (!res.ok) return null;
   const w = await safeJson<OpenAlexWork>(res);
   if (!w) return null;
@@ -130,6 +135,7 @@ async function worksByIds(ids: string[], limit: number): Promise<Paper[]> {
     sort: "cited_by_count:desc",
     per_page: String(limit),
     mailto: MAILTO,
+    ...(API_KEY ? { api_key: API_KEY } : {}),
   });
   const res = await fetchWithTimeout(`${BASE}?${params}`);
   if (!res.ok) return [];
@@ -144,7 +150,7 @@ async function worksByIds(ids: string[], limit: number): Promise<Paper[]> {
  */
 export async function getRelatedPapers(doi: string, limit = 10): Promise<RelatedPapers | null> {
   const workRes = await fetchWithTimeout(
-    `${BASE}/doi:${doiPath(doi)}?select=id,referenced_works,related_works&mailto=${MAILTO}`
+    `${BASE}/doi:${doiPath(doi)}?select=id,referenced_works,related_works&mailto=${MAILTO}${KEY_QUERY}`
   );
   if (!workRes.ok) return null;
   const work = await safeJson<{ id?: string; referenced_works?: string[]; related_works?: string[] }>(workRes);
@@ -155,6 +161,7 @@ export async function getRelatedPapers(doi: string, limit = 10): Promise<Related
     sort: "cited_by_count:desc",
     per_page: String(limit),
     mailto: MAILTO,
+    ...(API_KEY ? { api_key: API_KEY } : {}),
   });
 
   const [references, similar, citedByRes] = await Promise.all([
