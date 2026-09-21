@@ -30,36 +30,49 @@ export function SaveButton({ paper, className }: Props) {
 
   // Firestore check (for logged-in users)
   const [cloudSaved, setCloudSaved] = useState<boolean | null>(null);
+  const [busy, setBusy] = useState(false);
 
   useEffect(() => {
     if (!user) { setCloudSaved(null); return; }
-    isSaved(paper.id).then(setCloudSaved);
+    // A failed lookup must not become an unhandled rejection; treat as "not saved".
+    isSaved(paper.id).then(setCloudSaved).catch(() => setCloudSaved(false));
   }, [user, paper.id]);
 
   // Merge: prefer Firestore when logged in
   const saved = user ? (cloudSaved ?? false) : (localSaved ?? false);
 
   async function toggle() {
-    if (saved) {
-      await unsavePaper(paper.id);
-      if (user) setCloudSaved(false);
-      toast("Removed from library", "info");
-    } else {
-      const entry: SavedPaper = {
-        ...paper,
-        savedAt: Date.now(),
-        tags: [],
-        readingStatus: "to-read",
-      };
-      await savePaper(entry);
-      if (user) setCloudSaved(true);
-      toast("Saved to library", "success");
+    if (busy) return; // ignore double-clicks while a write is in flight
+    setBusy(true);
+    try {
+      if (saved) {
+        await unsavePaper(paper.id);
+        if (user) setCloudSaved(false);
+        toast("Removed from library", "info");
+      } else {
+        const entry: SavedPaper = {
+          ...paper,
+          savedAt: Date.now(),
+          tags: [],
+          readingStatus: "to-read",
+        };
+        await savePaper(entry);
+        if (user) setCloudSaved(true);
+        toast("Saved to library", "success");
+      }
+    } catch {
+      // Firestore/IndexedDB writes can fail (offline, rules, quota). Tell the
+      // user instead of leaving the button in a state that looks successful.
+      toast("Couldn't update your library — please try again.", "error");
+    } finally {
+      setBusy(false);
     }
   }
 
   return (
     <button
       onClick={toggle}
+      disabled={busy}
       className={cn(
         saved ? "btn-secondary !py-1.5 !text-xs text-brand-600" : "btn-ghost !py-1.5 !text-xs",
         className
