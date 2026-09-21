@@ -31,6 +31,7 @@ export const SOURCE_META: Record<string, SourceMeta> = {
   hal: { label: "HAL", blurb: "French national open archive: articles, theses and reports (multilingual)", color: "#f778ba" },
   openaire: { label: "OpenAIRE", blurb: "European open-science graph: repositories, publishers and funder-linked research", color: "#ff7b72" },
   inspire: { label: "INSPIRE-HEP", blurb: "High-energy physics, astrophysics and cosmology (CERN, Fermilab, DESY)", color: "#a5d6ff" },
+  plos: { label: "PLOS", blurb: "PLOS ONE, Climate, Medicine, Biology and more — all open access", color: "#ff9bce" },
 };
 
 /** Number of sources that work out of the box, with no API key. */

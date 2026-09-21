@@ -14,6 +14,7 @@ import { searchZenodo } from "@/lib/sources/zenodo";
 import { searchHal } from "@/lib/sources/hal";
 import { searchOpenAire } from "@/lib/sources/openaire";
 import { searchInspire } from "@/lib/sources/inspire";
+import { searchPlos } from "@/lib/sources/plos";
 import { dedupePapers, scoreRelevance } from "@/lib/dedupe";
 
 export interface SearchOpts {
@@ -114,6 +115,7 @@ const ADAPTERS: { id: string; run: SourceSearch; boolean: boolean }[] = [
   { id: "hal",              run: searchHal,              boolean: false },
   { id: "openaire",         run: searchOpenAire,         boolean: false },
   { id: "inspire",          run: searchInspire,          boolean: false },
+  { id: "plos",             run: searchPlos,             boolean: false },
 ];
 
 /**
