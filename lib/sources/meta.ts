@@ -27,6 +27,7 @@ export const SOURCE_META: Record<string, SourceMeta> = {
   base:            { label: "BASE",             blurb: "Institutional repositories and theses",                    color: "#ffa64d", needsKey: true },
   google_scholar:  { label: "Google Scholar",   blurb: "Broad coverage (best-effort scraping)",                    color: "#4285f4" },
   eric: { label: "ERIC", blurb: "Education research: articles, theses and reports (U.S. Dept. of Education)", color: "#e3b341" },
+  zenodo: { label: "Zenodo", blurb: "Open articles, theses, reports and preprints from every field (CERN)", color: "#58a6ff" },
 };
 
 /** Number of sources that work out of the box, with no API key. */
