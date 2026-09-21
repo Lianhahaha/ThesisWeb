@@ -9,6 +9,18 @@ import type { Paper } from "@/lib/types";
  * Docs: https://info.arxiv.org/help/api/user-manual.html
  */
 
+/** Decode the XML entities arXiv's Atom feed uses in text nodes. */
+function decodeXml(s: string): string {
+  return s
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&quot;/g, '"')
+    .replace(/&apos;/g, "'")
+    .replace(/&#(d+);/g, (_, n) => String.fromCodePoint(Number(n)))
+    .replace(/&#x([0-9a-f]+);/gi, (_, h) => String.fromCodePoint(parseInt(h, 16)))
+    .replace(/&amp;/g, "&"); // last, so "&amp;lt;" stays a literal "&lt;"
+}
+
 export async function searchArxiv(
   query: string,
   opts: { fromYear?: number; perSource?: number; openAccessOnly?: boolean } = {}
@@ -44,10 +56,10 @@ export async function searchArxiv(
     const arxivId = arxivUrl ? arxivUrl.split("/abs/")[1]?.replace(/v\d+$/, "") : null;
     
     const titleMatch = entryXml.match(/<title>([\s\S]*?)<\/title>/);
-    const title = titleMatch ? titleMatch[1].replace(/\s+/g, ' ').trim() : "Untitled";
+    const title = titleMatch ? decodeXml(titleMatch[1]).replace(/\s+/g, ' ').trim() : "Untitled";
     
     const abstractMatch = entryXml.match(/<summary>([\s\S]*?)<\/summary>/);
-    const abstract = abstractMatch ? abstractMatch[1].replace(/\s+/g, ' ').trim() : null;
+    const abstract = abstractMatch ? decodeXml(abstractMatch[1]).replace(/\s+/g, ' ').trim() : null;
     
     const publishedMatch = entryXml.match(/<published>(.*?)<\/published>/);
     const publishedStr = publishedMatch ? publishedMatch[1].trim() : null;
@@ -60,7 +72,7 @@ export async function searchArxiv(
     const authorRegex = /<author>\s*<name>([\s\S]*?)<\/name>\s*<\/author>/g;
     let authorMatch;
     while ((authorMatch = authorRegex.exec(entryXml)) !== null) {
-      authors.push(authorMatch[1].trim());
+      authors.push(decodeXml(authorMatch[1]).trim());
     }
     
     // Extract DOI if available
