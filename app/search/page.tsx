@@ -12,6 +12,7 @@ import { storeRecentPapers } from "@/lib/recent-papers";
 import type { Paper, SearchResult } from "@/lib/types";
 import { ALL_COUNTRIES, filterCountries } from "@/lib/countries";
 import { KEYLESS_SOURCE_COUNT, sourceLabel, sourceStyle, SOURCE_META } from "@/lib/sources/meta";
+import { MIN_QUERY_LENGTH, buildSearchParams, parseSearchParams, type SearchInput } from "@/lib/search-params";
 import { SORT_OPTIONS, countBySource, filterBySources, sortPapers, type SortKey } from "@/lib/result-view";
 
 const CURRENT_YEAR = new Date().getFullYear();
@@ -194,10 +195,10 @@ export default function SearchPage() {
   }
 
   const search = useMutation({
-    mutationFn: async () => {
-      const params = new URLSearchParams({ q: query, fromYear: String(fromYear) });
-      if (openAccessOnly) params.set("openAccessOnly", "1");
-      if (country) params.set("country", country);
+    mutationFn: async (input: SearchInput) => {
+      const params = new URLSearchParams({ q: input.query, fromYear: String(input.fromYear) });
+      if (input.openAccessOnly) params.set("openAccessOnly", "1");
+      if (input.country) params.set("country", input.country);
       const res = await fetch(`/api/search?${params}`);
       if (!res.ok) {
         const err = await res.json().catch(() => ({ error: "Search failed" }));
@@ -205,12 +206,14 @@ export default function SearchPage() {
       }
       return (await res.json()) as SearchResult;
     },
-    onSuccess: (data) => {
+    onSuccess: (data, input) => {
       setResult(data);
+      // Reflect the search in the address bar so it can be refreshed or shared.
+      window.history.replaceState(null, "", `?${buildSearchParams(input)}`);
       setSelectedSources(new Set()); // a new search starts unfiltered
       storeRecentPapers(data.papers);
       const okSources = Object.values(data.sources).filter((s) => s === "ok").length;
-      const locationNote = country ? ` (${country})` : "";
+      const locationNote = input.country ? ` (${input.country})` : "";
       if (okSources === 0) toast("No sources returned results. Try a different topic.", "error");
       else toast(`Found ${data.papers.length} papers in ${(data.tookMs / 1000).toFixed(1)}s${locationNote}`, "success");
     },
@@ -219,9 +222,22 @@ export default function SearchPage() {
 
   function onSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (query.trim().length < 3) return;
-    search.mutate();
+    if (query.trim().length < MIN_QUERY_LENGTH) return;
+    search.mutate({ query: query.trim(), fromYear, openAccessOnly, country });
   }
+
+  // Opened from a shared link or a refresh: restore the form and run the search.
+  // (Read once on mount; the mutation function is stable enough not to belong in deps.)
+  useEffect(() => {
+    const input = parseSearchParams(window.location.search, { fromYear: CURRENT_YEAR - 5 });
+    if (!input) return;
+    setQuery(input.query);
+    setFromYear(input.fromYear);
+    setOpenAccessOnly(input.openAccessOnly);
+    setCountry(input.country);
+    search.mutate(input);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <div className="w-full max-w-[900px] mx-auto">
@@ -285,6 +301,10 @@ export default function SearchPage() {
               <option value={CURRENT_YEAR - 10}>Last 10 yrs ({CURRENT_YEAR - 10}+)</option>
               <option value={CURRENT_YEAR - 1}>This & last year</option>
               <option value={0}>All years</option>
+              {/* A shared link can carry a year that isn't one of the presets. */}
+              {![0, CURRENT_YEAR - 1, CURRENT_YEAR - 3, CURRENT_YEAR - 5, CURRENT_YEAR - 10].includes(fromYear) && (
+                <option value={fromYear}>{fromYear}+ (custom)</option>
+              )}
             </select>
           </label>
 
