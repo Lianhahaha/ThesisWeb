@@ -12,6 +12,7 @@ import { storeRecentPapers } from "@/lib/recent-papers";
 import type { Paper, SearchResult } from "@/lib/types";
 import { ALL_COUNTRIES, filterCountries } from "@/lib/countries";
 import { KEYLESS_SOURCE_COUNT, sourceLabel, sourceStyle, SOURCE_META } from "@/lib/sources/meta";
+import { addSearchHistory, clearSearchHistory, getSearchHistory } from "@/lib/search-history";
 import { MIN_QUERY_LENGTH, buildSearchParams, parseSearchParams, type SearchInput } from "@/lib/search-params";
 import { SORT_OPTIONS, countBySource, filterBySources, sortPapers, type SortKey } from "@/lib/result-view";
 
@@ -176,6 +177,9 @@ export default function SearchPage() {
   const [country, setCountry] = useState<string | null>(null);
   const [result, setResult] = useState<SearchResult | null>(null);
   const [sortKey, setSortKey] = useState<SortKey>("relevance");
+  // Loaded after mount: localStorage doesn't exist during server rendering.
+  const [history, setHistory] = useState<string[]>([]);
+  useEffect(() => setHistory(getSearchHistory()), []);
   // Sources the user narrowed the results to. Empty = show everything.
   const [selectedSources, setSelectedSources] = useState<Set<string>>(new Set());
 
@@ -211,6 +215,7 @@ export default function SearchPage() {
       // Reflect the search in the address bar so it can be refreshed or shared.
       window.history.replaceState(null, "", `?${buildSearchParams(input)}`);
       setSelectedSources(new Set()); // a new search starts unfiltered
+      setHistory(addSearchHistory(input.query));
       storeRecentPapers(data.papers);
       const okSources = Object.values(data.sources).filter((s) => s === "ok").length;
       const locationNote = input.country ? ` (${input.country})` : "";
@@ -346,6 +351,40 @@ export default function SearchPage() {
                 <X className="h-3 w-3" />
               </button>
             </span>
+          </div>
+        )}
+
+        {/* Recent searches */}
+        {!result && history.length > 0 && (
+          <div className="mt-3 flex flex-wrap items-center gap-1.5">
+            <span className="text-xs" style={{ color: "rgb(var(--subtle))" }}>Recent:</span>
+            {history.map((h) => (
+              <button
+                key={h}
+                type="button"
+                onClick={() => {
+                  setQuery(h);
+                  search.mutate({ query: h, fromYear, openAccessOnly, country });
+                }}
+                className="rounded-full px-2.5 py-1 text-xs font-medium transition-colors max-w-[220px] truncate"
+                style={{
+                  backgroundColor: "rgba(56,139,253,0.08)",
+                  color: "#388bfd",
+                  border: "1px solid rgba(56,139,253,0.25)",
+                }}
+                title={h}
+              >
+                {h}
+              </button>
+            ))}
+            <button
+              type="button"
+              onClick={() => { clearSearchHistory(); setHistory([]); }}
+              className="text-xs hover:underline"
+              style={{ color: "rgb(var(--subtle))" }}
+            >
+              Clear
+            </button>
           </div>
         )}
 
