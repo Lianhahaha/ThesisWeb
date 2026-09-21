@@ -34,7 +34,7 @@ interface CrossrefItem {
  */
 function hasOpenLicense(it: CrossrefItem): boolean {
   return (it.license || []).some((l) =>
-    /creativecommons.org|publicdomain/i.test(l.URL || "")
+    /creativecommons\.org|publicdomain/i.test(l.URL || "")
   );
 }
 
