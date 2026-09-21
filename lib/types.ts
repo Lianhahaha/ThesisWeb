@@ -23,6 +23,8 @@ export interface Paper {
   sources: string[];
   /** Pre-computed relevance score for sorting (0-100) */
   relevance?: number;
+  /** True if the work has been retracted (OpenAlex `is_retracted`). */
+  retracted?: boolean;
 }
 
 /** A user's saved copy of a paper, with their annotations. */

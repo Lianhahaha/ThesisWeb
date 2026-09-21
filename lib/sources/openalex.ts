@@ -33,6 +33,7 @@ interface OpenAlexWork {
   abstract_inverted_index?: Record<string, number[]> | null;
   concepts?: { display_name: string; score: number }[] | null;
   keywords?: { keyword: string; score: number }[] | null;
+  is_retracted?: boolean;
 }
 
 /** Reconstruct abstract text from OpenAlex's inverted-index format. */
@@ -85,6 +86,7 @@ export async function searchOpenAlex(
       keywords: (w.keywords || w.concepts || [])
         .slice(0, 5)
         .map((k) => ("keyword" in k ? k.keyword : k.display_name)),
+      retracted: w.is_retracted === true,
       sources: ["openalex"],
     };
   });
@@ -111,6 +113,7 @@ export async function getOpenAlexByDoi(doi: string): Promise<Paper | null> {
     isOpenAccess: oa?.pdf_url != null,
     citedByCount: w.cited_by_count ?? 0,
     keywords: [],
+    retracted: w.is_retracted === true,
     sources: ["openalex"],
   };
 }

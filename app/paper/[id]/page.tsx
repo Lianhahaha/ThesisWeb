@@ -216,6 +216,23 @@ export default function PaperDetailPage({ params }: { params: Promise<{ id: stri
         Back to search
       </Link>
 
+      {p.retracted && (
+        <div
+          role="alert"
+          className="mb-4 flex items-start gap-2 rounded-lg border p-3 text-sm"
+          style={{ borderColor: "rgba(248,81,73,0.4)", backgroundColor: "rgba(248,81,73,0.08)", color: "#f85149" }}
+        >
+          <AlertCircle className="h-4 w-4 mt-0.5 shrink-0" />
+          <div>
+            <p className="font-semibold">This paper has been retracted.</p>
+            <p className="text-xs mt-0.5 text-muted">
+              Its findings are no longer considered reliable. Don&apos;t cite it as supporting
+              evidence in your review of related literature.
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* Title + meta */}
       <h1 className="text-2xl font-bold leading-snug">{p.title}</h1>
       <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-sm text-muted">

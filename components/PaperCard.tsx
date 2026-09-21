@@ -1,6 +1,6 @@
 "use client";
 
-import { FileText, ExternalLink, Quote, Calendar, Users, CircleDot } from "lucide-react";
+import { FileText, ExternalLink, Quote, Calendar, Users, CircleDot, AlertTriangle } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import type { Paper } from "@/lib/types";
@@ -48,6 +48,16 @@ export function PaperCard({ paper, showScore, refNum }: Props) {
           >
             {paper.title}
           </Link>
+          {paper.retracted && (
+            <span
+              className="shrink-0 inline-flex items-center gap-1 text-[11px] font-semibold px-1.5 py-0.5 rounded"
+              style={{ color: "#f85149", backgroundColor: "rgba(248,81,73,0.1)", border: "1px solid rgba(248,81,73,0.4)" }}
+              title="This work has been retracted. Do not cite it as valid evidence."
+            >
+              <AlertTriangle className="h-3 w-3" />
+              Retracted
+            </span>
+          )}
           {showScore && paper.relevance != null && (
             <span
               className="shrink-0 text-xs font-mono font-bold px-1.5 py-0.5 rounded"
