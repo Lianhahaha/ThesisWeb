@@ -29,6 +29,7 @@ export const SOURCE_META: Record<string, SourceMeta> = {
   eric: { label: "ERIC", blurb: "Education research: articles, theses and reports (U.S. Dept. of Education)", color: "#e3b341" },
   zenodo: { label: "Zenodo", blurb: "Open articles, theses, reports and preprints from every field (CERN)", color: "#58a6ff" },
   hal: { label: "HAL", blurb: "French national open archive: articles, theses and reports (multilingual)", color: "#f778ba" },
+  openaire: { label: "OpenAIRE", blurb: "European open-science graph: repositories, publishers and funder-linked research", color: "#ff7b72" },
 };
 
 /** Number of sources that work out of the box, with no API key. */
