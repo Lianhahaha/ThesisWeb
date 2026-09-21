@@ -21,14 +21,27 @@ function s2Headers(): HeadersInit {
   return key ? { "x-api-key": key } : {};
 }
 
-/** GET with one retry on 429, after a short pause. */
+/**
+ * A key allows 1 request per second, cumulative across all endpoints. Every
+ * call reserves the next free slot 1.1 s after the previous one, so
+ * concurrent searches queue instead of being rejected. The counter lives in
+ * this server instance only, so under heavy parallel traffic (several
+ * serverless instances) the retry below is still the safety net.
+ */
+const MIN_GAP_MS = 1100;
+let lastSlot = 0;
+
+/** GET, paced to the rate limit, with one retry on 429. */
 async function s2Fetch(url: string): Promise<Response> {
-  let res = await fetchWithTimeout(url, { headers: s2Headers() });
-  if (res.status === 429) {
-    await sleep(1200);
-    res = await fetchWithTimeout(url, { headers: s2Headers() });
+  for (let attempt = 0; ; attempt++) {
+    const now = Date.now();
+    const slot = Math.max(now, lastSlot + MIN_GAP_MS);
+    lastSlot = slot; // reserve synchronously, before awaiting
+    if (slot > now) await sleep(slot - now);
+
+    const res = await fetchWithTimeout(url, { headers: s2Headers() });
+    if (res.status !== 429 || attempt >= 1) return res;
   }
-  return res;
 }
 
 interface S2Paper {
