@@ -21,7 +21,8 @@ export function DexieHooksProvider({ children }: { children: React.ReactNode }) 
       // Don't set ready=true — children won't mount, preventing silent useLiveQuery failures
     }
   }, []);
-  if (!ready) return null;
+  // Check the error first: on failure `ready` stays false, so testing `ready`
+  // first would return null forever and the warning would never render.
   if (error) {
     return (
       <div className="p-4 text-sm text-amber-600 bg-amber-50 dark:bg-amber-950/30 dark:text-amber-400 rounded-lg m-4">
@@ -29,5 +30,6 @@ export function DexieHooksProvider({ children }: { children: React.ReactNode }) 
       </div>
     );
   }
+  if (!ready) return null;
   return <>{children}</>;
 }
