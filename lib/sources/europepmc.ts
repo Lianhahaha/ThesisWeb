@@ -1,4 +1,4 @@
-import { fetchWithTimeout, safeJson, paperId } from "@/lib/utils";
+import { fetchWithTimeout, safeJson, paperId, sleep } from "@/lib/utils";
 import type { Paper } from "@/lib/types";
 
 /**
@@ -34,7 +34,10 @@ export async function searchEuropePMC(
 ): Promise<Paper[]> {
   const { fromYear, perSource = 15, openAccessOnly } = opts;
 
-  let q = `"${query}"`;
+  // Don't wrap the query in quotes: that turns it into an exact-phrase search
+  // (nothing matches a multi-word topic) and breaks the country clause
+  // `AND ("A" OR "B")`. Unquoted terms are ANDed, which is what we want.
+  let q = `(${query})`;
   if (fromYear) q += ` AND (PUB_YEAR:[${fromYear} TO 9999])`;
   if (openAccessOnly) q += " AND OPEN_ACCESS:y";
 
@@ -43,13 +46,26 @@ export async function searchEuropePMC(
     format: "json",
     pageSize: String(perSource),
     resultType: "core",
-    sort: "RELEVANCE",
+    // No `sort`: results are relevance-ranked by default, and "RELEVANCE" is not
+    // a valid value — Europe PMC answers it with an error, so every search
+    // through this adapter used to come back empty.
   });
 
-  const res = await fetchWithTimeout(`${BASE}?${params}`);
-  if (!res.ok) throw new Error(`EuropePMC ${res.status}`);
-  const data = await safeJson<{ resultList?: { result: EPMCResult[] } }>(res);
-  if (!data?.resultList?.result) return [];
+  // Europe PMC occasionally answers 200 with an error body instead of results.
+  // A real response always has `resultList`; retry once, then report an error
+  // rather than silently showing the source as "empty".
+  async function fetchOnce() {
+    const res = await fetchWithTimeout(`${BASE}?${params}`);
+    if (!res.ok) throw new Error(`EuropePMC ${res.status}`);
+    return safeJson<{ resultList?: { result?: EPMCResult[] } }>(res);
+  }
+  let data = await fetchOnce();
+  if (!data?.resultList) {
+    await sleep(400);
+    data = await fetchOnce();
+  }
+  if (!data?.resultList) throw new Error("EuropePMC returned no result list");
+  if (!data.resultList.result) return [];
 
   return data.resultList.result.map<Paper>((r) => {
     const title = r.title?.replace(/\.$/, "") || "Untitled";
