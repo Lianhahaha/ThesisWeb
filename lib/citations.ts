@@ -35,8 +35,11 @@ function authorsApa(authors: string[]): string {
   });
   return parsed
     .map((a, i) => {
-      const name = `${a.last}, ${a.initials}`.trim();
-      const sep = i === parsed.length - 1 ? "" : i === parsed.length - 2 ? " & " : ", ";
+      // Single-name authors (organizations, mononyms) have no initials —
+      // don't leave a dangling comma ("WHO," instead of "WHO").
+      const name = a.initials ? `${a.last}, ${a.initials}` : a.last;
+      // APA 7 keeps the comma before the ampersand: "Smith, J., & Doe, A."
+      const sep = i === parsed.length - 1 ? "" : i === parsed.length - 2 ? ", & " : ", ";
       return name + sep;
     })
     .join("");
