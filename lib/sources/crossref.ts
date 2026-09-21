@@ -27,6 +27,30 @@ interface CrossrefItem {
   license?: { URL: string }[];
 }
 
+/**
+ * True if the record carries a genuinely open license (Creative Commons or
+ * public domain). Crossref's `has-license` also matches publishers' paywalled
+ * text-and-data-mining licenses, so it can't be used as an "open access" test.
+ */
+function hasOpenLicense(it: CrossrefItem): boolean {
+  return (it.license || []).some((l) =>
+    /creativecommons.org|publicdomain/i.test(l.URL || "")
+  );
+}
+
+/** Current Creative Commons / CC0 license URLs, ORed into a Crossref filter. */
+const OPEN_LICENSE_FILTER = [
+  "https://creativecommons.org/licenses/by/4.0/",
+  "https://creativecommons.org/licenses/by-sa/4.0/",
+  "https://creativecommons.org/licenses/by-nc/4.0/",
+  "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+  "https://creativecommons.org/licenses/by-nd/4.0/",
+  "https://creativecommons.org/licenses/by-nc-nd/4.0/",
+  "https://creativecommons.org/publicdomain/zero/1.0/",
+]
+  .map((u) => `license.url:${u}`)
+  .join(",");
+
 function yearFromItem(it: CrossrefItem): number | null {
   const parts =
     it["published-print"]?.["date-parts"]?.[0] ||
@@ -40,25 +64,30 @@ export async function searchCrossref(
   query: string,
   opts: { fromYear?: number; perSource?: number; openAccessOnly?: boolean } = {}
 ): Promise<Paper[]> {
-  const { fromYear, perSource = 15 } = opts;
+  const { fromYear, perSource = 15, openAccessOnly } = opts;
   const params = new URLSearchParams({
     query,
     rows: String(perSource),
     "mailto": MAILTO,
     sort: "relevance",
   });
-  if (fromYear) {
-    params.set("filter", `from-pub-date:${fromYear}-01-01${opts.openAccessOnly ? ",has-license:true" : ""}`);
-  } else if (opts.openAccessOnly) {
-    params.set("filter", "has-license:true");
-  }
+  // Repeated license.url values are ORed by Crossref, so this returns only
+  // records under an open license (hasOpenLicense() double-checks the result).
+  const filters: string[] = [];
+  if (fromYear) filters.push(`from-pub-date:${fromYear}-01-01`);
+  if (openAccessOnly) filters.push(OPEN_LICENSE_FILTER);
+  if (filters.length) params.set("filter", filters.join(","));
 
   const res = await fetchWithTimeout(`${BASE}?${params}`);
   if (!res.ok) throw new Error(`Crossref ${res.status}`);
   const data = await safeJson<{ message: { items: CrossrefItem[] } }>(res);
   if (!data?.message?.items) return [];
 
-  return data.message.items.map<Paper>((it) => {
+  const items = openAccessOnly
+    ? data.message.items.filter(hasOpenLicense)
+    : data.message.items;
+
+  return items.map<Paper>((it) => {
     const title = it.title?.[0] || "Untitled";
     const doi = it.DOI || null;
     const year = yearFromItem(it);
@@ -72,6 +101,8 @@ export async function searchCrossref(
       // Crossref abstracts often contain JATS XML tags — strip lightly.
       abstract: it.abstract ? it.abstract.replace(/<[^>]+>/g, "") : null,
       citedByCount: it["is-referenced-by-count"] ?? 0,
+      isOpenAccess: hasOpenLicense(it),
+      openAccessUrl: hasOpenLicense(it) && doi ? `https://doi.org/${doi}` : null,
       sources: ["crossref"],
     };
   });
