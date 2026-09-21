@@ -142,7 +142,14 @@ function bibtexEscape(s: string): string {
 
 /** Make a BibTeX entry. */
 export function toBibtex(p: Paper): string {
-  const key = (p.authors[0]?.split(/\s+/).pop() || "anon").toLowerCase() + (p.year || "nd") + (p.title.split(/\s+/)[0]?.toLowerCase() || "");
+  // Cite keys must be plain ASCII with no punctuation: "O'Brien", "Müller" or a
+  // title starting with '"Deep:' otherwise yields a .bib that fails to parse.
+  const keyPart = (s: string) =>
+    s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().replace(/[^a-z0-9]/g, "");
+  const key =
+    (keyPart(p.authors[0]?.trim().split(/\s+/).pop() || "") || "anon") +
+    (p.year || "nd") +
+    keyPart(p.title.trim().split(/\s+/)[0] || "");
   const fields = [
     `  author = {${bibtexEscape(p.authors.join(" and ") || "Anonymous")}}`,
     `  title = {${bibtexEscape(p.title)}}`,
