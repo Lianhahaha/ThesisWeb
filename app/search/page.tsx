@@ -12,6 +12,7 @@ import { storeRecentPapers } from "@/lib/recent-papers";
 import type { Paper, SearchResult } from "@/lib/types";
 import { ALL_COUNTRIES, filterCountries } from "@/lib/countries";
 import { KEYLESS_SOURCE_COUNT, sourceLabel, sourceStyle, SOURCE_META } from "@/lib/sources/meta";
+import { suggestTerms } from "@/lib/related-terms";
 import { addSearchHistory, clearSearchHistory, getSearchHistory } from "@/lib/search-history";
 import { MIN_QUERY_LENGTH, buildSearchParams, parseSearchParams, type SearchInput } from "@/lib/search-params";
 import { SORT_OPTIONS, countBySource, filterBySources, sortPapers, type SortKey } from "@/lib/result-view";
@@ -183,6 +184,14 @@ export default function SearchPage() {
   // Sources the user narrowed the results to. Empty = show everything.
   const [selectedSources, setSelectedSources] = useState<Set<string>>(new Set());
 
+  // Keyword suggestions come from the whole result set (not the filtered view),
+  // for the query that produced it (the input box may have been edited since).
+  const [searchedQuery, setSearchedQuery] = useState("");
+  const relatedTerms = useMemo(
+    () => (result ? suggestTerms(result.papers, searchedQuery) : []),
+    [result, searchedQuery]
+  );
+
   const sourceCounts = useMemo(() => countBySource(result?.papers ?? []), [result]);
   const visible = useMemo(
     () => sortPapers(filterBySources(result?.papers ?? [], selectedSources), sortKey),
@@ -216,6 +225,7 @@ export default function SearchPage() {
       window.history.replaceState(null, "", `?${buildSearchParams(input)}`);
       setSelectedSources(new Set()); // a new search starts unfiltered
       setHistory(addSearchHistory(input.query));
+      setSearchedQuery(input.query);
       storeRecentPapers(data.papers);
       const okSources = Object.values(data.sources).filter((s) => s === "ok").length;
       const locationNote = input.country ? ` (${input.country})` : "";
@@ -507,6 +517,37 @@ export default function SearchPage() {
               </button>
             )}
           </div>
+        </div>
+      )}
+
+      {/* Related topics: narrow the search with terms the results share */}
+      {result && relatedTerms.length > 0 && (
+        <div
+          className="px-3 py-2 border border-b-0 flex flex-wrap items-center gap-1.5"
+          style={{ backgroundColor: "rgb(var(--surface))", borderColor: "rgb(var(--border))" }}
+        >
+          <span className="text-xs" style={{ color: "rgb(var(--subtle))" }}>Narrow with:</span>
+          {relatedTerms.map((t) => (
+            <button
+              key={t.term}
+              type="button"
+              disabled={search.isPending}
+              onClick={() => {
+                const next = `${searchedQuery} ${t.term}`;
+                setQuery(next);
+                search.mutate({ query: next, fromYear, openAccessOnly, country });
+              }}
+              title={`Add "${t.term}" to your search (${t.count} results mention it)`}
+              className="rounded-full px-2.5 py-0.5 text-xs transition-colors disabled:opacity-50"
+              style={{
+                backgroundColor: "rgba(139,148,158,0.08)",
+                color: "rgb(var(--muted))",
+                border: "1px solid rgb(var(--border))",
+              }}
+            >
+              + {t.term}
+            </button>
+          ))}
         </div>
       )}
 
