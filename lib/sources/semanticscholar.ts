@@ -1,4 +1,4 @@
-import { fetchWithTimeout, safeJson, paperId } from "@/lib/utils";
+import { fetchWithTimeout, safeJson, paperId, sleep } from "@/lib/utils";
 import type { Paper } from "@/lib/types";
 
 /**
@@ -11,6 +11,25 @@ import type { Paper } from "@/lib/types";
  */
 
 const BASE = "https://api.semanticscholar.org/graph/v1/paper/search";
+
+/**
+ * Optional API key (SEMANTIC_SCHOLAR_API_KEY). Unauthenticated requests share a
+ * small pool and are frequently answered with 429; a key gets a dedicated limit.
+ */
+function s2Headers(): HeadersInit {
+  const key = process.env.SEMANTIC_SCHOLAR_API_KEY?.trim();
+  return key ? { "x-api-key": key } : {};
+}
+
+/** GET with one retry on 429, after a short pause. */
+async function s2Fetch(url: string): Promise<Response> {
+  let res = await fetchWithTimeout(url, { headers: s2Headers() });
+  if (res.status === 429) {
+    await sleep(1200);
+    res = await fetchWithTimeout(url, { headers: s2Headers() });
+  }
+  return res;
+}
 
 interface S2Paper {
   paperId: string;
@@ -40,7 +59,7 @@ export async function searchSemanticScholar(
   });
   if (fromYear) params.set("year", `${fromYear}-`);
 
-  const res = await fetchWithTimeout(`${BASE}?${params}`);
+  const res = await s2Fetch(`${BASE}?${params}`);
   if (!res.ok) throw new Error(`Semantic Scholar ${res.status}`);
   const data = await safeJson<{ data: S2Paper[]; total?: number }>(res);
   if (!data?.data) return [];
@@ -72,7 +91,7 @@ export async function searchSemanticScholar(
 /** Fetch S2 metadata for one paper by DOI — enriches the saved-paper view. */
 export async function getSemanticScholarByDoi(doi: string): Promise<Paper | null> {
   const url = `https://api.semanticscholar.org/graph/v1/paper/DOI:${doi}?fields=title,abstract,year,publicationDate,venue,citationCount,openAccessPdf,tldr,authors`;
-  const res = await fetchWithTimeout(url);
+  const res = await s2Fetch(url);
   if (!res.ok) return null;
   const p = await safeJson<S2Paper>(res);
   if (!p) return null;
