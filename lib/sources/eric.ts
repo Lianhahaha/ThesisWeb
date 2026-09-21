@@ -1,5 +1,6 @@
 import { fetchWithTimeout, safeJson, paperId } from "@/lib/utils";
 import { USER_AGENT } from "@/lib/config";
+import { decodeEntities, flipName } from "@/lib/text";
 import type { Paper } from "@/lib/types";
 
 /**
@@ -31,23 +32,6 @@ interface EricDoc {
   /** 1 when ERIC hosts the full text as a PDF, else 0. */
   e_fulltextauth?: number | string;
   publicationtype?: string[];
-}
-
-/** ERIC returns HTML entities in text fields ("Students&apos; ..."). */
-function decodeEntities(s: string): string {
-  return s
-    .replace(/&lt;/g, "<")
-    .replace(/&gt;/g, ">")
-    .replace(/&quot;/g, '"')
-    .replace(/&apos;|&#0?39;/g, "'")
-    .replace(/&#(\d+);/g, (_, n) => String.fromCodePoint(Number(n)))
-    .replace(/&amp;/g, "&");
-}
-
-/** ERIC lists authors "Family, Given"; the rest of the app stores "Given Family". */
-function flipName(name: string): string {
-  const [family, given] = name.split(",").map((s) => s.trim());
-  return given ? `${given} ${family}` : name.trim();
 }
 
 export async function searchEric(
