@@ -69,7 +69,9 @@ export async function searchArxiv(
     if (fromYear && year && year < fromYear) continue;
     
     const authors: string[] = [];
-    const authorRegex = /<author>\s*<name>([\s\S]*?)<\/name>\s*<\/author>/g;
+    // Don't require </author> right after </name>: authors with an
+    // <arxiv:affiliation> child were silently dropped from the list.
+    const authorRegex = /<author>\s*<name>([\s\S]*?)<\/name>/g;
     let authorMatch;
     while ((authorMatch = authorRegex.exec(entryXml)) !== null) {
       authors.push(decodeXml(authorMatch[1]).trim());
