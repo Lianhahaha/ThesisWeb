@@ -32,6 +32,7 @@ export const SOURCE_META: Record<string, SourceMeta> = {
   openaire: { label: "OpenAIRE", blurb: "European open-science graph: repositories, publishers and funder-linked research", color: "#ff7b72" },
   inspire: { label: "INSPIRE-HEP", blurb: "High-energy physics, astrophysics and cosmology (CERN, Fermilab, DESY)", color: "#a5d6ff" },
   plos: { label: "PLOS", blurb: "PLOS ONE, Climate, Medicine, Biology and more — all open access", color: "#ff9bce" },
+  datacite: { label: "DataCite Theses", blurb: "Theses and dissertations from university repositories worldwide", color: "#7ee787" },
 };
 
 /** Number of sources that work out of the box, with no API key. */
