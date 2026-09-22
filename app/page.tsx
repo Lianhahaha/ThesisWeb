@@ -113,42 +113,43 @@ export default function HomePage() {
         </ul>
       </section>
 
-      <section
-        id="readme"
-        className="mx-auto max-w-3xl border-t border-border py-10"
-        aria-labelledby="readme-h"
-      >
-        <h2 id="readme-h" className="eyebrow !text-sm !font-semibold !text-text">READ ME</h2>
-        <p className="mt-2 text-muted">How to go from a topic to a reference list.</p>
+      <section id="readme" className="mx-auto max-w-4xl py-8" aria-labelledby="readme-h">
+        <div className="panel">
+          <h2 id="readme-h" className="eyebrow !text-sm !font-semibold !text-text">READ ME</h2>
+          <p className="mt-1 text-sm text-muted">How to go from a topic to a reference list.</p>
 
-        <ol className="mt-4 divide-y divide-border border-t border-border">
-          {STEPS.map((s, i) => (
-            <li key={s.title} className="flex gap-4 py-4">
-              <span className="serif text-2xl leading-none text-subtle" aria-hidden>
-                {i + 1}
-              </span>
-              <div>
-                <h3 className="text-lg">{s.title}</h3>
-                <p className="mt-1 text-sm text-muted">{s.body}</p>
-              </div>
-            </li>
-          ))}
-        </ol>
+          <ol className="mt-4 grid gap-x-8 gap-y-0 sm:grid-cols-2">
+            {STEPS.map((s, i) => (
+              <li
+                key={s.title}
+                className="flex gap-3 border-t border-border py-3 first:border-t-0 sm:[&:nth-child(2)]:border-t-0"
+              >
+                <span className="serif text-xl leading-none text-subtle" aria-hidden>
+                  {i + 1}
+                </span>
+                <div className="min-w-0">
+                  <h3 className="text-base">{s.title}</h3>
+                  <p className="mt-0.5 text-sm text-muted">{s.body}</p>
+                </div>
+              </li>
+            ))}
+          </ol>
 
-        <div className="mt-6 border-t border-border pt-4">
-          <p className="font-semibold">Good to know</p>
-          <ul className="mt-2 list-disc space-y-1 pl-5 text-muted">
-            <li>
-              <strong>Abstract ≠ RRL.</strong>{" "}
-              The abstract is the authors&apos; own summary — use it to judge whether
-              a paper fits your study, then read the paper and write your RRL in your own words. Copying abstracts
-              into your chapter counts as plagiarism.
-            </li>
-            <li>Only free, legal sources. Full-text links go to publishers, repositories and preprint servers.</li>
-            <li>Some databases are slow or down at times. The Databases list shows which ones answered.</li>
-            <li>Preprints (arXiv, some Zenodo records) are not peer-reviewed. Check before you cite.</li>
-            <li>Always check a generated citation against your school&apos;s style guide.</li>
-          </ul>
+          <div className="mt-4 border-t border-border pt-3">
+            <p className="text-sm font-semibold">Good to know</p>
+            <ul className="mt-1.5 list-disc space-y-1 pl-5 text-sm text-muted">
+              <li>
+                <strong>Abstract ≠ RRL.</strong>{" "}
+                The abstract is the authors&apos; own summary — use it to judge whether a paper fits your study, then
+                read the paper and write your RRL in your own words. Copying abstracts into your chapter counts as
+                plagiarism.
+              </li>
+              <li>Only free, legal sources. Full-text links go to publishers, repositories and preprint servers.</li>
+              <li>Some databases are slow or down at times. The Databases list shows which ones answered.</li>
+              <li>Preprints (arXiv, some Zenodo records) are not peer-reviewed. Check before you cite.</li>
+              <li>Always check a generated citation against your school&apos;s style guide.</li>
+            </ul>
+          </div>
         </div>
       </section>
     </div>
