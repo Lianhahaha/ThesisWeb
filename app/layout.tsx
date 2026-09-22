@@ -1,19 +1,29 @@
 import type { Metadata } from "next";
+import { EB_Garamond } from "next/font/google";
 import "./globals.css";
 import { Header } from "@/components/Header";
 import { Providers } from "@/components/Providers";
 import { Toaster } from "@/components/Toaster";
 import { Analytics } from "@vercel/analytics/react";
 
+// Self-hosted at build time, so there is no layout shift or runtime font request.
+const serif = EB_Garamond({
+  subsets: ["latin"],
+  weight: ["400", "500", "600"],
+  style: ["normal", "italic"],
+  variable: "--font-serif",
+  display: "swap",
+});
+
 export const metadata: Metadata = {
-  title: "ThesisWeb — RRL finder, reference manager & AI self-check",
+  title: "thesisweb ph",
   description:
-    "Find recent related literature, organize it, and pre-check your writing for AI-likeness before submitting.",
+    "Find related literature across free academic databases, keep it organised, and generate citations.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" className={serif.variable} suppressHydrationWarning>
       <body className="min-h-screen antialiased">
         <Providers>
           <a href="#main" className="skip-link">Skip to content</a>

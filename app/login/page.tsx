@@ -71,7 +71,7 @@ export default function LoginPage() {
 
   return (
     <div className="mx-auto mt-4 max-w-md sm:mt-12">
-      <p className="overline">Account</p>
+      <p className="eyebrow">Account</p>
       <h1 className="display mt-3 text-3xl">
         {mode === "login" ? "Sign in" : "Create an account"}
       </h1>
@@ -150,7 +150,7 @@ export default function LoginPage() {
           </div>
           {mode === "signup" && (
             <p className="field-hint">
-              At least 6 characters. Use a new password made for ThesisWeb, never your email password.
+              At least 6 characters. Use a new password made for thesisweb ph, never your email password.
             </p>
           )}
         </div>

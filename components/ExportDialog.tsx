@@ -74,7 +74,7 @@ export function ExportDialog({ papers, onClose }: { papers: SavedPaper[]; onClos
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end justify-center bg-black/70 p-0 sm:items-center sm:p-4"
+      className="fixed inset-0 z-50 flex items-end justify-center bg-text/40 p-0 sm:items-center sm:p-4"
       onClick={onClose}
     >
       <div
@@ -111,7 +111,7 @@ export function ExportDialog({ papers, onClose }: { papers: SavedPaper[]; onClos
               {copied === "refs" ? "Copied" : "Copy"}
             </button>
           </div>
-          <pre className="mt-2 max-h-56 overflow-y-auto whitespace-pre-wrap break-words rounded-lg border border-border bg-surface2 p-3 font-serif text-sm leading-relaxed">
+          <pre className="mt-2 max-h-56 overflow-y-auto whitespace-pre-wrap break-words rounded-lg border border-border bg-surface2 p-3 serif text-[15px] leading-relaxed">
             {refList}
           </pre>
 

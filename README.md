@@ -1,252 +1,214 @@
-# ThesisWeb
+# thesisweb ph
 
-ThesisWeb helps thesis students find related literature (RRL) fast, keep the papers they need, and check their own writing before submitting.
+A free web app that helps thesis students find related literature (RRL), keep it organised, and cite it correctly.
 
-- **Find** — one search box queries 19 free academic databases at once, merges duplicates and ranks the results.
-- **Keep** — save papers, group them by chapter, take notes, compare them in a synthesis matrix and export citations.
-- **Check** — paste a paragraph and see which writing patterns make it read as AI-generated, with suggested edits.
+- **Search** — one topic, 17 free academic databases at once. Results are merged, de-duplicated and ranked.
+- **Library** — save papers, group them by chapter, take notes, compare them in a synthesis matrix.
+- **Cite** — paste DOIs and get references in APA, MLA, IEEE or Chicago, or export your whole library.
 
-It is free, needs no account to search, and only links to legal open-access full text.
-
-## Contents
-
-1. [Features](#features)
-2. [Databases searched](#databases-searched)
-3. [How results are ranked](#how-results-are-ranked)
-4. [Getting started](#getting-started)
-5. [Environment variables](#environment-variables)
-6. [Deploying to Vercel](#deploying-to-vercel)
-7. [Project structure](#project-structure)
-8. [How it works](#how-it-works)
-9. [Data and privacy](#data-and-privacy)
-10. [Known limits](#known-limits)
-11. [Adding a database](#adding-a-database)
-12. [Ethics and legal](#ethics-and-legal)
+No account needed to search. Only links to legal open-access full text.
 
 ---
 
-## Features
+## READ ME: how to use it
 
-### Search (`/search`)
+### 1. Search for papers
 
-- Queries every database in parallel. A slow or failing database never blocks the rest: each has its own time limit.
-- **Published since** filter. Defaults to the last 5 years, which is what most thesis rubrics ask for.
-- **Country focus** filter. Adds the country name and its common adjective (for example *Philippines* and *Filipino*) to your words to surface local studies.
-- **Free full text only** filter.
-- **Sort** by best match, most cited, newest or oldest, and **filter by source**. Both work on the results already loaded, with no new request.
-- **Related topics**: terms taken from the keywords of your results, to help you narrow a search when you do not know the field's vocabulary yet.
-- **Retraction warning** on papers that OpenAlex marks as retracted.
-- **Shareable links**: the search is stored in the URL (`/search?q=…&from=2021&country=Philippines`), so it survives a refresh and can be sent to a classmate.
-- **Recent searches**, kept in your browser.
-- Each result shows authors, year, venue, abstract, an open-access marker, citation count, relevance score and which databases returned it.
+On the home page or **Search**:
 
-### Paper page (`/paper/[id]`)
+1. Type **three to six words** about your topic, e.g. `reading comprehension strategies`. Full sentences return worse results.
+2. Pick **Published since**. It defaults to the last 5 years, which is what most thesis rubrics ask for.
+3. Optional: set a **Country focus** (e.g. *Philippines*) to find local studies. It also matches the adjective, so *Filipino* counts.
+4. Optional: tick **Free full text only** to hide paywalled papers.
+5. Press **Search**. It takes about 5 to 15 seconds because every database is asked at the same time.
 
-- Abstract, plus a one-sentence TL;DR when Semantic Scholar provides one.
-- **Find free PDF** looks up a legal open-access copy through Unpaywall when the paper has a DOI.
-- **Extract key points** builds a summary from the authors' own sentences. It never writes new text.
-- **Explore citations**: papers that cite it, papers it cites and similar papers (from OpenAlex), for growing a review from one good paper.
-- Citation in APA, MLA, IEEE and Chicago, with the in-text form, plus BibTeX.
-- Private notes.
+Below the form you also get your **Recent** searches (one click to re-run) and **Try** examples.
 
-### Library (`/library`)
+### 2. Narrow the results
 
-- Save with one click. Group papers into collections such as *Foreign studies* or *Theoretical framework*.
-- **Synthesis matrix**: a table of *Method, Findings, Limitations, Relevance to my topic* for every saved paper. Cells save when you leave them.
-- **Export** a reference list and in-text list in four styles, or download BibTeX (`.bib`) and RIS (`.ris`) for Zotero, Mendeley and EndNote.
+- **Sort**: best match, most cited, newest or oldest.
+- **Databases** (right side, or above the results on a phone): shows how many papers each database returned. Click one or more to show only their papers. A database marked *failed* timed out; the rest still worked.
+- **Narrow with**: terms that appear often in your results. Click one to add it to your search.
+- Each result shows authors, year, journal, a **Free full text** label when a legal copy exists, citation count, and a **Match** score (how closely the title and abstract match your words, out of 100).
 
-### AI self-check (`/ai-check`)
+The page address holds your search, so you can refresh it or send the link to a groupmate.
 
-Flags six style signals: sentence-length uniformity, vocabulary richness, transition-word density, formulaic openers, AI-typical vocabulary and predictability of word pairs. It highlights the flagged words and suggests a fix for each issue.
+### 3. Read a paper
 
-This is a rule-based estimate, not a trained classifier. It cannot predict what Turnitin or any other tool will report. It is a writing coach, not a detection-evasion tool.
+Click a title to open it. You get:
 
-### Accounts (`/login`, `/settings`)
+- The abstract, plus a one-line TL;DR when Semantic Scholar has one.
+- **Read free copy** or **Find free PDF** (asks Unpaywall for a legal open-access version).
+- **Extract key points**: three key sentences taken from the abstract itself.
+- **Cite this paper** in APA, MLA, IEEE or Chicago, with the in-text form. **Copy citation** and **Copy BibTeX**.
+- **Explore citations**: papers that cite this one, papers it cites, and similar papers. The fastest way to grow a review from one good source.
+- **My notes**: private notes. Saving a note also saves the paper.
 
-Optional. An account keeps your library in the cloud. Settings has display name, recovery PIN, password and email changes. `/forgot-password` recovers an account with the PIN.
+### 4. Save and organise
+
+- Press **Save** on any paper. The Library tab shows the count.
+- In **Library**:
+  - **Filter** by title, author or note.
+  - Put each paper in a **collection** (e.g. *Foreign studies*, *Local studies*, *Theoretical framework*). Use **New collection** to create one.
+  - Switch to **Synthesis matrix** and fill in *Method*, *Findings*, *Limitations* and *Relevance to my topic* for each paper. Each box saves when you click out of it. This table is what you turn into your written RRL.
+- **Signed out**, the library is stored in this browser only. Clearing site data deletes it. **Sign in** to keep it on every device.
+
+### 5. Cite and export
+
+- **Library → Export references**: your reference list and in-text citations in APA 7, MLA 9, IEEE or Chicago, sorted by author. **Copy** them, or download **BibTeX (.bib)** or **RIS (.ris)** for Zotero, Mendeley or EndNote. Exports what the filter currently shows, so pick a collection first to export one chapter.
+- **Cite** tab: paste up to 25 DOIs or `doi.org` links, one per line, and press **Generate**. Switch style at any time, **Copy all**, download .bib or .ris, or **Save** a reference to your library. A DOI looks like `10.1016/j.compedu.2019.103778` and is on the first page of most papers.
+
+### 6. Your account (optional)
+
+**Sign in → Sign up** with a display name, email and a new password. In **Account settings** you can change your name, password and email, and set a **recovery PIN**. New accounts start with PIN `0000`, so change it. If you forget your password, **Forgot password?** asks for your email and PIN, then emails a reset link.
+
+### Good to know
+
+- Only free, legal sources. Full-text links go to publishers, repositories and preprint servers, never to pirated copies.
+- Databases are sometimes slow or down. The Databases list shows which ones answered.
+- Preprints (arXiv, some Zenodo and OpenAIRE records) are not peer-reviewed.
+- The Match score compares words. It does not judge quality. Read the abstract before you cite.
+- Generated citations are simplified. Check them against your school's style guide.
 
 ---
 
 ## Databases searched
 
-All are free to use. Databases marked **key** are skipped until their API key is set.
+All are free. Databases marked **key** are skipped until an API key is set.
 
 | Database | Covers | Best for |
 |---|---|---|
 | [OpenAlex](https://openalex.org) | 250M+ works in every field | A broad first pass; citation data |
-| [Crossref](https://www.crossref.org) | Publisher-deposited metadata and DOIs | Accurate citation details |
+| [Crossref](https://www.crossref.org) | Publisher metadata and DOIs | Accurate citation details |
 | [Semantic Scholar](https://www.semanticscholar.org) | Papers in all fields | TL;DR summaries |
 | [DOAJ](https://doaj.org) | Fully open-access journals | Guaranteed free text |
-| [Europe PMC](https://europepmc.org) | Life sciences, biomedical, preprints | Health, nursing, psychology |
-| [PubMed](https://pubmed.ncbi.nlm.nih.gov) | Biomedical and health literature | Medical and public-health studies |
-| [arXiv](https://arxiv.org) | Preprints in physics, maths, CS, economics | Very recent technical work |
-| [ERIC](https://eric.ed.gov) | Education research (U.S. Dept. of Education) | Education and teaching topics |
-| [Zenodo](https://zenodo.org) | Open articles, theses, reports (CERN) | Small-journal papers, theses |
+| [Europe PMC](https://europepmc.org) | Life sciences, preprints | Health, nursing, psychology |
+| [PubMed](https://pubmed.ncbi.nlm.nih.gov) | Biomedical literature | Medical and public-health studies |
+| [arXiv](https://arxiv.org) | Physics, maths, CS, economics preprints | Recent technical work |
+| [ERIC](https://eric.ed.gov) | Education research | Teaching and learning topics |
+| [Zenodo](https://zenodo.org) | Open articles, theses, reports | Small-journal papers, theses |
 | [HAL](https://hal.science) | French national open archive | Social science, engineering, humanities |
-| [OpenAIRE](https://explore.openaire.eu) | European open-science graph | Repository copies, funded research |
-| [INSPIRE-HEP](https://inspirehep.net) | High-energy physics, astrophysics | Physics topics |
-| [PLOS](https://plos.org) | PLOS ONE, Medicine, Biology, more | Science and health, always open |
-| [DataCite Theses](https://commons.datacite.org) | Theses from university repositories | Local and foreign thesis studies |
+| [OpenAIRE](https://explore.openaire.eu) | European open-science graph | Repository copies |
+| [INSPIRE-HEP](https://inspirehep.net) | High-energy physics | Physics topics |
+| [PLOS](https://plos.org) | PLOS ONE and other PLOS journals | Science and health, always open |
+| [DataCite Theses](https://commons.datacite.org) | University thesis repositories | Local and foreign thesis studies |
 | [OAPEN Books](https://oapen.org) | Open-access academic books | Theoretical frameworks |
-| [Figshare](https://figshare.com) | University and publisher repository items | Journal articles, theses, conference papers |
-| [CORE](https://core.ac.uk) — **key** | Open-access repositories and theses | Repository copies |
+| [Figshare](https://figshare.com) | University and publisher repositories | Articles, theses, conference papers |
+| [Google Scholar](https://scholar.google.com) | Broad web index | Papers others miss (unofficial, often blocked) |
+| [CORE](https://core.ac.uk) — **key** | Open-access repositories | Repository copies |
 | [BASE](https://www.base-search.net) — **key** | Institutional repositories | Theses, grey literature |
-| [Google Scholar](https://scholar.google.com) | Broad web index | Papers others miss |
-
-Google Scholar has no official API. ThesisWeb uses an unofficial lookup that Google often blocks, so treat it as a bonus. CORE trial keys expire and then need a licence; an expired key makes CORE fail on every search.
 
 ---
 
 ## How results are ranked
 
-After the databases answer, ThesisWeb removes duplicates (same DOI, or same title and year) and scores each paper against your words, using stemming so *teacher* matches *teachers*:
+Duplicates (same DOI, or same title and year) are merged. Each paper is then scored against your words, with stemming so *teacher* matches *teachers*:
 
-1. Share of your words in the **title** (up to 40 points).
-2. Share of your words in the **abstract** (up to 15).
-3. All words together and in order, in the title or abstract (up to 30).
+1. Your words in the **title** (up to 40 points).
+2. Your words in the **abstract** (up to 15).
+3. All words together and in order (up to 30).
 4. Matching word pairs (up to 10).
 5. Your words near the start of the title (up to 5).
 6. Recency (up to 3) and citation count (up to 5).
 
-A paper is dropped when fewer than 25% of your words appear in its title and fewer than 30% appear in its abstract. The score shown on each result is out of 100. It measures how closely the text matches your words, not the quality of the paper. Read the abstract before you cite.
-
-The code is in [`lib/dedupe.ts`](lib/dedupe.ts).
+Papers where fewer than 25% of your words are in the title and fewer than 30% are in the abstract are dropped. Code: [`lib/dedupe.ts`](lib/dedupe.ts).
 
 ---
 
-## Getting started
+## For developers
 
-**Requirements:** Node.js 18 or newer, npm.
+### Run it locally
+
+Requires Node.js 18+.
 
 ```bash
 git clone <your-fork-url>
 cd ThesisWeb
 npm install
-cp .env.example .env.local     # then edit .env.local
-npm run dev
+cp .env.example .env.local     # then fill it in
+npm run dev                    # http://localhost:3000
 ```
-
-Open <http://localhost:3000>.
 
 ```bash
-npm run build     # production build
-npm start         # serve the production build
-npm run lint      # ESLint
-npx tsc --noEmit  # type check
+npm run build      # production build
+npm run lint       # ESLint
+npx tsc --noEmit   # type check
 ```
 
----
+### Environment variables
 
-## Environment variables
-
-Copy `.env.example` to `.env.local`. Never commit `.env.local`; it is git-ignored.
+Copy `.env.example` to `.env.local`. `.env.local` is git-ignored; never commit it.
 
 | Variable | Needed? | What it does |
 |---|---|---|
-| `NEXT_PUBLIC_FIREBASE_*` (7 values) | Yes | Firebase web config for accounts and the cloud library. From Firebase console → Project settings → Your apps. |
-| `CONTACT_EMAIL` | Recommended | A real email sent to OpenAlex, Crossref, PubMed, Zenodo and other free APIs. Identified requests get faster, more reliable limits. Falls back to `UNPAYWALL_EMAIL`. |
-| `UNPAYWALL_EMAIL` | Recommended | A real email for Unpaywall. Without it, **Find free PDF** is disabled. |
-| `SEMANTIC_SCHOLAR_API_KEY` | Recommended | Sent as the `x-api-key` header. Allows 1 request per second, and ThesisWeb paces itself to stay under that. Without a key you share a public pool that is often rate-limited. |
-| `OPENALEX_API_KEY` | Recommended | Free key from <https://openalex.org/settings/api>. OpenAlex pauses anonymous searches whenever it is under load, and OpenAlex is the biggest source, so set this for production. |
+| `NEXT_PUBLIC_FIREBASE_*` (7 values) | Yes | Firebase web config for accounts and the cloud library. |
+| `CONTACT_EMAIL` | Recommended | Real email sent to OpenAlex, Crossref and other APIs for faster, more reliable limits. Falls back to `UNPAYWALL_EMAIL`. |
+| `UNPAYWALL_EMAIL` | Recommended | Real email for Unpaywall. Without it **Find free PDF** is off. |
+| `SEMANTIC_SCHOLAR_API_KEY` | Recommended | Sent as `x-api-key`. Requests are paced to 1 per second to match the key's limit. |
+| `OPENALEX_API_KEY` | Recommended | Free key from <https://openalex.org/settings/api>. OpenAlex pauses anonymous searches under load. |
 | `CORE_API_KEY` | Optional | Enables CORE. |
 | `BASE_API_KEY` | Optional | Enables BASE. |
 
-Firestore also needs security rules that let each signed-in user read and write only their own `users/{uid}` documents, plus the `email_map` lookup used for account recovery. Set these in the Firebase console.
+Firestore needs rules that let each signed-in user read and write only their own `users/{uid}` documents, plus the `email_map` lookup used for account recovery.
 
----
+### Deploy to Vercel
 
-## Deploying to Vercel
-
-1. Import the repository in Vercel. The Next.js preset works unchanged.
-2. Add every variable from the table above under **Project settings → Environment variables**. `.env.local` is not uploaded.
-3. Add your Vercel domain under **Firebase console → Authentication → Settings → Authorized domains**.
+1. Import the repository in Vercel; the Next.js preset works unchanged.
+2. Add every variable above under **Project settings → Environment variables**.
+3. Add your Vercel domain under **Firebase → Authentication → Settings → Authorized domains**.
 4. Redeploy after changing any variable.
 
----
-
-## Project structure
+### Project structure
 
 ```
 app/
-  page.tsx               Overview and database list
-  search/                RRL search
-  library/               Saved papers, collections, synthesis matrix
-  paper/[id]/            Paper detail: abstract, citations, notes
-  ai-check/              Writing-style checker
-  login/ forgot-password/ settings/    Account pages
+  page.tsx            Home: search panel and READ ME
+  search/             Results, database filter, related terms
+  library/            Saved papers, collections, synthesis matrix
+  paper/[id]/         Abstract, citation, notes, citation explorer
+  cite/               DOI citation generator
+  login/ forgot-password/ settings/
   api/
-    search/              Meta-search endpoint
-    related/             Citation neighbourhood (OpenAlex)
-    pdf/                 Unpaywall lookup
-    summarize/           Extractive summary
-    ai-check/            Style analysis
-components/              Header, PaperCard, RelatedPapers, SaveButton,
-                         ExportDialog, SynthesisMatrix, Toaster
+    search/           Meta-search across all databases
+    cite/             DOI lookup (Crossref, then OpenAlex)
+    related/          Citation neighbourhood (OpenAlex)
+    pdf/              Unpaywall lookup
+    summarize/        Extractive summary
+components/
+  SearchPanel.tsx     Topic, filters, recent and example searches
+  CountryCombobox.tsx PaperCard.tsx SaveButton.tsx ExportDialog.tsx
+  SynthesisMatrix.tsx RelatedPapers.tsx Header.tsx Toaster.tsx
 lib/
-  search.ts              Runs every source in parallel and merges results
-  dedupe.ts              De-duplication and relevance scoring
-  result-view.ts         Client-side sort and source filter
-  related-terms.ts       "Narrow your search" suggestions
-  search-params.ts       Search form <-> URL
-  search-history.ts      Recent searches
-  citations.ts           APA, MLA, IEEE, Chicago, BibTeX, RIS
-  ai-detector.ts         Style signals
-  summarize.ts           Extractive summarizer
-  db.ts                  Library storage (IndexedDB or Firestore)
-  config.ts  text.ts     Shared contact email, User-Agent and text helpers
-  sources/
-    meta.ts              Names, descriptions and colours for every database
-    *.ts                 One adapter per database
+  search.ts           Runs every database in parallel and merges results
+  dedupe.ts           De-duplication and relevance scoring
+  citations.ts        APA, MLA, IEEE, Chicago, BibTeX, RIS
+  db.ts               Library storage (IndexedDB or Firestore)
+  sources/            One adapter per database; meta.ts lists them all
 ```
 
----
+### How it works
 
-## How it works
+- **Next.js App Router, React 19, TypeScript, Tailwind CSS.** Light cream theme with one lavender accent; tokens are CSS variables in [`app/globals.css`](app/globals.css). No animations.
+- **Server-side proxy.** The browser calls `/api/*`; the server calls the databases. Keeps API keys off the client and avoids CORS.
+- **Time limits.** Each database has a deadline (12 s, 15 s for Figshare, 6 s for Google Scholar), so one slow source never blocks the rest.
+- **Rate limiting.** Semantic Scholar calls are queued 1.1 s apart and a 429 is retried once.
 
-- **Next.js App Router, React 19, TypeScript, Tailwind CSS.** The interface uses a GitHub-style dark theme; its colour tokens are CSS variables in [`app/globals.css`](app/globals.css). On phones a bottom tab bar replaces the top navigation.
-- **Server-side proxy.** The browser calls `/api/search`; the server calls the databases. This avoids CORS, keeps API keys off the client and centralises timeouts.
-- **One adapter per database**, each turning its own response format into the shared `Paper` type in [`lib/types.ts`](lib/types.ts).
-- **Time limits.** Every adapter has a deadline (12 seconds, 6 for Google Scholar). The response reports `ok`, `empty` or `error` for each database, and the search page shows it.
-- **Rate limiting.** Semantic Scholar calls are queued 1.1 seconds apart to respect the 1-request-per-second key limit, and a 429 is retried once. The queue lives in one server instance, so heavy parallel traffic across several serverless instances can still hit the limit.
-- **Country filter.** Databases that understand boolean syntax get `AND ("Philippines" OR "Filipino" …)`. The others get the country name as an extra keyword.
+### Adding a database
+
+1. Create `lib/sources/<name>.ts` exporting `search<Name>(query, opts): Promise<Paper[]>`. Copy a small adapter such as `plos.ts`.
+2. Add an entry to `SOURCE_META` in [`lib/sources/meta.ts`](lib/sources/meta.ts).
+3. Add it to `ADAPTERS` in [`lib/search.ts`](lib/search.ts). Set `boolean: true` only if the API understands `AND (a OR b)`.
+4. Test with a real query and a year filter, and compare titles, years and links against the source's own site.
 
 ---
 
 ## Data and privacy
 
-- **Signed out:** saved papers live in your browser's IndexedDB on that device. Clearing site data deletes them.
+- **Signed out:** saved papers stay in your browser's IndexedDB on that device.
 - **Signed in:** saved papers and notes are stored in Firestore under your account.
-- **Recovery PIN:** stored only as a SHA-256 hash. New accounts start with the PIN `0000`, so change it in Settings.
-- **Search text** is sent to the databases listed above and nowhere else. Vercel Analytics counts page views. Recent searches stay in your browser.
-- **AI self-check** text is analysed on the server and not stored.
+- **Recovery PIN:** stored only as a SHA-256 hash.
+- **Search text and DOIs** are sent only to the databases listed above. Vercel Analytics counts page views.
 
----
+## Ethics
 
-## Known limits
-
-- Results are only as good as the databases. Some return no abstract, no DOI or an incomplete author list.
-- The relevance score compares words. It does not understand meaning.
-- Databases can be slow, down or rate-limited. The source badges on the search page show which ones failed.
-- Citation formatters are simplified for single articles. Check them against your school's style guide, or import the `.bib`/`.ris` file into Zotero or Mendeley.
-- An open-access marker is what the database reports. Some links open a repository page, not the PDF.
-- Preprints (arXiv, and some Zenodo and OpenAIRE records) are not peer-reviewed.
-- The retraction warning only covers papers OpenAlex flags. Absence of a warning does not prove a paper is sound.
-
----
-
-## Adding a database
-
-1. Create `lib/sources/<name>.ts` exporting `search<Name>(query, opts): Promise<Paper[]>`. Copy a small adapter such as `plos.ts` or `eric.ts`. Send `USER_AGENT` from [`lib/config.ts`](lib/config.ts) as the `User-Agent` header.
-2. Add an entry to `SOURCE_META` in [`lib/sources/meta.ts`](lib/sources/meta.ts): label, one-line description, colour, and `needsKey: true` if it needs a key.
-3. Add the adapter to the `ADAPTERS` table in [`lib/search.ts`](lib/search.ts). Set `boolean: true` only if the API understands `AND (a OR b)`.
-4. Test with a real query and a `fromYear` filter. Compare title, year, authors and link with the source's own site.
-
-The overview page and search page read names and counts from `meta.ts`.
-
----
-
-## Ethics and legal
-
-- Uses free, public academic APIs. Full-text links point only to open-access copies from publishers, repositories and preprint servers. It never links to Sci-Hub or pirated copies.
-- The AI self-check exists to help students write more naturally and avoid false positives. It is not for hiding AI-written work.
-- Always cite what you use, and follow your school's academic-integrity rules.
+Uses free, public academic APIs and links only to open-access copies. Always cite what you use and follow your school's academic-integrity rules.

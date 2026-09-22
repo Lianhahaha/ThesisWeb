@@ -71,7 +71,7 @@ export default function ForgotPasswordPage() {
         Back to sign in
       </Link>
 
-      <p className="overline">Step {STEP_NUMBER[step]} of 3</p>
+      <p className="eyebrow">Step {STEP_NUMBER[step]} of 3</p>
       <h1 className="display mt-3 text-3xl">Recover your account</h1>
 
       {step === "email" && (

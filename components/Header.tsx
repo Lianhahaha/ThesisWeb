@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Search, Library, Sparkles, Home, BookOpen, LogOut } from "lucide-react";
+import { Search, Library, Quote, Home, LogOut } from "lucide-react";
 import { useLiveQuery } from "dexie-react-hooks";
 import { getDb } from "@/lib/db";
 import { useAuth } from "@/lib/auth-store";
@@ -14,7 +14,7 @@ import { doc, getDoc } from "firebase/firestore";
 const NAV = [
   { href: "/search", label: "Search", icon: Search },
   { href: "/library", label: "Library", icon: Library },
-  { href: "/ai-check", label: "AI check", icon: Sparkles },
+  { href: "/cite", label: "Cite", icon: Quote },
 ];
 
 /** Count of saved papers, from whichever store this user is on. */
@@ -48,18 +48,15 @@ export function Header() {
   return (
     <>
       <header className="sticky top-0 z-40 border-b border-border bg-surface">
-        <div className="mx-auto flex h-16 w-full max-w-6xl items-center gap-4 px-4 sm:px-6">
-          <Link href="/" className="flex shrink-0 items-center gap-2.5">
-            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-text">
-              <BookOpen className="h-[18px] w-[18px] text-bg" aria-hidden />
-            </span>
-            <span className="text-[17px] font-bold tracking-tight">ThesisWeb</span>
-            <span className="hidden rounded-full border border-border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-muted xs:inline">
-              Free
+        <div className="mx-auto flex h-14 w-full max-w-6xl items-center gap-4 px-4 sm:grid sm:grid-cols-[1fr_auto_1fr] sm:px-6">
+          <Link href="/" className="flex shrink-0 items-center gap-3" aria-label="thesisweb ph home">
+            <span className="serif text-[21px] font-medium leading-none">thesisweb ph</span>
+            <span className="hidden rounded-full border border-border px-2 py-0.5 text-[10px] font-medium uppercase tracking-[0.14em] text-subtle xs:inline">
+              RRL toolkit
             </span>
           </Link>
 
-          <nav className="ml-2 hidden sm:block" aria-label="Main">
+          <nav className="hidden sm:block" aria-label="Main">
             <div className="seg">
               {NAV.map(({ href, label, icon: Icon }) => (
                 <Link
@@ -76,8 +73,9 @@ export function Header() {
             </div>
           </nav>
 
-          <div className="flex-1" />
-          <UserArea />
+          <div className="flex flex-1 justify-end">
+            <UserArea />
+          </div>
         </div>
       </header>
 
@@ -102,7 +100,7 @@ export function Header() {
               <Icon className="h-5 w-5" aria-hidden />
               {label}
               {href === "/library" && count > 0 && (
-                <span className="absolute right-[22%] top-1.5 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-accent px-1 text-[10px] font-bold text-bg">
+                <span className="absolute right-[22%] top-1.5 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-accent px-1 text-[10px] font-bold text-surface">
                   {count}
                 </span>
               )}

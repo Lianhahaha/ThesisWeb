@@ -1,133 +1,142 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
-import { ArrowRight, Search, Library, Sparkles } from "lucide-react";
-import { useLiveQuery } from "dexie-react-hooks";
-import { getDb } from "@/lib/db";
+import { useRouter } from "next/navigation";
+import { SearchPanel, DEFAULT_FROM_YEAR } from "@/components/SearchPanel";
 import { KEYLESS_SOURCE_COUNT, SOURCE_META } from "@/lib/sources/meta";
+import { buildSearchParams, type SearchInput } from "@/lib/search-params";
 
 const SOURCE_NAMES = Object.values(SOURCE_META)
   .filter((s) => !s.needsKey)
   .map((s) => s.label);
 
-const FEATURES = [
+const STEPS: { title: string; body: React.ReactNode }[] = [
   {
-    icon: Search,
-    title: "Multi-source search",
-    body: `One topic, ${KEYLESS_SOURCE_COUNT} databases. Results are merged, de-duplicated and ranked by how well the title and abstract match your words.`,
-    href: "/search",
-    cta: "Search papers",
+    title: "Search",
+    body: (
+      <>
+        Type three to six words about your topic. Set <em>Published since</em>{" "}(most rubrics want
+        the last 5 years), a <em>Country focus</em>{" "}for local studies, or tick{" "}
+        <em>Free full text only</em>. Press Search.
+      </>
+    ),
   },
   {
-    icon: Library,
-    title: "Reference manager",
-    body: "Save papers into chapter collections, take notes, compare them in a synthesis matrix, and export APA, MLA, IEEE, Chicago, BibTeX or RIS.",
-    href: "/library",
-    cta: "Open library",
+    title: "Narrow",
+    body: (
+      <>
+        Sort by best match, citations or date. Use the <em>Databases</em>{" "}list to show one
+        database&apos;s results, or a <em>Narrow with</em>{" "}term to refine the search.
+      </>
+    ),
   },
   {
-    icon: Sparkles,
-    title: "AI self-check",
-    body: "Paste a paragraph to see which patterns make writing read as AI-generated — uniform sentences, stock openers, transition overuse — and how to fix each one.",
-    href: "/ai-check",
-    cta: "Check writing",
-  },
-];
-
-const FAQ = [
-  {
-    q: "Can't find recent papers on your topic?",
-    a: `Type it once. ThesisWeb queries ${KEYLESS_SOURCE_COUNT} free databases at the same time, removes duplicates and ranks what is left. Defaults to the last 5 years, which is what most rubrics ask for.`,
+    title: "Read",
+    body: (
+      <>
+        Open a title for its abstract, a free PDF link (or <em>Find free PDF</em>), a ready
+        citation, related papers and a notes box.
+      </>
+    ),
   },
   {
-    q: "Hitting paywalls?",
-    a: "Every result is labelled when a legal open-access copy exists. For papers with a DOI but no free link, \"Find free PDF\" asks Unpaywall for one.",
+    title: "Save",
+    body: (
+      <>
+        Press <em>Save</em>{" "}on any paper. Your library lives in this browser; sign in to keep it
+        on every device.
+      </>
+    ),
   },
   {
-    q: "Worried a strict professor will flag your writing?",
-    a: "The AI self-check reports six writing-style signals and names the exact words and sentences to revise. It is a writing coach, not a detection-evasion tool.",
+    title: "Organise",
+    body: (
+      <>
+        In <Link href="/library" className="underline">Library</Link>, group papers into
+        collections (e.g. <em>Local studies</em>) and fill the synthesis matrix: method,
+        findings, limitations, relevance.
+      </>
+    ),
+  },
+  {
+    title: "Cite",
+    body: (
+      <>
+        <em>Export references</em>{" "}gives APA, MLA, IEEE or Chicago, plus .bib and .ris for Zotero
+        or Mendeley. Have DOIs already? Paste them into{" "}
+        <Link href="/cite" className="underline">Cite</Link>.
+      </>
+    ),
   },
 ];
 
 export default function HomePage() {
-  const savedCount = useLiveQuery(async () => {
-    if (typeof window === "undefined") return 0;
-    return getDb().papers.count();
-  }, []);
+  const router = useRouter();
+  const [form, setForm] = useState<SearchInput>({
+    query: "",
+    fromYear: DEFAULT_FROM_YEAR,
+    openAccessOnly: false,
+    country: null,
+  });
 
   return (
     <div>
-      {/* Hero */}
-      <section className="py-8 sm:py-16">
-        <p className="overline">Thesis research toolkit</p>
-
-        <h1 className="display mt-4 text-[2.5rem] sm:text-6xl lg:text-7xl">
-          Find your literature
-          <br />
-          <span className="text-subtle">in one search.</span>
+      <section className="mx-auto max-w-3xl pb-10 pt-4 text-center sm:pt-10">
+        <p className="eyebrow">Related literature, found faster</p>
+        <h1 className="display mt-4 text-4xl sm:text-5xl">
+          Research, <em>simplified.</em>
         </h1>
-
-        <p className="mt-6 max-w-xl text-base text-muted sm:text-lg">
-          Search {KEYLESS_SOURCE_COUNT} free academic databases at once, keep what matters, and
-          check your own writing before you submit.
+        <p className="mx-auto mt-4 max-w-lg text-muted">
+          One search across {KEYLESS_SOURCE_COUNT} free academic databases.
         </p>
 
-        <div className="mt-8 flex flex-wrap gap-3">
-          <Link href="/search" className="btn-primary">
-            Start searching
-          </Link>
-          <Link href="/library" className="btn-secondary">
-            Open library
-            {savedCount ? <span className="counter">{savedCount}</span> : null}
-            <ArrowRight className="h-4 w-4" aria-hidden />
-          </Link>
+        <div className="mt-8">
+          <SearchPanel
+            value={form}
+            onChange={setForm}
+            onSearch={(input) => router.push(`/search?${buildSearchParams(input)}`)}
+          />
         </div>
 
-        <ul className="mt-10 flex flex-wrap gap-2">
+        <ul className="mt-6 flex flex-wrap justify-center gap-1.5" aria-label="Databases searched">
           {SOURCE_NAMES.map((name) => (
-            <li key={name} className="chip">{name}</li>
+            <li key={name} className="tag">{name}</li>
           ))}
         </ul>
       </section>
 
-      {/* What it does */}
-      <section className="border-t border-border py-10 sm:py-14" aria-labelledby="features">
-        <h2 id="features" className="sr-only">Features</h2>
-        <div className="grid gap-4 sm:grid-cols-3">
-          {FEATURES.map(({ icon: Icon, title, body, href, cta }) => (
-            <Link key={href} href={href} className="panel flex flex-col hover:border-border2">
-              <Icon className="h-5 w-5 text-accent" aria-hidden />
-              <h3 className="mt-4 text-lg">{title}</h3>
-              <p className="mt-2 flex-1 text-sm text-muted">{body}</p>
-              <span className="mt-5 inline-flex items-center gap-1.5 text-sm font-medium">
-                {cta}
-                <ArrowRight className="h-4 w-4" aria-hidden />
+      <section
+        id="readme"
+        className="mx-auto max-w-3xl border-t border-border py-10"
+        aria-labelledby="readme-h"
+      >
+        <h2 id="readme-h" className="eyebrow !text-sm !font-semibold !text-text">READ ME</h2>
+        <p className="mt-2 text-muted">How to go from a topic to a reference list.</p>
+
+        <ol className="mt-6 grid gap-3 sm:grid-cols-2">
+          {STEPS.map((s, i) => (
+            <li key={s.title} className="panel flex gap-4">
+              <span className="serif text-2xl leading-none text-subtle" aria-hidden>
+                {i + 1}
               </span>
-            </Link>
+              <div>
+                <h3 className="text-lg">{s.title}</h3>
+                <p className="mt-1 text-sm text-muted">{s.body}</p>
+              </div>
+            </li>
           ))}
+        </ol>
+
+        <div className="notice notice-info mt-6">
+          <p className="font-semibold">Good to know</p>
+          <ul className="mt-1 list-disc space-y-1 pl-5 text-muted">
+            <li>Only free, legal sources. Full-text links go to publishers, repositories and preprint servers.</li>
+            <li>Some databases are slow or down at times. The Databases list shows which ones answered.</li>
+            <li>Preprints (arXiv, some Zenodo records) are not peer-reviewed. Check before you cite.</li>
+            <li>Always check a generated citation against your school&apos;s style guide.</li>
+          </ul>
         </div>
-      </section>
-
-      {/* Why */}
-      <section className="border-t border-border py-10 sm:py-14" aria-labelledby="why">
-        <p className="overline">Built for thesis work</p>
-        <h2 id="why" className="display mt-3 text-2xl sm:text-3xl">
-          Three problems, solved
-        </h2>
-
-        <dl className="mt-8 grid gap-8 sm:grid-cols-3">
-          {FAQ.map(({ q, a }) => (
-            <div key={q}>
-              <dt className="font-semibold">{q}</dt>
-              <dd className="mt-2 text-sm text-muted">{a}</dd>
-            </div>
-          ))}
-        </dl>
-
-        <p className="mt-10 max-w-3xl text-sm text-subtle">
-          ThesisWeb uses only free, public academic APIs and links exclusively to open-access full
-          text from publishers, repositories and preprint servers. It never links to pirated copies.
-        </p>
       </section>
     </div>
   );

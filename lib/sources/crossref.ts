@@ -1,6 +1,7 @@
 import { fetchWithTimeout, safeJson, paperId } from "@/lib/utils";
 import type { Paper } from "@/lib/types";
 import { CONTACT_EMAIL } from "@/lib/config";
+import { stripHtml } from "@/lib/text";
 
 /**
  * Crossref adapter — metadata, DOIs, reference lists.
@@ -87,23 +88,34 @@ export async function searchCrossref(
     ? data.message.items.filter(hasOpenLicense)
     : data.message.items;
 
-  return items.map<Paper>((it) => {
-    const title = it.title?.[0] || "Untitled";
-    const doi = it.DOI || null;
-    const year = yearFromItem(it);
-    return {
-      id: paperId(doi, title),
-      title,
-      authors: (it.author || []).map((a) => [a.given, a.family].filter(Boolean).join(" ")),
-      year,
-      venue: it["container-title"]?.[0] ?? null,
-      doi,
-      // Crossref abstracts often contain JATS XML tags — strip lightly.
-      abstract: it.abstract ? it.abstract.replace(/<[^>]+>/g, "") : null,
-      citedByCount: it["is-referenced-by-count"] ?? 0,
-      isOpenAccess: hasOpenLicense(it),
-      openAccessUrl: hasOpenLicense(it) && doi ? `https://doi.org/${doi}` : null,
-      sources: ["crossref"],
-    };
-  });
+  return items.map(itemToPaper);
+}
+
+function itemToPaper(it: CrossrefItem): Paper {
+  // Crossref returns HTML entities and tags in titles ("Computers &amp; Education").
+  const title = it.title?.[0] ? stripHtml(it.title[0]) : "Untitled";
+  const doi = it.DOI || null;
+  const open = hasOpenLicense(it);
+  return {
+    id: paperId(doi, title),
+    title,
+    authors: (it.author || []).map((a) => stripHtml([a.given, a.family].filter(Boolean).join(" "))),
+    year: yearFromItem(it),
+    venue: it["container-title"]?.[0] ? stripHtml(it["container-title"][0]) : null,
+    doi,
+    abstract: it.abstract ? stripHtml(it.abstract) : null,
+    citedByCount: it["is-referenced-by-count"] ?? 0,
+    isOpenAccess: open,
+    openAccessUrl: open && doi ? `https://doi.org/${doi}` : null,
+    sources: ["crossref"],
+  };
+}
+
+/** Look up one work by DOI. Returns null when Crossref doesn't know it. */
+export async function getCrossrefByDoi(doi: string): Promise<Paper | null> {
+  const path = doi.split("/").map(encodeURIComponent).join("/");
+  const res = await fetchWithTimeout(`${BASE}/${path}?mailto=${encodeURIComponent(MAILTO)}`);
+  if (!res.ok) return null;
+  const data = await safeJson<{ message?: CrossrefItem }>(res);
+  return data?.message ? itemToPaper(data.message) : null;
 }

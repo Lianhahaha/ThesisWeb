@@ -252,7 +252,7 @@ export default function SettingsPage() {
   return (
     <div className="mx-auto max-w-xl space-y-4">
       <header className="mb-2">
-        <p className="overline">Account</p>
+        <p className="eyebrow">Account</p>
         <h1 className="display mt-3 text-3xl">{username || email || "Account"}</h1>
         <p className="mt-2 text-muted">{email}</p>
       </header>
@@ -354,7 +354,7 @@ export default function SettingsPage() {
         {pendingEmail && (
           <div className="notice notice-info mt-4">
             <p>
-              <strong>Waiting for verification.</strong> Open the link sent to{" "}
+              <strong>Waiting for verification.</strong>{" "}Open the link sent to{" "}
               <strong>{pendingEmail}</strong>, then press the button below.
             </p>
             <button
@@ -382,7 +382,7 @@ export default function SettingsPage() {
           Your saved papers stay in your account. On a shared computer, sign out when you finish.
         </p>
         <button onClick={handleSignOut} className="btn-danger mt-4 w-full sm:w-auto">
-          Sign out of ThesisWeb
+          Sign out of thesisweb ph
         </button>
       </Section>
     </div>
