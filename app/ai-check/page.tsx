@@ -2,20 +2,28 @@
 
 import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
-import {
-  Sparkles,
-  Loader2,
-  Gauge,
-  AlertTriangle,
-  Lightbulb,
-  Activity,
-  Type,
-  Repeat,
-  Wand2,
-} from "lucide-react";
 import { toast } from "@/components/Toaster";
 import type { AiCheckResult, FlaggedWord } from "@/lib/ai-detector";
-import { cn } from "@/lib/utils";
+
+const MIN_CHARS = 80;
+
+const BANDS = {
+  high: {
+    heading: "Reads as likely AI-generated",
+    toast: "Reads as likely AI. See the fixes below.",
+    color: "rgb(var(--danger))",
+  },
+  moderate: {
+    heading: "Some AI-like patterns found",
+    toast: "A few AI-like patterns. Small edits will help.",
+    color: "rgb(var(--accent))",
+  },
+  low: {
+    heading: "Reads as human-written",
+    toast: "Reads naturally. Low AI-likeness.",
+    color: "rgb(var(--ok))",
+  },
+} as const;
 
 export default function AiCheckPage() {
   const [text, setText] = useState("");
@@ -37,253 +45,249 @@ export default function AiCheckPage() {
     onSuccess: (data) => {
       setResult(data);
       toast(
-        data.band === "high"
-          ? "This reads as likely AI — see the fixes below."
-          : data.band === "moderate"
-          ? "A few AI-like patterns — small edits will help."
-          : "Reads naturally — low AI-likeness.",
+        BANDS[data.band].toast,
         data.band === "high" ? "error" : data.band === "moderate" ? "info" : "success"
       );
     },
     onError: (e: Error) => toast(e.message, "error"),
   });
 
+  const words = text.trim().split(/\s+/).filter(Boolean).length;
+  const canCheck = text.trim().length >= MIN_CHARS && !check.isPending;
+
   function onSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (text.trim().length < 80) return;
-    check.mutate();
+    if (canCheck) check.mutate();
   }
 
   return (
-    <div className="mx-auto max-w-4xl px-6 py-8">
+    <div className="mx-auto max-w-3xl">
       <header className="mb-6">
-        <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
-          <Sparkles className="h-6 w-6 text-brand-600" />
-          AI self-check
-        </h1>
-        <p className="mt-1 text-sm text-muted">
-          Paste a paragraph or section of your thesis. We&apos;ll flag the patterns that make text
-          read as AI-generated and suggest concrete edits — so an honest paper doesn&apos;t get
-          flagged by a strict detector.
+        <p className="overline">Before you submit</p>
+        <h1 className="display mt-3 text-3xl sm:text-4xl">AI self-check</h1>
+        <p className="mt-2 text-muted">
+          Paste a paragraph of your thesis. ThesisWeb names the writing patterns that make text read
+          as AI-generated, and what to change.
         </p>
       </header>
 
-      {/* Ethical framing banner */}
-      <div className="card p-3 mb-4 border-brand-200 dark:border-brand-900 bg-brand-50/50 dark:bg-brand-950/30 text-xs text-muted">
-        <strong className="text-text">This is a writing coach, not an evasion tool.</strong> It helps
-        you write more authentically. It won&apos;t magically defeat Turnitin — and using it that way
-        isn&apos;t what it&apos;s for. The goal is a genuinely human paper that passes honestly.
-      </div>
+      <p className="notice notice-info mb-5">
+        <strong>A writing coach, not an evasion tool.</strong>{" "}
+        This measures writing style with
+        fixed rules. It is not a trained classifier and cannot predict what Turnitin or your
+        school&apos;s tool will report. Use it on your own writing, not to disguise AI text.
+      </p>
 
-      {/* Input or Highlighted Result */}
       {!result ? (
-        <form onSubmit={onSubmit} className="card p-4 mb-4">
+        <form onSubmit={onSubmit} className="panel">
+          <label htmlFor="text" className="field-label">Your text</label>
           <textarea
+            id="text"
             autoFocus
             value={text}
             onChange={(e) => setText(e.target.value)}
-            placeholder="Paste your text here… (at least 80 characters, ideally a full paragraph)"
-            rows={8}
-            className="input resize-y font-serif text-sm leading-relaxed"
+            placeholder="Paste at least one full paragraph."
+            rows={10}
+            className="input prose-serif resize-y"
           />
-          <div className="mt-3 flex items-center justify-between">
-            <span className="text-xs text-muted">{text.trim().split(/\s+/).filter(Boolean).length} words</span>
-            <button type="submit" disabled={check.isPending || text.trim().length < 80} className="btn-primary">
-              {check.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Wand2 className="h-4 w-4" />}
-              Analyze text
+          <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
+            <span className="text-sm text-muted" aria-live="polite">
+              {words} {words === 1 ? "word" : "words"}
+              {text.trim().length > 0 && text.trim().length < MIN_CHARS &&
+                ` · ${MIN_CHARS - text.trim().length} more characters needed`}
+            </span>
+            <button type="submit" disabled={!canCheck} className="btn-primary">
+              {check.isPending ? "Checking…" : "Check text"}
             </button>
           </div>
         </form>
       ) : (
-        <div className="card p-4 mb-4 font-serif text-sm leading-relaxed whitespace-pre-wrap">
-          <HighlightedText text={text} flagged={result.flaggedWords} />
-          <div className="mt-4 pt-3 border-t border-border flex justify-end">
-             <button onClick={() => setResult(null)} className="btn-secondary">
-               Analyze another
-             </button>
+        <section className="panel" aria-label="Your text with flagged words">
+          <p className="prose-serif whitespace-pre-wrap">
+            <HighlightedText text={text} flagged={result.flaggedWords} />
+          </p>
+
+          {result.flaggedWords.length > 0 && (
+            <p className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-1 border-t border-border pt-3 text-sm text-muted">
+              <span>Highlights:</span>
+              <Legend kind="ai-vocab">AI-typical word</Legend>
+              <Legend kind="transition">transition</Legend>
+              <Legend kind="opener">stock opener</Legend>
+            </p>
+          )}
+
+          <div className="mt-4 flex flex-wrap gap-2 border-t border-border pt-3">
+            <button onClick={() => setResult(null)} className="btn-secondary btn-sm">
+              Edit this text
+            </button>
+            <button
+              onClick={() => { setResult(null); setText(""); }}
+              className="btn-ghost btn-sm"
+            >
+              Check different text
+            </button>
           </div>
-        </div>
+        </section>
       )}
 
-      {/* Result */}
       {result && (
-        <div className="space-y-4">
-          {/* Overall score gauge */}
-          <div className="card p-5">
-            <div className="flex items-center gap-5">
-              <ScoreGauge score={result.aiLikelihood} band={result.band} />
-              <div className="flex-1">
-                <h2 className="font-semibold">
-                  {result.band === "high"
-                    ? "Reads as likely AI-generated"
-                    : result.band === "moderate"
-                    ? "Some AI-like patterns detected"
-                    : "Reads as human-written"}
-                </h2>
-                <p className="mt-1 text-sm text-muted">
-                  Based on {result.stats.words} words across {result.stats.sentences} sentences.
-                  This is a heuristic estimate, not a real classifier — treat it as a heads-up, not
-                  a verdict.
-                </p>
-              </div>
+        <div className="mt-5 space-y-5">
+          <section className="panel" aria-labelledby="score">
+            <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1">
+              <p className="text-5xl font-bold tabular-nums" style={{ color: BANDS[result.band].color }}>
+                {result.aiLikelihood}
+                <span className="text-lg font-medium text-muted"> / 100</span>
+              </p>
+              <h2 id="score" className="text-lg">{BANDS[result.band].heading}</h2>
             </div>
+            <p className="mt-2 text-sm text-muted">
+              From {result.stats.words} words across {result.stats.sentences} sentences. Higher means
+              more AI-like.
+            </p>
 
-            {/* Signal bars */}
-            <div className="mt-5 grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3">
-              <SignalBar
-                icon={Activity}
+            <dl className="mt-6 grid gap-x-8 gap-y-5 sm:grid-cols-2">
+              <Signal
                 label="Sentence length uniformity"
                 value={result.signals.burstiness}
-                hint="Lower is better. AI writes uniform-length sentences."
+                hint="AI writes sentences of similar length. Mix short and long ones."
               />
-              <SignalBar
-                icon={Type}
-                label="Lexical richness"
+              <Signal
+                label="Vocabulary repetition"
                 value={result.signals.lexicalRichness}
-                hint="Lower is better. AI reuses the same vocabulary."
+                hint="AI reuses the same words. Vary your wording."
               />
-              <SignalBar
-                icon={Repeat}
+              <Signal
                 label="Transition-word density"
                 value={result.signals.transitionDensity}
-                hint="Lower is better. LLMs overuse signposts like 'moreover'."
+                hint="“Moreover”, “furthermore” and “however” are overused by AI."
               />
-              <SignalBar
-                icon={AlertTriangle}
+              <Signal
                 label="Formulaic openers"
                 value={result.signals.formulaicDensity}
-                hint="Lower is better. 'This shows that…' is robotic."
+                hint="Openers like “This shows that…” read as templated."
               />
-              <SignalBar
-                icon={Wand2}
-                label="AI Vocabulary Footprint"
+              <Signal
+                label="AI-typical vocabulary"
                 value={result.signals.aiVocab}
-                hint="Lower is better. Flags words statistically overused by AI (e.g. 'delve', 'tapestry')."
+                hint="Words AI uses far more than people, such as “delve” or “tapestry”."
               />
-              <SignalBar
-                icon={Gauge}
-                label="Predictability (common word pairs)"
+              <Signal
+                label="Predictability"
                 value={result.signals.predictability}
-                hint="Lower is better. AI text favours generic collocations."
+                hint="Very common word pairs make writing generic."
               />
-            </div>
-          </div>
+            </dl>
+          </section>
 
-          {/* Issues */}
-          {result.issues.length > 0 ? (
-            <div className="card p-5">
-              <h2 className="font-semibold flex items-center gap-2 mb-3">
-                <Lightbulb className="h-5 w-5 text-amber-500" />
-                What to fix ({result.issues.length})
-              </h2>
-              <ul className="space-y-3">
-                {result.issues.map((issue, i) => (
-                  <li key={i} className="flex gap-3 text-sm">
-                    <span
-                      className={cn(
-                        "mt-0.5 h-2 w-2 rounded-full shrink-0",
-                        issue.severity === "high" ? "bg-red-500" : issue.severity === "warn" ? "bg-amber-500" : "bg-blue-500"
-                      )}
-                    />
-                    <div>
-                      <p className="text-text">{issue.message}</p>
+          <section className="panel" aria-labelledby="fixes">
+            {result.issues.length > 0 ? (
+              <>
+                <h2 id="fixes" className="text-lg">What to fix ({result.issues.length})</h2>
+                <ul className="mt-4 space-y-5">
+                  {result.issues.map((issue, i) => (
+                    <li key={i}>
+                      <p className="flex flex-wrap items-baseline gap-2">
+                        <span
+                          className="chip"
+                          style={
+                            issue.severity === "high"
+                              ? {
+                                  color: "rgb(var(--danger))",
+                                  borderColor: "rgb(var(--danger) / 0.45)",
+                                  backgroundColor: "rgb(var(--danger-d))",
+                                }
+                              : issue.severity === "warn"
+                              ? {
+                                  color: "rgb(var(--accent))",
+                                  borderColor: "rgb(var(--accent) / 0.45)",
+                                  backgroundColor: "rgb(var(--accent-d))",
+                                }
+                              : undefined
+                          }
+                        >
+                          {issue.severity === "high" ? "Important" : issue.severity === "warn" ? "Worth fixing" : "Tip"}
+                        </span>
+                        <span className="flex-1">{issue.message}</span>
+                      </p>
                       {issue.excerpt && (
-                        <p className="mt-1 text-xs italic text-muted border-l-2 border-border pl-2">
+                        <p className="prose-serif mt-2 border-l-2 border-border2 pl-3 text-sm italic text-muted">
                           {issue.excerpt}
                         </p>
                       )}
                       {issue.suggestion && (
-                        <p className="mt-1 text-xs text-brand-700 dark:text-brand-300">
-                          <strong>Fix:</strong> {issue.suggestion}
+                        <p className="mt-2 text-sm">
+                          <strong>Try:</strong> {issue.suggestion}
                         </p>
                       )}
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ) : (
-            <div className="card p-5 text-center">
-              <p className="font-medium text-green-600">No major issues detected.</p>
-              <p className="text-sm text-muted mt-1">
-                Your text varied sentence length, used natural transitions, and avoided stock
-                openers. Nice.
-              </p>
-            </div>
-          )}
+                    </li>
+                  ))}
+                </ul>
+              </>
+            ) : (
+              <>
+                <h2 id="fixes" className="text-lg">No major issues found</h2>
+                <p className="mt-2 text-muted">
+                  Your sentence lengths vary, your transitions read naturally, and you avoid stock
+                  openers.
+                </p>
+              </>
+            )}
+          </section>
 
-          {/* Stats */}
-          <div className="card p-5">
-            <h3 className="text-sm font-semibold mb-2">Statistics</h3>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-sm">
-              <Stat label="Avg sentence length" value={`${result.stats.avgSentenceLen.toFixed(1)} words`} />
-              <Stat label="Length variation" value={`±${result.stats.sentenceLenStd.toFixed(1)}`} />
+          <section className="panel" aria-labelledby="stats">
+            <h2 id="stats" className="text-lg">Text statistics</h2>
+            <dl className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-4">
+              <Stat label="Average sentence" value={`${result.stats.avgSentenceLen.toFixed(1)} words`} />
+              <Stat label="Length variation" value={`±${result.stats.sentenceLenStd.toFixed(1)} words`} />
               <Stat label="Unique-word ratio" value={result.stats.uniqueWordsRatio.toFixed(2)} />
               <Stat label="Transition phrases" value={String(result.stats.transitionCount)} />
-            </div>
-          </div>
+            </dl>
+          </section>
         </div>
       )}
     </div>
   );
 }
 
-function ScoreGauge({ score, band }: { score: number; band: "low" | "moderate" | "high" }) {
-  const color =
-    band === "high" ? "#ef4444" : band === "moderate" ? "#f59e0b" : "#22c55e";
-  const r = 38;
-  const circ = 2 * Math.PI * r;
-  const offset = circ - (score / 100) * circ;
+const MARK_STYLES: Record<FlaggedWord["type"], { bg: string; line: string }> = {
+  "ai-vocab": { bg: "rgb(var(--danger-d))", line: "rgb(var(--danger))" },
+  transition: { bg: "rgb(var(--accent-d))", line: "rgb(var(--accent))" },
+  opener: { bg: "rgb(var(--ok-d))", line: "rgb(var(--ok))" },
+};
+
+function Legend({ kind, children }: { kind: FlaggedWord["type"]; children: string }) {
+  const s = MARK_STYLES[kind];
   return (
-    <div className="relative h-24 w-24 shrink-0">
-      <svg className="h-24 w-24 -rotate-90" viewBox="0 0 96 96">
-        <circle cx="48" cy="48" r={r} fill="none" stroke="currentColor" strokeWidth="8" className="text-bg opacity-50" />
-        <circle
-          cx="48"
-          cy="48"
-          r={r}
-          fill="none"
-          stroke={color}
-          strokeWidth="8"
-          strokeLinecap="round"
-          strokeDasharray={circ}
-          strokeDashoffset={offset}
-          style={{ transition: "stroke-dashoffset 0.5s ease" }}
-        />
-      </svg>
-      <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <span className="text-2xl font-bold" style={{ color }}>
-          {score}
-        </span>
-        <span className="text-[10px] uppercase tracking-wide text-muted">AI-like</span>
-      </div>
-    </div>
+    <span
+      className="rounded px-1 text-text"
+      style={{ backgroundColor: s.bg, boxShadow: `inset 0 -2px 0 ${s.line}` }}
+    >
+      {children}
+    </span>
   );
 }
 
-function SignalBar({
-  icon: Icon,
-  label,
-  value,
-  hint,
-}: {
-  icon: React.ElementType;
-  label: string;
-  value: number;
-  hint: string;
-}) {
-  const color = value >= 65 ? "bg-red-500" : value >= 40 ? "bg-amber-500" : "bg-green-500";
+function Signal({ label, value, hint }: { label: string; value: number; hint: string }) {
+  const level = value >= 65 ? "High" : value >= 40 ? "Medium" : "Low";
+  const color =
+    value >= 65 ? "rgb(var(--danger))" : value >= 40 ? "rgb(var(--accent))" : "rgb(var(--ok))";
   return (
     <div>
-      <div className="flex items-center gap-1.5 text-xs font-medium">
-        <Icon className="h-3.5 w-3.5 text-muted" />
-        {label}
-        <span className="ml-auto text-muted">{value}/100</span>
-      </div>
-      <div className="mt-1 h-1.5 rounded-full bg-bg overflow-hidden">
-        <div className={cn("h-full rounded-full transition-all", color)} style={{ width: `${value}%` }} />
-      </div>
-      <p className="mt-1 text-[11px] text-muted leading-snug">{hint}</p>
+      <dt className="flex items-baseline justify-between gap-2 text-sm font-medium">
+        <span>{label}</span>
+        {/* Level is spelled out, so the bar colour is never the only signal. */}
+        <span className="tabular-nums text-muted">{level} · {value}</span>
+      </dt>
+      <dd>
+        <div
+          className="mt-2 h-2 overflow-hidden rounded-full bg-surface3"
+          role="img"
+          aria-label={`${label}: ${value} out of 100, ${level}`}
+        >
+          <div className="h-full" style={{ width: `${Math.max(2, value)}%`, backgroundColor: color }} />
+        </div>
+        <p className="mt-1.5 text-sm text-muted">{hint}</p>
+      </dd>
     </div>
   );
 }
@@ -291,47 +295,40 @@ function SignalBar({
 function Stat({ label, value }: { label: string; value: string }) {
   return (
     <div>
-      <div className="text-xs text-muted">{label}</div>
-      <div className="font-medium">{value}</div>
+      <dt className="text-sm text-muted">{label}</dt>
+      <dd className="font-semibold">{value}</dd>
     </div>
   );
 }
 
-// Helper component to render text with AI words highlighted
+/** Wraps every flagged word in a <mark>, colour plus underline. */
 function HighlightedText({ text, flagged }: { text: string; flagged: FlaggedWord[] }) {
-  if (flagged.length === 0) return <>{text}</>;
+  const words = [...new Set(flagged.map((f) => f.word))].sort((a, b) => b.length - a.length);
+  if (words.length === 0) return <>{text}</>;
 
-  // Build a giant regex for all flagged words (sorted by length desc to match longest first)
-  const sortedWords = [...new Set(flagged.map((f) => f.word))].sort((a, b) => b.length - a.length);
-  
-  if (sortedWords.length === 0) return <>{text}</>;
-  
-  const escapedWords = sortedWords.map(w => w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
-  const regex = new RegExp(`\\b(${escapedWords.join('|')})\\b`, 'gi');
+  const escaped = words.map((w) => w.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"));
+  const parts = text.split(new RegExp(`\\b(${escaped.join("|")})\\b`, "gi"));
 
-  const parts = text.split(regex);
-
-  // Map to apply specific styles based on why it was flagged
-  const getStyle = (word: string) => {
-    const f = flagged.find(x => x.word.toLowerCase() === word.toLowerCase());
-    if (f?.type === 'ai-vocab') return "bg-[#e06060]/20 text-[#e06060] font-medium px-0.5 rounded";
-    if (f?.type === 'transition') return "bg-amber-500/20 text-amber-500 font-medium px-0.5 rounded";
-    if (f?.type === 'opener') return "bg-blue-500/20 text-blue-500 font-medium px-0.5 rounded";
-    return "bg-amber-500/20 text-amber-500 font-medium px-0.5 rounded";
+  const styleFor = (word: string) => {
+    const hit = flagged.find((f) => f.word.toLowerCase() === word.toLowerCase());
+    return MARK_STYLES[hit?.type ?? "transition"];
   };
 
   return (
     <>
       {parts.map((part, i) => {
-        // Since we split with a capture group, every odd index is a matched word
-        if (i % 2 === 1) {
-          return (
-            <span key={i} className={getStyle(part)} title="Flagged as AI-like">
-              {part}
-            </span>
-          );
-        }
-        return <span key={i}>{part}</span>;
+        // With one capture group, odd indexes are the matched words.
+        if (i % 2 === 0) return <span key={i}>{part}</span>;
+        const s = styleFor(part);
+        return (
+          <mark
+            key={i}
+            className="rounded px-0.5 text-text"
+            style={{ backgroundColor: s.bg, boxShadow: `inset 0 -2px 0 ${s.line}` }}
+          >
+            {part}
+          </mark>
+        );
       })}
     </>
   );

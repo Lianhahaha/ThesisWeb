@@ -1,18 +1,16 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Table2 } from "lucide-react";
 import type { SavedPaper } from "@/lib/types";
 import { updatePaper } from "@/lib/db";
-import { toast } from "@/components/Toaster";
 
 /**
- * The synthesis matrix — THE tool that turns a search tool into an RRL writer.
- * For each saved paper, the student fills in: method, findings, limitations,
- * and (most importantly) how it relates to their own topic. These columns are
- * exactly what a thesis advisor wants to see in a review of related literature.
+ * The synthesis matrix: one row per saved paper, with the four columns a
+ * supervisor expects in a review of related literature. Cells save when they
+ * lose focus.
  *
- * Cells auto-save to IndexedDB on blur; no save button needed.
+ * On phones the table becomes one card per paper, because a four-column table
+ * at 390px is unusable.
  */
 
 type Field = "method" | "findings" | "limitations" | "relevanceToTopic";
@@ -20,32 +18,57 @@ type Field = "method" | "findings" | "limitations" | "relevanceToTopic";
 const FIELDS: { key: Field; label: string; placeholder: string }[] = [
   { key: "method", label: "Method", placeholder: "Quantitative, survey of 200 students…" },
   { key: "findings", label: "Findings", placeholder: "X significantly predicts Y…" },
-  { key: "limitations", label: "Limitations", placeholder: "Small sample, single country…" },
+  { key: "limitations", label: "Limitations", placeholder: "Small sample, single school…" },
   { key: "relevanceToTopic", label: "Relevance to my topic", placeholder: "Supports my hypothesis that…" },
 ];
 
 export function SynthesisMatrix({ papers }: { papers: SavedPaper[] }) {
   if (papers.length === 0) {
     return (
-      <div className="card p-12 text-center">
-        <Table2 className="h-10 w-10 text-muted mx-auto opacity-50" />
-        <p className="mt-3 font-medium">Nothing to synthesize yet</p>
-        <p className="text-sm text-muted mt-1">Save some papers first, then fill in the matrix.</p>
+      <div className="panel py-12 text-center">
+        <h2 className="text-lg">Nothing to synthesise yet</h2>
+        <p className="mt-2 text-sm text-muted">
+          Save some papers first, then fill in this matrix to turn them into a written review.
+        </p>
       </div>
     );
   }
 
   return (
-    <div className="card overflow-hidden">
-      <div className="overflow-x-auto">
-        <table className="w-full text-sm border-collapse">
-          <thead>
-            <tr className="border-b border-border bg-bg">
-              <th className="text-left p-3 font-semibold min-w-[200px] sticky left-0 bg-bg z-10">
-                Paper
-              </th>
+    <>
+      <p className="mb-3 text-sm text-muted">
+        Fill a row per paper. Entries save when you click out of a box.
+      </p>
+
+      {/* Phones: one card per paper. */}
+      <ul className="space-y-3 md:hidden">
+        {papers.map((p) => (
+          <li key={p.id} className="panel">
+            <h3 className="text-sm font-semibold leading-snug">{p.title}</h3>
+            <p className="mt-1 text-xs text-muted">
+              {p.authors[0] || "Unknown author"}
+              {p.authors.length > 1 && " et al."} ({p.year || "n.d."})
+            </p>
+            <div className="mt-3 space-y-3">
               {FIELDS.map((f) => (
-                <th key={f.key} className="text-left p-3 font-semibold min-w-[220px]">
+                <div key={f.key}>
+                  <label htmlFor={`${p.id}-${f.key}`} className="field-label">{f.label}</label>
+                  <Cell paper={p} field={f} />
+                </div>
+              ))}
+            </div>
+          </li>
+        ))}
+      </ul>
+
+      {/* Tablet and up: the real matrix. */}
+      <div className="card hidden overflow-x-auto md:block">
+        <table className="w-full border-collapse text-sm">
+          <thead>
+            <tr className="border-b border-border">
+              <th scope="col" className="w-[220px] p-3 text-left font-semibold">Paper</th>
+              {FIELDS.map((f) => (
+                <th key={f.key} scope="col" className="min-w-[200px] p-3 text-left font-semibold">
                   {f.label}
                 </th>
               ))}
@@ -53,16 +76,19 @@ export function SynthesisMatrix({ papers }: { papers: SavedPaper[] }) {
           </thead>
           <tbody>
             {papers.map((p) => (
-              <tr key={p.id} className="border-b border-border last:border-0 hover:bg-bg/50">
-                <td className="p-3 align-top sticky left-0 bg-surface z-10">
-                  <div className="font-medium leading-snug line-clamp-3">{p.title}</div>
-                  <div className="mt-1 text-xs text-muted">
-                    {p.authors[0] || "—"}
-                    {p.authors.length > 1 ? " et al." : ""} ({p.year || "n.d."})
-                  </div>
-                </td>
+              <tr key={p.id} className="border-b border-border last:border-0">
+                <th scope="row" className="p-3 text-left align-top font-medium">
+                  <span className="line-clamp-3 leading-snug">{p.title}</span>
+                  <span className="mt-1 block text-xs font-normal text-muted">
+                    {p.authors[0] || "Unknown author"}
+                    {p.authors.length > 1 && " et al."} ({p.year || "n.d."})
+                  </span>
+                </th>
                 {FIELDS.map((f) => (
-                  <td key={f.key} className="p-1 align-top">
+                  <td key={f.key} className="p-2 align-top">
+                    <label htmlFor={`${p.id}-${f.key}`} className="sr-only">
+                      {f.label} for {p.title}
+                    </label>
                     <Cell paper={p} field={f} />
                   </td>
                 ))}
@@ -71,39 +97,42 @@ export function SynthesisMatrix({ papers }: { papers: SavedPaper[] }) {
           </tbody>
         </table>
       </div>
-    </div>
+    </>
   );
 }
 
-function Cell({ paper, field }: { paper: SavedPaper; field: { key: Field; label: string; placeholder: string } }) {
+function Cell({
+  paper,
+  field,
+}: {
+  paper: SavedPaper;
+  field: { key: Field; label: string; placeholder: string };
+}) {
   const [value, setValue] = useState(paper.matrix?.[field.key] || "");
   const [dirty, setDirty] = useState(false);
 
-  // Sync state when paper prop changes (e.g. after auto-save re-render)
+  // Re-sync when the row's stored value changes and the user isn't mid-edit.
   useEffect(() => {
     if (!dirty) setValue(paper.matrix?.[field.key] || "");
   }, [paper.matrix, field.key, dirty]);
 
   async function commit() {
     if (!dirty) return;
-    const updated = { ...paper.matrix, [field.key]: value } as SavedPaper["matrix"];
-    await updatePaper(paper.id, { matrix: updated });
+    await updatePaper(paper.id, {
+      matrix: { ...paper.matrix, [field.key]: value } as SavedPaper["matrix"],
+    });
     setDirty(false);
   }
 
   return (
     <textarea
+      id={`${paper.id}-${field.key}`}
       value={value}
-      onChange={(e) => {
-        setValue(e.target.value);
-        setDirty(true);
-      }}
-      onBlur={() => {
-        commit();
-      }}
+      onChange={(e) => { setValue(e.target.value); setDirty(true); }}
+      onBlur={commit}
       placeholder={field.placeholder}
       rows={3}
-      className="w-full resize-y rounded border border-transparent bg-transparent p-2 text-xs leading-relaxed focus:border-brand-400 focus:bg-surface focus:outline-none focus:ring-1 focus:ring-brand-400"
+      className="input resize-y text-sm"
     />
   );
 }

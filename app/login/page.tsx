@@ -1,16 +1,14 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
-import {
-  signInWithEmailAndPassword,
-  createUserWithEmailAndPassword,
-} from "firebase/auth";
-import { doc, setDoc, getDoc } from "firebase/firestore";
+import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from "firebase/auth";
+import { doc, setDoc } from "firebase/firestore";
+import { Eye, EyeOff } from "lucide-react";
 import { auth, db } from "@/lib/firebase";
 import { useAuth } from "@/lib/auth-store";
 import { toast } from "@/components/Toaster";
-import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { hashMPIN } from "@/lib/utils";
 
 const DEFAULT_MPIN = "0000";
@@ -31,13 +29,8 @@ export default function LoginPage() {
   }, [initialized, user, router]);
 
   if (!initialized) {
-    return (
-      <div className="flex items-center justify-center min-h-[200px]">
-        <Loader2 className="animate-spin h-6 w-6 text-muted" />
-      </div>
-    );
+    return <p role="status" className="py-20 text-center text-muted">Loading…</p>;
   }
-
   if (user) return null;
 
   async function onSubmit(e: React.FormEvent) {
@@ -46,133 +39,131 @@ export default function LoginPage() {
     if (mode === "signup" && !username) return;
 
     setLoading(true);
-
     try {
       if (mode === "login") {
         await signInWithEmailAndPassword(auth, email, password);
-        toast("Welcome back!", "success");
+        toast("Signed in", "success");
         router.push("/library");
-
       } else {
         const cred = await createUserWithEmailAndPassword(auth, email, password);
         const uid = cred.user.uid;
-        const defaultMpinHash = await hashMPIN(DEFAULT_MPIN);
         const normalizedEmail = email.toLowerCase().replace(/\./g, "_");
 
-        // Save profile — default MPIN only, never store passwords
+        // Profile holds the display name and a hashed recovery PIN. Never a password.
         await setDoc(doc(db, "users", uid, "profile", "main"), {
           username,
-          mpinHash: defaultMpinHash,
+          mpinHash: await hashMPIN(DEFAULT_MPIN),
           createdAt: Date.now(),
         });
-
-        // Save email → uid lookup map (for forgot-password flow)
+        // email → uid map, used by the forgot-password flow.
         await setDoc(doc(db, "email_map", normalizedEmail), { uid, email: email.toLowerCase() });
 
         localStorage.setItem(`tw_username_${uid}`, username);
-
-        toast("Account created successfully!", "success");
+        toast("Account created", "success");
         router.push("/library");
       }
-    } catch (err: any) {
-      toast(err.message || "Authentication failed", "error");
+    } catch (err) {
+      toast(err instanceof Error ? err.message : "Authentication failed", "error");
     } finally {
       setLoading(false);
     }
   }
 
   return (
-    <div className="max-w-[400px] mx-auto mt-12 p-6 rounded-lg border bg-surface border-border">
-      <h1 className="text-xl font-semibold text-text text-center mb-6">
-        {mode === "login" ? "Sign in to ThesisWeb" : "Create an account"}
+    <div className="mx-auto mt-4 max-w-md sm:mt-12">
+      <p className="overline">Account</p>
+      <h1 className="display mt-3 text-3xl">
+        {mode === "login" ? "Sign in" : "Create an account"}
       </h1>
+      <p className="mt-2 text-muted">
+        An account keeps your saved papers on every device. Searching works without one.
+      </p>
 
-      <div className="flex gap-2 mb-6">
-        <button
-          className={`flex-1 py-1.5 text-sm font-medium border-b-2 transition-colors ${mode === "login" ? "border-brand-500 text-text" : "border-transparent text-muted hover:text-text"}`}
-          onClick={() => setMode("login")}
-        >
-          Sign In
+      <div className="seg mt-6 w-full" role="group" aria-label="Sign in or sign up">
+        <button type="button" className="flex-1" data-on={mode === "login"} onClick={() => setMode("login")}>
+          Sign in
         </button>
-        <button
-          className={`flex-1 py-1.5 text-sm font-medium border-b-2 transition-colors ${mode === "signup" ? "border-brand-500 text-text" : "border-transparent text-muted hover:text-text"}`}
-          onClick={() => setMode("signup")}
-        >
-          Sign Up
+        <button type="button" className="flex-1" data-on={mode === "signup"} onClick={() => setMode("signup")}>
+          Sign up
         </button>
       </div>
 
-      <form onSubmit={onSubmit} className="flex flex-col gap-4">
+      <form onSubmit={onSubmit} className="panel mt-4 space-y-4">
         {mode === "signup" && (
           <div>
-            <label className="block text-xs font-medium text-text mb-1">Username</label>
+            <label htmlFor="username" className="field-label">Display name</label>
             <input
+              id="username"
               required
               autoFocus
-              className="input w-full"
-              placeholder="e.g. Researcher123"
+              autoComplete="nickname"
+              className="input"
+              placeholder="e.g. Lian"
               value={username}
-              onChange={e => setUsername(e.target.value)}
+              onChange={(e) => setUsername(e.target.value)}
             />
           </div>
         )}
 
         <div>
-          <label className="block text-xs font-medium text-text mb-1">Email address</label>
+          <label htmlFor="email" className="field-label">Email address</label>
           <input
+            id="email"
             type="email"
             required
-            className="input w-full"
+            autoComplete="email"
+            className="input"
             placeholder="you@example.com"
             value={email}
-            onChange={e => setEmail(e.target.value)}
+            onChange={(e) => setEmail(e.target.value)}
           />
         </div>
 
         <div>
-          <div className="flex justify-between items-end mb-1">
-            <label className="block text-xs font-medium text-text">Password</label>
+          <div className="flex items-baseline justify-between">
+            <label htmlFor="password" className="field-label">Password</label>
             {mode === "login" && (
-              <button
-                type="button"
-                onClick={() => router.push("/forgot-password")}
-                className="text-[11px] text-brand-500 hover:underline"
-              >
+              <Link href="/forgot-password" className="mb-1.5 text-xs text-accent underline">
                 Forgot password?
-              </button>
+              </Link>
             )}
           </div>
           <div className="relative">
             <input
+              id="password"
               type={showPassword ? "text" : "password"}
               required
               minLength={6}
-              className="input w-full pr-9"
-              placeholder="••••••••"
+              autoComplete={mode === "login" ? "current-password" : "new-password"}
+              className="input pr-12"
               value={password}
-              onChange={e => setPassword(e.target.value)}
+              onChange={(e) => setPassword(e.target.value)}
             />
             <button
               type="button"
-              className="absolute right-2 top-1/2 -translate-y-1/2 text-muted hover:text-text p-1"
-              onClick={() => setShowPassword(!showPassword)}
+              onClick={() => setShowPassword((v) => !v)}
+              aria-label={showPassword ? "Hide password" : "Show password"}
+              className="absolute right-0 top-0 flex h-full w-11 items-center justify-center text-muted hover:text-text"
             >
-              {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              {showPassword ? <EyeOff className="h-4 w-4" aria-hidden /> : <Eye className="h-4 w-4" aria-hidden />}
             </button>
           </div>
           {mode === "signup" && (
-            <p className="text-[10px] text-muted mt-1.5">
-              <strong className="text-amber-500">Do not use your real Gmail password here!</strong>{" "}
-              Create a brand new password just for ThesisWeb. Min 6 characters.
-              <br />
-              <span className="text-muted/70">Default recovery MPIN will be <strong className="text-text">0000</strong> — change it in Settings after signing in.</span>
+            <p className="field-hint">
+              At least 6 characters. Use a new password made for ThesisWeb, never your email password.
             </p>
           )}
         </div>
 
-        <button type="submit" disabled={loading} className="btn-primary w-full mt-2 justify-center">
-          {loading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-          {mode === "login" ? "Sign in" : "Create account"}
+        {mode === "signup" && (
+          <p className="notice notice-info">
+            Your recovery PIN starts as <strong>0000</strong>. Change it in Account settings once
+            you are signed in.
+          </p>
+        )}
+
+        <button type="submit" disabled={loading} className="btn-primary w-full">
+          {loading ? "Please wait…" : mode === "login" ? "Sign in" : "Create account"}
         </button>
       </form>
     </div>

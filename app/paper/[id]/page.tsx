@@ -1,32 +1,18 @@
 "use client";
 
 import { use, useState, useEffect } from "react";
-import { useMutation } from "@tanstack/react-query";
-import {
-  ArrowLeft,
-  FileText,
-  ExternalLink,
-  Quote,
-  Loader2,
-  Users,
-  Calendar,
-  Building2,
-  Bookmark,
-  BookmarkCheck,
-  Download,
-  Wand2,
-  AlertCircle,
-} from "lucide-react";
 import Link from "next/link";
+import { useMutation } from "@tanstack/react-query";
 import { useLiveQuery } from "dexie-react-hooks";
+import { ArrowLeft, Check, ExternalLink, FileText } from "lucide-react";
 import { getDb, savePaper, unsavePaper, updatePaper, getPaper } from "@/lib/db";
 import { getRecentPaper } from "@/lib/recent-papers";
-import { formatCitation, inTextCitation, toBibtex, type CitationStyle } from "@/lib/citations";
+import { formatCitation, citationToText, inTextCitation, toBibtex, type CitationStyle } from "@/lib/citations";
 import { toast } from "@/components/Toaster";
 import type { Paper, SavedPaper } from "@/lib/types";
-import { cn } from "@/lib/utils";
 import { useAuth } from "@/lib/auth-store";
 import { RelatedPapers } from "@/components/RelatedPapers";
+import { sourceLabel } from "@/lib/sources/meta";
 
 const STYLES: { id: CitationStyle; label: string }[] = [
   { id: "apa", label: "APA" },
@@ -38,10 +24,9 @@ const STYLES: { id: CitationStyle; label: string }[] = [
 export default function PaperDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const decodedId = decodeURIComponent(id);
-
   const { user } = useAuth();
 
-  // IndexedDB live query (for logged-out users)
+  // IndexedDB, for signed-out users.
   const savedLocal = useLiveQuery(
     async () => {
       if (typeof window === "undefined") return undefined;
@@ -51,27 +36,27 @@ export default function PaperDetailPage({ params }: { params: Promise<{ id: stri
     undefined
   );
 
-  // Firestore saved state (for logged-in users)
+  // Firestore, for signed-in users.
   const [cloudSaved, setCloudSaved] = useState<boolean | null>(null);
   const [cloudSavedData, setCloudSavedData] = useState<SavedPaper | null>(null);
 
   useEffect(() => {
     if (!user) { setCloudSaved(null); setCloudSavedData(null); return; }
-    getPaper(decodedId).then(p => {
-      if (p) {
-        setCloudSaved(true);
-        setCloudSavedData(p);
-      } else {
-        setCloudSaved(false);
-        setCloudSavedData(null);
-      }
+    getPaper(decodedId).then((p) => {
+      setCloudSaved(!!p);
+      setCloudSavedData(p ?? null);
     });
   }, [user, decodedId]);
 
-  // Merge saved state: prefer Firestore when logged in
-  const saved = user ? (cloudSaved === true ? (cloudSavedData ?? true) : cloudSaved === false ? null : undefined) : savedLocal;
+  const saved = user
+    ? cloudSaved === true
+      ? cloudSavedData ?? true
+      : cloudSaved === false
+      ? null
+      : undefined
+    : savedLocal;
 
-  // Check sessionStorage (search results the user just clicked).
+  // Papers the user just saw in search results live in sessionStorage.
   const [recent, setRecent] = useState<Paper | null>(null);
   useEffect(() => {
     const found = getRecentPaper(decodedId);
@@ -85,19 +70,16 @@ export default function PaperDetailPage({ params }: { params: Promise<{ id: stri
   const [style, setStyle] = useState<CitationStyle>("apa");
   const [notes, setNotes] = useState("");
 
-  // Always mirror the stored notes (including "none"): the old truthy check left
-  // the previous paper's notes on screen when opening one without notes.
+  // Mirror the stored notes, including "none" — a truthy check used to leave the
+  // previous paper's notes on screen.
   useEffect(() => {
     setNotes(isSavedData?.notes ?? "");
   }, [decodedId, isSavedData?.notes]);
 
-  // --- Loading state: only show spinner while IndexedDB is still booting ---
-  // and we don't have a recent copy either.
   const dbLoading = saved === undefined;
   const noRecent = recent === null;
   const dbMissing = saved === null;
 
-  // --- Find PDF via Unpaywall ---
   const findPdf = useMutation({
     mutationFn: async (doi: string) => {
       const res = await fetch(`/api/pdf?doi=${encodeURIComponent(doi)}`);
@@ -106,19 +88,15 @@ export default function PaperDetailPage({ params }: { params: Promise<{ id: stri
     },
     onSuccess: (data) => {
       if (data.found && data.url) {
-        toast(
-          `Found ${data.kind === "pdf" ? "a PDF" : "a landing page"} (${data.status || "OA"})`,
-          "success"
-        );
+        toast(`Found ${data.kind === "pdf" ? "a PDF" : "a landing page"}`, "success");
         if (isSavedData) updatePaper(decodedId, { openAccessUrl: data.url, isOpenAccess: true });
       } else {
         toast("No legal open-access copy found for this DOI.", "error");
       }
     },
-    onError: () => toast("PDF lookup failed — try again.", "error"),
+    onError: () => toast("PDF lookup failed. Try again.", "error"),
   });
 
-  // --- Extractive summarizer ---
   const summarize = useMutation({
     mutationFn: async (text: string) => {
       const res = await fetch("/api/summarize", {
@@ -129,48 +107,37 @@ export default function PaperDetailPage({ params }: { params: Promise<{ id: stri
       if (!res.ok) throw new Error("Summarize failed");
       return res.json();
     },
-    onError: () => toast("Summarize failed", "error"),
+    onError: () => toast("Could not summarize this abstract.", "error"),
   });
 
   if (dbLoading && noRecent) {
-    return (
-      <div className="flex items-center justify-center py-20">
-        <Loader2 className="h-5 w-5 animate-spin text-muted" />
-      </div>
-    );
+    return <p role="status" className="py-20 text-center text-muted">Loading paper…</p>;
   }
 
   if (!dbLoading && dbMissing && noRecent) {
     return (
-      <div className="mx-auto max-w-2xl px-6 py-16 text-center">
-        <AlertCircle className="h-10 w-10 text-muted mx-auto opacity-50" />
-        <p className="mt-3 font-medium">Paper not found</p>
-        <p className="text-sm text-muted mt-1">
-          This paper isn&apos;t saved in your library and isn&apos;t in your recent search
-          results. Search for it and open its details from there.
+      <div className="panel mx-auto max-w-xl py-14 text-center">
+        <h1 className="text-xl">Paper not found</h1>
+        <p className="mx-auto mt-2 max-w-md text-sm text-muted">
+          This paper is not in your library and is not in your latest search results. Search for it
+          again and open it from there.
         </p>
-        <Link href="/search" className="btn-primary mt-4 inline-flex">
-          Go to search
-        </Link>
+        <Link href="/search" className="btn-primary mt-6">Go to search</Link>
       </div>
     );
   }
 
-  if (!paper) return null; // should not happen, but guard
+  if (!paper) return null;
 
-
-
-  // Helper to safely promote a Paper (with optional fields) to a SavedPaper
-  // (with required fields). The search-result sources always populate these,
-  // so defaults are just a safety net.
-  function toSaved(paper_: Paper, overrides?: Partial<SavedPaper>): SavedPaper {
+  /** Fill in the fields a SavedPaper needs but a search result may not carry. */
+  function toSaved(source: Paper, overrides?: Partial<SavedPaper>): SavedPaper {
     return {
-      ...paper_,
-      id: paper_.id || decodedId,
-      title: paper_.title || "Untitled",
-      authors: paper_.authors || [],
-      year: paper_.year ?? null,
-      sources: paper_.sources || [],
+      ...source,
+      id: source.id || decodedId,
+      title: source.title || "Untitled",
+      authors: source.authors || [],
+      year: source.year ?? null,
+      sources: source.sources || [],
       savedAt: Date.now(),
       tags: [],
       readingStatus: "to-read",
@@ -189,7 +156,7 @@ export default function PaperDetailPage({ params }: { params: Promise<{ id: stri
       await savePaper(sp);
       setCloudSaved(true);
       setCloudSavedData(sp);
-      toast("Saved to library ✓", "success");
+      toast("Saved to library", "success");
     }
   }
 
@@ -201,8 +168,8 @@ export default function PaperDetailPage({ params }: { params: Promise<{ id: stri
       setCloudSavedData(sp);
     } else {
       await updatePaper(decodedId, { notes });
-      // Logged-in users read from cloudSavedData, which updatePaper doesn't
-      // touch — without this the "Save notes" button never disables again.
+      // Signed-in users read from cloudSavedData, which updatePaper doesn't
+      // touch — without this the button never re-disables.
       if (user) setCloudSavedData((prev) => (prev ? { ...prev, notes } : prev));
     }
     toast("Notes saved", "success");
@@ -211,64 +178,54 @@ export default function PaperDetailPage({ params }: { params: Promise<{ id: stri
   const p: Paper = isSavedData ?? paper;
 
   return (
-    <div className="mx-auto max-w-3xl px-6 py-8 pb-24 sm:pb-8">
-      <Link href="/search" className="btn-ghost !px-2 mb-4 inline-flex items-center gap-1">
-        <ArrowLeft className="h-4 w-4" />
+    <article className="mx-auto max-w-3xl">
+      <Link href="/search" className="btn-ghost btn-sm -ml-2.5 mb-4">
+        <ArrowLeft className="h-4 w-4" aria-hidden />
         Back to search
       </Link>
 
       {p.retracted && (
-        <div
-          role="alert"
-          className="mb-4 flex items-start gap-2 rounded-lg border p-3 text-sm"
-          style={{ borderColor: "rgba(248,81,73,0.4)", backgroundColor: "rgba(248,81,73,0.08)", color: "#f85149" }}
-        >
-          <AlertCircle className="h-4 w-4 mt-0.5 shrink-0" />
-          <div>
-            <p className="font-semibold">This paper has been retracted.</p>
-            <p className="text-xs mt-0.5 text-muted">
-              Its findings are no longer considered reliable. Don&apos;t cite it as supporting
-              evidence in your review of related literature.
-            </p>
-          </div>
-        </div>
+        <p role="alert" className="notice notice-danger mb-5">
+          <strong>This paper has been retracted.</strong>{" "}
+          Its findings are no longer considered
+          reliable. Do not cite it as supporting evidence.
+        </p>
       )}
 
-      {/* Title + meta */}
-      <h1 className="text-2xl font-bold leading-snug">{p.title}</h1>
-      <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-sm text-muted">
-        {p.authors.length > 0 && (
-          <span className="inline-flex items-center gap-1">
-            <Users className="h-3.5 w-3.5" />
-            {p.authors.join(", ")}
+      <h1 className="display text-2xl leading-tight sm:text-3xl">{p.title}</h1>
+
+      <p className="mt-3 text-muted">
+        {p.authors.length > 0 ? p.authors.join(", ") : "Author not listed"}
+        {p.year != null && ` · ${p.year}`}
+        {p.venue && <> · <span className="italic">{p.venue}</span></>}
+      </p>
+
+      <div className="mt-3 flex flex-wrap gap-1.5">
+        {p.isOpenAccess && (
+          <span
+            className="chip"
+            style={{
+              color: "rgb(var(--ok))",
+              borderColor: "rgb(var(--ok) / 0.4)",
+              backgroundColor: "rgb(var(--ok-d))",
+            }}
+          >
+            <Check className="h-3 w-3" aria-hidden />
+            Free full text
           </span>
         )}
-        {p.year && (
-          <span className="inline-flex items-center gap-1">
-            <Calendar className="h-3.5 w-3.5" />
-            {p.year}
-          </span>
-        )}
-        {p.venue && (
-          <span className="inline-flex items-center gap-1 italic">
-            <Building2 className="h-3.5 w-3.5" />
-            {p.venue}
-          </span>
+        {(p.citedByCount ?? 0) > 0 && (
+          <span className="chip">Cited {p.citedByCount!.toLocaleString()}</span>
         )}
       </div>
 
-      {/* Action row */}
-      <div className="mt-4 flex flex-wrap items-center gap-2">
+      <div className="mt-5 flex flex-wrap gap-2">
         <button
           onClick={toggleSave}
-          className={cn(isSavedData ? "btn-secondary" : "btn-primary")}
+          aria-pressed={!!isSavedData}
+          className={isSavedData ? "btn-secondary" : "btn-primary"}
         >
-          {isSavedData ? (
-            <BookmarkCheck className="h-4 w-4" />
-          ) : (
-            <Bookmark className="h-4 w-4" />
-          )}
-          {isSavedData ? "In library" : "Save to library"}
+          {isSavedData ? "Saved to library" : "Save to library"}
         </button>
 
         {p.openAccessUrl ? (
@@ -278,8 +235,8 @@ export default function PaperDetailPage({ params }: { params: Promise<{ id: stri
             rel="noopener noreferrer"
             className="btn-secondary"
           >
-            <FileText className="h-4 w-4" />
-            Open PDF
+            <FileText className="h-4 w-4" aria-hidden />
+            Read free copy
           </a>
         ) : p.doi ? (
           <button
@@ -287,12 +244,7 @@ export default function PaperDetailPage({ params }: { params: Promise<{ id: stri
             disabled={findPdf.isPending}
             className="btn-secondary"
           >
-            {findPdf.isPending ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <Download className="h-4 w-4" />
-            )}
-            Find free PDF
+            {findPdf.isPending ? "Looking…" : "Find free PDF"}
           </button>
         ) : null}
 
@@ -303,119 +255,146 @@ export default function PaperDetailPage({ params }: { params: Promise<{ id: stri
             rel="noopener noreferrer"
             className="btn-ghost"
           >
-            <ExternalLink className="h-4 w-4" />
-            DOI
+            <ExternalLink className="h-4 w-4" aria-hidden />
+            Publisher page
           </a>
         )}
       </div>
 
-      {/* TLDR / abstract */}
+      {!p.openAccessUrl && !p.doi && (
+        <p className="field-hint">
+          No DOI is listed, so a free copy cannot be looked up automatically.
+        </p>
+      )}
+
       {(p.tldr || p.abstract) && (
-        <section className="mt-6">
-          <h2 className="text-sm font-semibold mb-2">{p.tldr ? "TL;DR" : "Abstract"}</h2>
-          <p className="card p-4 text-sm leading-relaxed text-text font-serif">
-            {p.tldr || p.abstract}
-          </p>
-          {p.abstract && p.abstract.length > 400 && (
-            <button
-              onClick={() => summarize.mutate(p.abstract!)}
-              disabled={summarize.isPending}
-              className="btn-ghost !py-1.5 !text-xs mt-2"
-            >
-              {summarize.isPending ? (
-                <Loader2 className="h-3.5 w-3.5 animate-spin" />
-              ) : (
-                <Wand2 className="h-3.5 w-3.5" />
-              )}
-              {summarize.isPending ? "Summarizing…" : "Extract key points"}
-            </button>
+        <section className="mt-10" aria-labelledby="abstract">
+          <h2 id="abstract" className="text-lg">Abstract</h2>
+
+          {p.tldr && (
+            <p className="notice notice-info mt-3">
+              <strong>TL;DR:</strong> {p.tldr}
+            </p>
           )}
-          {summarize.data && (
-            <div className="card p-3 mt-2 text-xs bg-brand-50/50 dark:bg-brand-950/30 border-brand-200 dark:border-brand-900">
-              <strong className="text-brand-700 dark:text-brand-300">Key points: </strong>
-              {summarize.data.text}
-            </div>
+
+          {p.abstract ? (
+            <p className="prose-serif mt-4 whitespace-pre-line text-base">{p.abstract}</p>
+          ) : (
+            <p className="mt-3 text-muted">No abstract is available for this paper.</p>
+          )}
+
+          {p.abstract && p.abstract.length > 400 && (
+            <>
+              <button
+                onClick={() => summarize.mutate(p.abstract!)}
+                disabled={summarize.isPending}
+                className="btn-secondary btn-sm mt-4"
+              >
+                {summarize.isPending ? "Working…" : "Extract key points"}
+              </button>
+              {summarize.data && (
+                <p className="notice notice-info mt-3">
+                  <strong>Key points: </strong>
+                  {summarize.data.text}
+                </p>
+              )}
+            </>
           )}
         </section>
       )}
 
-      {/* Citation */}
-      <section className="mt-6">
-        <div className="flex items-center justify-between mb-2">
-          <h2 className="text-sm font-semibold">Citation</h2>
-          <div className="flex gap-1">
+      <section className="mt-10" aria-labelledby="cite">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h2 id="cite" className="text-lg">Cite this paper</h2>
+          <div className="seg" role="group" aria-label="Citation style">
             {STYLES.map((s) => (
-              <button
-                key={s.id}
-                onClick={() => setStyle(s.id)}
-                className={cn(
-                  "badge border px-2 py-0.5 cursor-pointer",
-                  style === s.id
-                    ? "bg-brand-600 text-white border-brand-600"
-                    : "bg-surface text-muted border-border"
-                )}
-              >
+              <button key={s.id} type="button" data-on={style === s.id} onClick={() => setStyle(s.id)}>
                 {s.label}
               </button>
             ))}
           </div>
         </div>
-        <div className="card p-3 font-serif text-sm leading-relaxed">
-          <p dangerouslySetInnerHTML={{ __html: formatCitation(p, style, 1) }} />
-          <p className="mt-2 pt-2 border-t border-border text-xs text-muted">
-            In-text: <code className="font-mono">{inTextCitation(p, style, 1)}</code>
+
+        <div className="panel mt-3">
+          <p
+            className="prose-serif text-[15px]"
+            dangerouslySetInnerHTML={{ __html: formatCitation(p, style, 1) }}
+          />
+          <p className="mt-3 border-t border-border pt-3 text-sm text-muted">
+            In text: <code>{inTextCitation(p, style, 1)}</code>
           </p>
         </div>
-        <div className="mt-2 flex gap-2">
+
+        <div className="mt-3 flex flex-wrap gap-2">
           <button
             onClick={() => {
-              navigator.clipboard.writeText(toBibtex(p))
-                .then(() => toast("BibTeX copied", "success"))
-                .catch(() => toast("Failed to copy — try again", "error"));
+              navigator.clipboard
+                .writeText(citationToText(formatCitation(p, style, 1)))
+                .then(() => toast("Citation copied", "success"))
+                .catch(() => toast("Could not copy. Select the text instead.", "error"));
             }}
-            className="btn-ghost !py-1.5 !text-xs"
+            className="btn-secondary btn-sm"
           >
-            <Quote className="h-3.5 w-3.5" />
+            Copy citation
+          </button>
+          <button
+            onClick={() => {
+              navigator.clipboard
+                .writeText(toBibtex(p))
+                .then(() => toast("BibTeX copied", "success"))
+                .catch(() => toast("Could not copy. Select the text instead.", "error"));
+            }}
+            className="btn-ghost btn-sm"
+          >
             Copy BibTeX
           </button>
         </div>
+        <p className="field-hint">
+          Generated from database records. Check it against your school&apos;s style guide.
+        </p>
       </section>
 
-      {/* Citation neighbourhood */}
       {p.doi && <RelatedPapers key={p.doi} doi={p.doi} />}
 
-      {/* Notes */}
-      <section className="mt-6">
-        <h2 className="text-sm font-semibold mb-2">My notes</h2>
+      <section className="mt-10" aria-labelledby="notes">
+        <h2 id="notes" className="text-lg">My notes</h2>
+        <label htmlFor="notes-box" className="sr-only">Notes about this paper</label>
         <textarea
+          id="notes-box"
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
-          placeholder="Jot down why this paper matters to your thesis, key quotes with page numbers, etc."
+          placeholder="Why this paper matters to your thesis, key quotes with page numbers…"
           rows={5}
-          className="input resize-y text-sm font-serif"
+          className="input prose-serif mt-3 resize-y"
         />
         <button
           onClick={saveNotes}
           disabled={notes === (isSavedData?.notes || "")}
-          className="btn-secondary mt-2 !text-xs"
+          className="btn-secondary btn-sm mt-2"
         >
           Save notes
         </button>
+        {!isSavedData && (
+          <p className="field-hint">Saving notes also adds this paper to your library.</p>
+        )}
       </section>
 
-      {/* Keywords */}
       {p.keywords && p.keywords.length > 0 && (
-        <section className="mt-6">
-          <h2 className="text-sm font-semibold mb-2">Keywords</h2>
-          <div className="flex flex-wrap gap-1.5">
+        <section className="mt-10" aria-labelledby="keywords">
+          <h2 id="keywords" className="text-lg">Keywords</h2>
+          <ul className="mt-3 flex flex-wrap gap-1.5">
             {p.keywords.map((k) => (
-              <span key={k} className="badge bg-bg text-muted">
-                {k}
-              </span>
+              <li key={k} className="chip">{k}</li>
             ))}
-          </div>
+          </ul>
         </section>
       )}
-    </div>
+
+      {p.sources.length > 0 && (
+        <p className="mt-10 border-t border-border pt-4 text-sm text-subtle">
+          Found in {p.sources.map(sourceLabel).join(", ")}.
+        </p>
+      )}
+    </article>
   );
 }

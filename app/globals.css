@@ -2,164 +2,225 @@
 @tailwind components;
 @tailwind utilities;
 
-/* ─── GitHub dark — exact color tokens ──────────────────────────────────── */
+/* ─── Tokens ─────────────────────────────────────────────────────────────── */
 @layer base {
   :root {
-    /* Canvas — GitHub's actual dark values */
-    --bg:        13  17  23;      /* #0d1117  canvas-default         */
-    --surface:   22  27  34;      /* #161b22  canvas-subtle          */
-    --surface2:  33  38  45;      /* #21262d  canvas-inset           */
-    --surface3:  48  54  61;      /* #30363d  hover                  */
+    /* Canvas: near-black, warm-neutral greys */
+    --bg:        10  10  11;   /* #0a0a0b  page                     */
+    --surface:   19  19  22;   /* #131316  cards, header            */
+    --surface2:  26  26  30;   /* #1a1a1e  inputs, insets           */
+    --surface3:  35  35  40;   /* #232328  hover, active segment    */
 
-    /* Borders */
-    --border:    48  54  61;      /* #30363d  border-default         */
-    --border2:   68  76  86;      /* #444c56  border-muted           */
+    --border:    39  39  45;   /* #27272d  hairlines                */
+    --border2:   58  58  66;   /* #3a3a42  stronger edges           */
 
-    /* Text */
-    --text:      230 237 243;     /* #e6edf3  fg-default             */
-    --muted:     139 148 158;     /* #8b949e  fg-muted               */
-    --subtle:    110 118 129;     /* #6e7681  fg-subtle              */
+    --text:     250 250 250;   /* #fafafa                           */
+    --muted:    160 160 170;   /* #a0a0aa  secondary text           */
+    --subtle:   118 118 128;   /* #767680  tertiary text            */
 
-    /* Accent — warm amber (used sparingly, only for active/links) */
-    --accent:    210 153  34;     /* #d29922  warm amber             */
-    --accent-dim: 72  52  16;     /* #483410  amber dim bg           */
+    /* One accent, used sparingly: overlines, active state, links */
+    --accent:   232 160  48;   /* #e8a030  warm amber               */
+    --accent-d:  52  37  12;   /* #34250c  amber tint background    */
 
-    /* Status colors */
-    --green:      46 160  67;     /* #2ea043  success / OA           */
-    --green-bg:   18  54  24;     /* #123618  green bg               */
-    --red:       248  81  73;     /* #f85149  error                  */
-    --red-bg:    103  15   7;     /* #670f07  red bg                 */
+    --ok:       106 176 106;   /* #6ab06a                           */
+    --ok-d:      20  38  20;
+    --danger:   232  82  62;   /* #e8523e                           */
+    --danger-d:  46  17  13;
   }
 
-  html { color-scheme: dark; }
+  html {
+    color-scheme: dark;
+    -webkit-text-size-adjust: 100%;
+  }
 
   body {
     background-color: rgb(var(--bg));
     color: rgb(var(--text));
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans",
-      Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
-    font-size: 14px;
-    line-height: 1.5;
+    font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI",
+      Roboto, "Helvetica Neue", Arial, sans-serif;
+    font-size: 15px;
+    line-height: 1.6;
     -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
   }
 
-  ::-webkit-scrollbar { width: 6px; height: 6px; }
-  ::-webkit-scrollbar-track { background: transparent; }
-  ::-webkit-scrollbar-thumb { background: rgb(var(--border2)); border-radius: 6px; }
-  ::-webkit-scrollbar-thumb:hover { background: rgb(var(--muted)); }
+  h1, h2, h3, h4 {
+    font-weight: 600;
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+  }
 
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  /* Visible on every interactive element, since nothing animates to signal state. */
   *:focus-visible {
     outline: 2px solid rgb(var(--accent));
     outline-offset: 2px;
     border-radius: 6px;
   }
 
-  h1, h2, h3, h4, h5, h6 { font-weight: 600; line-height: 1.25; }
-  a { color: rgb(var(--accent)); text-decoration: none; }
-  a:hover { text-decoration: underline; }
-
   code, kbd, pre, samp {
-    font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas,
-      "Liberation Mono", monospace;
-    font-size: 85%;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 0.9em;
+  }
+
+  ::-webkit-scrollbar { width: 10px; height: 10px; }
+  ::-webkit-scrollbar-track { background: rgb(var(--bg)); }
+  ::-webkit-scrollbar-thumb {
+    background: rgb(var(--border2));
+    border: 2px solid rgb(var(--bg));
+    border-radius: 999px;
+  }
+
+  /* No motion anywhere: this is a research tool, not a showcase. */
+  *, *::before, *::after {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
   }
 }
 
 /* ─── Components ─────────────────────────────────────────────────────────── */
 @layer components {
 
+  /* Containers */
   .card {
-    background-color: rgb(var(--surface));
-    border: 1px solid rgb(var(--border));
-    border-radius: 6px;
+    @apply rounded-xl border border-border bg-surface;
+  }
+  .panel {
+    @apply rounded-xl border border-border bg-surface p-4 sm:p-5;
   }
 
-  /* ── Buttons — GitHub's exact style ── */
+  /* Buttons — white primary, like the reference */
   .btn {
-    @apply inline-flex items-center justify-center gap-1.5 rounded-md px-4 py-1.5
-           text-sm font-medium transition-all border cursor-pointer select-none
-           disabled:cursor-not-allowed disabled:opacity-50;
-    line-height: 20px;
-    white-space: nowrap;
+    @apply inline-flex shrink-0 select-none items-center justify-center gap-2
+           whitespace-nowrap rounded-lg border px-4 text-sm font-medium
+           disabled:cursor-not-allowed disabled:opacity-45;
+    min-height: 40px;
   }
-
-  /* Primary — GitHub green */
   .btn-primary {
-    @apply btn;
-    color: #ffffff;
-    background-color: #238636;
-    border-color: rgba(240,246,252,0.1);
-    box-shadow: 0 0 transparent, 0 0 transparent, 0 1px 0 rgba(20,70,32,0.1);
-  }
-  .btn-primary:hover:not(:disabled) {
-    background-color: #2ea043;
-    border-color: rgba(240,246,252,0.1);
-  }
-  .btn-primary:active:not(:disabled) { background-color: #238636; }
-
-  /* Secondary — GitHub gray button */
-  .btn-secondary {
-    @apply btn;
-    color: rgb(var(--text));
-    background-color: rgb(var(--surface2));
-    border-color: rgba(240,246,252,0.1);
-  }
-  .btn-secondary:hover:not(:disabled) {
-    background-color: rgb(var(--surface3));
-    border-color: rgba(240,246,252,0.1);
-  }
-
-  /* Ghost / text link */
-  .btn-ghost {
     @apply btn border-transparent;
-    color: rgb(var(--muted));
-    background-color: transparent;
+    background-color: rgb(var(--text));
+    color: rgb(var(--bg));
+  }
+  .btn-primary:hover:not(:disabled) { background-color: #ffffff; }
+
+  .btn-secondary {
+    @apply btn border-border2 bg-transparent text-text;
+  }
+  .btn-secondary:hover:not(:disabled) { background-color: rgb(var(--surface2)); }
+
+  .btn-ghost {
+    @apply btn border-transparent bg-transparent text-muted;
   }
   .btn-ghost:hover:not(:disabled) {
-    color: rgb(var(--text));
     background-color: rgb(var(--surface2));
-    border-color: transparent;
+    color: rgb(var(--text));
   }
 
-  /* Danger */
   .btn-danger {
-    @apply btn;
-    color: rgb(var(--red));
-    background-color: rgb(var(--surface2));
-    border-color: rgba(240,246,252,0.1);
+    @apply btn bg-transparent;
+    color: rgb(var(--danger));
+    border-color: rgb(var(--danger) / 0.4);
   }
-  .btn-danger:hover:not(:disabled) {
-    background-color: rgba(248,81,73,0.1);
-    border-color: rgba(248,81,73,0.4);
+  .btn-danger:hover:not(:disabled) { background-color: rgb(var(--danger) / 0.12); }
+
+  .btn-sm {
+    @apply gap-1.5 rounded-md px-2.5 text-xs;
+    min-height: 32px;
   }
 
-  /* ── Input ── */
+  /* Form controls */
   .input {
-    @apply w-full rounded-md px-3 py-1.5 text-sm transition-colors;
-    color: rgb(var(--text));
-    background-color: rgb(var(--bg));
-    border: 1px solid rgb(var(--border2));
-    outline: none;
-    line-height: 20px;
-    box-shadow: inset 0 1px 0 rgba(255,255,255,0.04);
+    @apply w-full rounded-lg border border-border bg-surface2 px-3 py-2
+           text-sm text-text placeholder:text-subtle;
+    min-height: 40px;
   }
-  .input::placeholder { color: rgb(var(--subtle)); }
   .input:focus {
-    border-color: #388bfd;
-    box-shadow: 0 0 0 3px rgba(56,139,253,0.3), inset 0 1px 0 rgba(255,255,255,0.04);
+    outline: none;
+    border-color: rgb(var(--accent));
+    box-shadow: 0 0 0 3px rgb(var(--accent) / 0.2);
+  }
+  select.input { @apply cursor-pointer pr-8; }
+  textarea.input { min-height: 0; }
+
+  /* 16px stops iOS Safari zooming the page on focus. */
+  @media (max-width: 640px) {
+    .input { font-size: 16px; }
   }
 
-  /* ── Badge ── */
-  .badge {
-    @apply inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium;
-    border: 1px solid rgb(var(--border));
+  .field-label { @apply mb-1.5 block text-xs font-medium text-muted; }
+  .field-hint  { @apply mt-1.5 text-xs text-subtle; }
+
+  /* Pills */
+  .chip {
+    @apply inline-flex items-center gap-1.5 whitespace-nowrap rounded-full
+           border border-border bg-surface2 px-2.5 py-1 text-xs text-muted;
+  }
+  .chip-btn { @apply chip cursor-pointer disabled:cursor-default; }
+  .chip-btn:hover:not(:disabled) {
+    background-color: rgb(var(--surface3));
+    color: rgb(var(--text));
+  }
+  .chip-on {
+    background-color: rgb(var(--accent-d));
+    border-color: rgb(var(--accent) / 0.55);
+    color: rgb(var(--accent));
+    font-weight: 600;
   }
 
-  /* ── Counter ── */
+  /* Segmented control — the nav/tab pattern from the reference */
+  .seg {
+    @apply inline-flex items-center gap-1 rounded-full border border-border
+           bg-surface p-1;
+  }
+  .seg > * {
+    @apply inline-flex items-center justify-center gap-1.5 whitespace-nowrap
+           rounded-full px-3 py-1.5 text-sm font-medium text-muted;
+  }
+  .seg > *:hover { color: rgb(var(--text)); }
+  .seg > [data-on="true"] {
+    background-color: rgb(var(--surface3));
+    color: rgb(var(--text));
+  }
+
+  /* Counters and notices */
   .counter {
-    @apply inline-flex items-center justify-center rounded-full px-2 min-w-[20px] h-5 text-xs font-medium;
-    background-color: rgba(139,148,158,0.1);
-    color: rgb(var(--muted));
-    border: 1px solid rgb(var(--border));
+    @apply inline-flex h-5 min-w-[20px] items-center justify-center rounded-full
+           border border-border bg-surface2 px-1.5 text-[11px] font-semibold text-muted;
+  }
+
+  .notice { @apply rounded-lg border p-3 text-sm; }
+  .notice-info   { border-color: rgb(var(--accent) / 0.35); background-color: rgb(var(--accent-d) / 0.6); }
+  .notice-ok     { border-color: rgb(var(--ok) / 0.35);     background-color: rgb(var(--ok-d) / 0.6); }
+  .notice-danger { border-color: rgb(var(--danger) / 0.4);  background-color: rgb(var(--danger-d) / 0.7); }
+
+  /* Typography helpers */
+  .overline {
+    @apply text-xs font-medium uppercase;
+    letter-spacing: 0.16em;
+    color: rgb(var(--accent));
+  }
+  .display {
+    @apply font-bold;
+    letter-spacing: -0.035em;
+    line-height: 1.05;
+  }
+  .prose-serif {
+    font-family: ui-serif, Georgia, "Times New Roman", serif;
+    line-height: 1.7;
+  }
+
+  /* Skip link for keyboard users */
+  .skip-link {
+    @apply sr-only;
+  }
+  .skip-link:focus {
+    @apply not-sr-only fixed left-4 top-4 z-[100] rounded-lg px-4 py-2 text-sm font-medium;
+    background-color: rgb(var(--text));
+    color: rgb(var(--bg));
   }
 }

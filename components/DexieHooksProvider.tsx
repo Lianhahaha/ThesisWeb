@@ -25,8 +25,10 @@ export function DexieHooksProvider({ children }: { children: React.ReactNode }) 
   // first would return null forever and the warning would never render.
   if (error) {
     return (
-      <div className="p-4 text-sm text-amber-600 bg-amber-50 dark:bg-amber-950/30 dark:text-amber-400 rounded-lg m-4">
-        <strong>Warning:</strong> Local storage unavailable. Library features may not work. {error}
+      <div role="alert" className="notice notice-info m-4">
+        <strong>Browser storage is unavailable.</strong>{" "}
+        Saving papers will not work. Turn off
+        private browsing or allow site data, then reload. ({error})
       </div>
     );
   }

@@ -1,56 +1,64 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useAuth } from "@/lib/auth-store";
-import { auth, db } from "@/lib/firebase";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 import {
   updatePassword,
   reauthenticateWithCredential,
   EmailAuthProvider,
-  sendPasswordResetEmail,
   verifyBeforeUpdateEmail,
+  signOut,
 } from "firebase/auth";
-import { signOut } from "firebase/auth";
-import Link from "next/link";
+import { Eye, EyeOff } from "lucide-react";
+import { auth, db } from "@/lib/firebase";
+import { useAuth } from "@/lib/auth-store";
 import { toast } from "@/components/Toaster";
-import { Eye, EyeOff, Loader2, User, Lock, Hash, LogOut, Mail, AtSign } from "lucide-react";
 import { hashMPIN } from "@/lib/utils";
 
-function Section({ title, icon: Icon, children }: { title: string; icon: React.ElementType; children: React.ReactNode }) {
+function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="rounded-lg border border-border bg-surface p-5">
-      <div className="flex items-center gap-2 mb-4">
-        <Icon className="h-4 w-4 text-muted" />
-        <h2 className="text-sm font-semibold text-text">{title}</h2>
-      </div>
-      {children}
-    </div>
+    <section className="panel" aria-label={title}>
+      <h2 className="text-lg">{title}</h2>
+      <div className="mt-4">{children}</div>
+    </section>
   );
 }
 
 function PasswordField({
-  label, value, onChange, placeholder
-}: { label: string; value: string; onChange: (v: string) => void; placeholder?: string }) {
+  id,
+  label,
+  value,
+  onChange,
+  autoComplete,
+}: {
+  id: string;
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+  autoComplete: string;
+}) {
   const [show, setShow] = useState(false);
   return (
     <div>
-      <label className="block text-xs font-medium text-muted mb-1">{label}</label>
+      <label htmlFor={id} className="field-label">{label}</label>
       <div className="relative">
         <input
+          id={id}
           type={show ? "text" : "password"}
-          className="input w-full pr-9"
+          autoComplete={autoComplete}
+          className="input pr-12"
           value={value}
-          placeholder={placeholder}
-          onChange={e => onChange(e.target.value)}
+          onChange={(e) => onChange(e.target.value)}
         />
         <button
           type="button"
-          className="absolute right-2 top-1/2 -translate-y-1/2 text-muted hover:text-text p-1"
-          onClick={() => setShow(s => !s)}
+          onClick={() => setShow((v) => !v)}
+          aria-label={show ? "Hide password" : "Show password"}
+          className="absolute right-0 top-0 flex h-full w-11 items-center justify-center text-muted hover:text-text"
         >
-          {show ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+          {show ? <EyeOff className="h-4 w-4" aria-hidden /> : <Eye className="h-4 w-4" aria-hidden />}
         </button>
       </div>
     </div>
@@ -61,10 +69,8 @@ export default function SettingsPage() {
   const router = useRouter();
   const { user, initialized } = useAuth();
 
-  // State
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
-  const [profileLoaded, setProfileLoaded] = useState(false);
 
   const [currentPass, setCurrentPass] = useState("");
   const [newPass, setNewPass] = useState("");
@@ -72,42 +78,34 @@ export default function SettingsPage() {
 
   const [mpin, setMpin] = useState("");
   const [savingMpin, setSavingMpin] = useState(false);
-
   const [savingUsername, setSavingUsername] = useState(false);
 
   const [newEmail, setNewEmail] = useState("");
   const [emailPass, setEmailPass] = useState("");
   const [savingEmail, setSavingEmail] = useState(false);
-  const [pendingEmail, setPendingEmail] = useState(""); // set after verification link sent
+  const [pendingEmail, setPendingEmail] = useState("");
   const [reloading, setReloading] = useState(false);
 
-  // Redirect if not logged in
   useEffect(() => {
     if (initialized && !user) router.replace("/login");
   }, [initialized, user, router]);
 
-  // Load profile — instant from cache, background from Firestore
+  // Show the cached name instantly, then refresh it from Firestore.
   useEffect(() => {
     if (!user) return;
     setEmail(user.email || "");
 
     const cached = localStorage.getItem(`tw_username_${user.uid}`);
-    if (cached) {
-      setUsername(cached);
-      setProfileLoaded(true);
-    }
+    if (cached) setUsername(cached);
 
-    // Always refresh from Firestore in background
     getDoc(doc(db, "users", user.uid, "profile", "main"))
-      .then(snap => {
-        if (snap.exists()) {
-          const name = snap.data().username || "";
-          setUsername(name);
-          localStorage.setItem(`tw_username_${user.uid}`, name);
-        }
-        setProfileLoaded(true);
+      .then((snap) => {
+        if (!snap.exists()) return;
+        const name = snap.data().username || "";
+        setUsername(name);
+        localStorage.setItem(`tw_username_${user.uid}`, name);
       })
-      .catch(() => setProfileLoaded(true));
+      .catch(() => {});
   }, [user]);
 
   async function saveUsername(e: React.FormEvent) {
@@ -118,18 +116,24 @@ export default function SettingsPage() {
       const controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(), 5000);
       await Promise.race([
-        setDoc(doc(db, "users", user.uid, "profile", "main"), { username: username.trim(), createdAt: Date.now() }, { merge: true }),
+        setDoc(
+          doc(db, "users", user.uid, "profile", "main"),
+          { username: username.trim(), createdAt: Date.now() },
+          { merge: true }
+        ),
         new Promise<never>((_, reject) => {
-          controller.signal.addEventListener("abort", () => reject(new Error("Request timed out. Is Firestore enabled in your Firebase console?")));
-        })
+          controller.signal.addEventListener("abort", () =>
+            reject(new Error("Request timed out. Is Firestore enabled in your Firebase console?"))
+          );
+        }),
       ]);
       clearTimeout(timeout);
       localStorage.setItem(`tw_username_${user.uid}`, username.trim());
-      // Notify header to re-read the username
+      // Tell the header to re-read the name.
       window.dispatchEvent(new CustomEvent("tw:usernameChanged", { detail: username.trim() }));
-      toast("Username updated", "success");
-    } catch (err: any) {
-      toast(err.message || "Failed to update username", "error");
+      toast("Display name updated", "success");
+    } catch (err) {
+      toast(err instanceof Error ? err.message : "Could not update the display name", "error");
     } finally {
       setSavingUsername(false);
     }
@@ -139,21 +143,20 @@ export default function SettingsPage() {
     e.preventDefault();
     if (!user || !mpin) return;
     if (!/^\d+$/.test(mpin) || mpin.length < 4) {
-      toast("MPIN must be at least 4 digits (numbers only)", "error");
+      toast("The PIN must be at least 4 digits, numbers only.", "error");
       return;
     }
     setSavingMpin(true);
     try {
-      const mpinHash = await hashMPIN(mpin);
       await setDoc(
         doc(db, "users", user.uid, "profile", "main"),
-        { mpinHash },
+        { mpinHash: await hashMPIN(mpin) },
         { merge: true }
       );
       setMpin("");
-      toast("MPIN saved successfully", "success");
+      toast("Recovery PIN saved", "success");
     } catch {
-      toast("Failed to save MPIN", "error");
+      toast("Could not save the PIN. Try again.", "error");
     } finally {
       setSavingMpin(false);
     }
@@ -161,63 +164,52 @@ export default function SettingsPage() {
 
   async function savePassword(e: React.FormEvent) {
     e.preventDefault();
-    if (!user || !user.email) return;
-    if (!currentPass) { toast("Enter your current password first", "error"); return; }
-    if (newPass.length < 6) { toast("New password must be at least 6 characters", "error"); return; }
+    if (!user?.email) return;
+    if (!currentPass) { toast("Enter your current password first.", "error"); return; }
+    if (newPass.length < 6) { toast("The new password must be at least 6 characters.", "error"); return; }
 
     setSavingPass(true);
     try {
-      const credential = EmailAuthProvider.credential(user.email, currentPass);
-      await reauthenticateWithCredential(user, credential);
+      await reauthenticateWithCredential(user, EmailAuthProvider.credential(user.email, currentPass));
       await updatePassword(user, newPass);
       setCurrentPass("");
       setNewPass("");
       toast("Password updated", "success");
-    } catch (err: any) {
-      toast(err.message || "Failed to update password", "error");
+    } catch (err) {
+      toast(err instanceof Error ? err.message : "Could not update the password", "error");
     } finally {
       setSavingPass(false);
     }
   }
 
-  async function sendReset() {
-    if (!user?.email) return;
-    try {
-      await sendPasswordResetEmail(auth, user.email);
-      toast(`Reset link sent to ${user.email}`, "success");
-    } catch {
-      toast("Failed to send reset email", "error");
-    }
-  }
-
   async function saveEmail(e: React.FormEvent) {
     e.preventDefault();
-    if (!user || !user.email || !newEmail || !emailPass) return;
+    if (!user?.email || !newEmail || !emailPass) return;
     setSavingEmail(true);
     try {
-      const credential = EmailAuthProvider.credential(user.email, emailPass);
-      await reauthenticateWithCredential(user, credential);
+      await reauthenticateWithCredential(user, EmailAuthProvider.credential(user.email, emailPass));
 
-      // Pass continueUrl so Firebase redirects back to /settings after verification
-      const continueUrl = typeof window !== "undefined"
-        ? `${window.location.origin}/settings`
-        : "http://localhost:3000/settings";
+      // continueUrl brings the user back here after they verify.
+      const continueUrl =
+        typeof window !== "undefined"
+          ? `${window.location.origin}/settings`
+          : "http://localhost:3000/settings";
 
       await verifyBeforeUpdateEmail(user, newEmail.toLowerCase(), {
         url: continueUrl,
         handleCodeInApp: false,
       });
 
-      // Stage the new Firestore email_map (don't delete old one until verification confirmed)
+      // Stage the new lookup entry; the old one is removed only once verified.
       const newKey = newEmail.toLowerCase().replace(/\./g, "_");
       await setDoc(doc(db, "email_map", newKey), { uid: user.uid, email: newEmail.toLowerCase() });
 
       setPendingEmail(newEmail.toLowerCase());
       setNewEmail("");
       setEmailPass("");
-      toast(`Verification link sent to ${newEmail}. Check that inbox and click the link, then come back and press "Refresh Session".`, "success");
-    } catch (err: any) {
-      toast(err.message || "Failed to send verification email", "error");
+      toast(`Verification link sent to ${newEmail}. Open it, then press Refresh here.`, "success");
+    } catch (err) {
+      toast(err instanceof Error ? err.message : "Could not send the verification email", "error");
     } finally {
       setSavingEmail(false);
     }
@@ -227,22 +219,21 @@ export default function SettingsPage() {
     if (!user) return;
     setReloading(true);
     try {
-      await user.reload(); // Pulls fresh data from Firebase servers
-      // user.email is now updated if the link was clicked
-      const freshUser = auth.currentUser;
-      if (freshUser?.email && freshUser.email !== email) {
-        // Email verified — now safe to delete old email_map
+      await user.reload();
+      const fresh = auth.currentUser;
+      if (fresh?.email && fresh.email !== email) {
+        // Verified: the old lookup entry can go now.
         const oldKey = email.toLowerCase().replace(/\./g, "_");
         const { deleteDoc } = await import("firebase/firestore");
         await deleteDoc(doc(db, "email_map", oldKey)).catch(() => {});
-        setEmail(freshUser.email);
+        setEmail(fresh.email);
         setPendingEmail("");
-        toast("Email updated successfully!", "success");
+        toast("Email updated", "success");
       } else {
-        toast("Email not changed yet — make sure you clicked the verification link.", "error");
+        toast("Email not changed yet. Make sure you opened the verification link.", "error");
       }
-    } catch (err: any) {
-      toast(err.message || "Reload failed", "error");
+    } catch (err) {
+      toast(err instanceof Error ? err.message : "Refresh failed", "error");
     } finally {
       setReloading(false);
     }
@@ -255,145 +246,145 @@ export default function SettingsPage() {
   }
 
   if (!initialized || !user) {
-    return (
-      <div className="flex items-center justify-center min-h-[200px]">
-        <Loader2 className="animate-spin h-6 w-6 text-muted" />
-      </div>
-    );
+    return <p role="status" className="py-20 text-center text-muted">Loading…</p>;
   }
 
   return (
-    <div className="max-w-[600px] mx-auto px-4 py-8 space-y-4">
+    <div className="mx-auto max-w-xl space-y-4">
+      <header className="mb-2">
+        <p className="overline">Account</p>
+        <h1 className="display mt-3 text-3xl">{username || email || "Account"}</h1>
+        <p className="mt-2 text-muted">{email}</p>
+      </header>
 
-      {/* Header — username, no logo */}
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-text">
-          {username || user.email || "Account"}
-        </h1>
-        <p className="text-sm text-muted mt-0.5">{email}</p>
-      </div>
-
-      {/* Username */}
-      <Section title="Display Name" icon={User}>
-        <form onSubmit={saveUsername} className="flex gap-2">
+      <Section title="Display name">
+        <form onSubmit={saveUsername} className="flex flex-col gap-2 sm:flex-row">
+          <label htmlFor="display-name" className="sr-only">Display name</label>
           <input
+            id="display-name"
             className="input flex-1"
             value={username}
             placeholder="Your display name"
-            onChange={e => setUsername(e.target.value)}
+            autoComplete="nickname"
+            onChange={(e) => setUsername(e.target.value)}
           />
-          <button type="submit" disabled={savingUsername} className="btn-primary shrink-0">
-            {savingUsername ? <Loader2 className="h-4 w-4 animate-spin" /> : "Save"}
+          <button type="submit" disabled={savingUsername} className="btn-primary">
+            {savingUsername ? "Saving…" : "Save"}
           </button>
         </form>
       </Section>
 
-      {/* MPIN */}
-      <Section title="Recovery MPIN" icon={Hash}>
-        <form onSubmit={saveMpin} className="space-y-3">
-          <div>
-            <label className="block text-xs font-medium text-muted mb-1">New MPIN (digits only, min 4)</label>
-            <div className="flex gap-2">
-              <input
-                type="text"
-                inputMode="numeric"
-                pattern="[0-9]*"
-                className="input flex-1"
-                placeholder="e.g. 12345678"
-                value={mpin}
-                onChange={e => setMpin(e.target.value)}
-              />
-              <button type="submit" disabled={savingMpin} className="btn-primary shrink-0">
-                {savingMpin ? <Loader2 className="h-4 w-4 animate-spin" /> : "Save"}
-              </button>
-            </div>
+      <Section title="Recovery PIN">
+        <form onSubmit={saveMpin}>
+          <label htmlFor="mpin" className="field-label">New PIN</label>
+          <div className="flex flex-col gap-2 sm:flex-row">
+            <input
+              id="mpin"
+              type="text"
+              inputMode="numeric"
+              pattern="[0-9]*"
+              autoComplete="off"
+              className="input flex-1"
+              placeholder="At least 4 digits"
+              value={mpin}
+              onChange={(e) => setMpin(e.target.value)}
+            />
+            <button type="submit" disabled={savingMpin} className="btn-primary">
+              {savingMpin ? "Saving…" : "Save PIN"}
+            </button>
           </div>
-          <p className="text-[11px] text-muted">
-            Your MPIN is stored securely and can be used as a backup way to verify your identity. Any length — the longer the better.
+          <p className="field-hint">
+            Digits only. You need this to recover the account if you forget your password. New
+            accounts start at <strong>0000</strong>, so change it.
           </p>
         </form>
       </Section>
 
-      {/* Change Password */}
-      <Section title="Change Password" icon={Lock}>
-        <form onSubmit={savePassword} className="space-y-3">
+      <Section title="Change password">
+        <form onSubmit={savePassword} className="space-y-4">
           <PasswordField
+            id="cur-pass"
             label="Current password"
             value={currentPass}
             onChange={setCurrentPass}
-            placeholder="Your current password"
+            autoComplete="current-password"
           />
           <PasswordField
-            label="New password (min 6 chars)"
+            id="new-pass"
+            label="New password (at least 6 characters)"
             value={newPass}
             onChange={setNewPass}
-            placeholder="New password"
+            autoComplete="new-password"
           />
-          <button type="submit" disabled={savingPass} className="btn-primary w-full justify-center">
-            {savingPass ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-            Update Password
+          <button type="submit" disabled={savingPass} className="btn-primary w-full sm:w-auto">
+            {savingPass ? "Updating…" : "Update password"}
           </button>
         </form>
       </Section>
 
-      {/* Change Email */}
-      <Section title="Change Email" icon={AtSign}>
-        <form onSubmit={saveEmail} className="space-y-3">
+      <Section title="Change email">
+        <form onSubmit={saveEmail} className="space-y-4">
           <div>
-            <label className="block text-xs font-medium text-muted mb-1">New email address</label>
-            <input type="email" className="input w-full" placeholder="new@email.com" value={newEmail} onChange={e => setNewEmail(e.target.value)} />
+            <label htmlFor="new-email" className="field-label">New email address</label>
+            <input
+              id="new-email"
+              type="email"
+              autoComplete="email"
+              className="input"
+              placeholder="new@email.com"
+              value={newEmail}
+              onChange={(e) => setNewEmail(e.target.value)}
+            />
           </div>
-          <PasswordField label="Current password (to verify it's you)" value={emailPass} onChange={setEmailPass} placeholder="Your current password" />
-          <p className="text-[11px] text-muted">
-            A verification link will be sent to your new email. Your email won't change until you click that link.
+          <PasswordField
+            id="email-pass"
+            label="Current password, to confirm it is you"
+            value={emailPass}
+            onChange={setEmailPass}
+            autoComplete="current-password"
+          />
+          <p className="field-hint">
+            We send a link to the new address. Your email does not change until you open it.
           </p>
-          <button type="submit" disabled={savingEmail} className="btn-primary w-full justify-center">
-            {savingEmail ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-            Send Verification Link
+          <button type="submit" disabled={savingEmail} className="btn-primary w-full sm:w-auto">
+            {savingEmail ? "Sending…" : "Send verification link"}
           </button>
         </form>
 
-        {/* Show this after the link is sent */}
         {pendingEmail && (
-          <div className="mt-4 rounded-md border border-amber-500/30 bg-amber-500/10 p-3 space-y-2">
-            <p className="text-xs text-amber-400 font-medium">⏳ Waiting for verification</p>
-            <p className="text-[11px] text-muted">
-              Check your inbox at <strong className="text-text">{pendingEmail}</strong> and click the verification link. Then press the button below.
+          <div className="notice notice-info mt-4">
+            <p>
+              <strong>Waiting for verification.</strong> Open the link sent to{" "}
+              <strong>{pendingEmail}</strong>, then press the button below.
             </p>
             <button
               onClick={reloadSession}
               disabled={reloading}
-              className="flex items-center gap-2 text-sm font-medium text-brand-500 hover:text-brand-400 transition-colors disabled:opacity-50"
+              className="btn-secondary btn-sm mt-3"
             >
-              {reloading ? <Loader2 className="h-4 w-4 animate-spin" /> : <span>↻</span>}
-              I clicked the link — Refresh Session
+              {reloading ? "Checking…" : "I opened the link. Refresh."}
             </button>
           </div>
         )}
       </Section>
 
-      {/* Forgot / Recovery link */}
-      <Section title="Forgot Your Password?" icon={Mail}>
-        <p className="text-sm text-muted mb-3">
-          Use your <strong className="text-text">MPIN</strong> to recover access without needing your old password.
-          Default MPIN for new accounts is <strong className="text-text">0000</strong> — update it above!
+      <Section title="Forgot your password?">
+        <p className="text-muted">
+          Use your recovery PIN to get a reset email without knowing the old password.
         </p>
-        <Link href="/forgot-password" className="btn-secondary w-full justify-center text-center block">
-          Go to Recovery Page
+        <Link href="/forgot-password" className="btn-secondary mt-4 w-full sm:w-auto">
+          Open account recovery
         </Link>
       </Section>
 
-      {/* Danger zone */}
-      <Section title="Session" icon={LogOut}>
-        <button
-          onClick={handleSignOut}
-          className="flex items-center gap-2 text-sm text-red-500 hover:text-red-400 transition-colors"
-        >
-          <LogOut className="h-4 w-4" />
+      <Section title="Sign out">
+        <p className="text-muted">
+          Your saved papers stay in your account. On a shared computer, sign out when you finish.
+        </p>
+        <button onClick={handleSignOut} className="btn-danger mt-4 w-full sm:w-auto">
           Sign out of ThesisWeb
         </button>
       </Section>
-
     </div>
   );
 }

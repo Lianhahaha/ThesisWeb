@@ -1,27 +1,27 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { auth, db } from "@/lib/firebase";
 import { doc, getDoc } from "firebase/firestore";
 import { sendPasswordResetEmail } from "firebase/auth";
+import { ArrowLeft } from "lucide-react";
+import { auth, db } from "@/lib/firebase";
 import { toast } from "@/components/Toaster";
-import { Loader2, ArrowLeft } from "lucide-react";
-import Link from "next/link";
 import { hashMPIN } from "@/lib/utils";
 
 type Step = "email" | "mpin" | "done";
+
+const STEP_NUMBER: Record<Step, number> = { email: 1, mpin: 2, done: 3 };
 
 export default function ForgotPasswordPage() {
   const router = useRouter();
 
   const [step, setStep] = useState<Step>("email");
   const [loading, setLoading] = useState(false);
-
   const [email, setEmail] = useState("");
   const [mpin, setMpin] = useState("");
-
-  // Stored after successful MPIN verify
+  // Set once the email is matched to an account.
   const [uid, setUid] = useState("");
 
   async function handleEmailSubmit(e: React.FormEvent) {
@@ -29,16 +29,14 @@ export default function ForgotPasswordPage() {
     if (!email) return;
     setLoading(true);
     try {
-      // Look up UID from the email_map collection we created on signup
+      // email_map is written at signup and maps an address to its uid.
       const normalizedEmail = email.toLowerCase().replace(/\./g, "_");
       const mapSnap = await getDoc(doc(db, "email_map", normalizedEmail));
-      if (!mapSnap.exists()) {
-        throw new Error("No account found with that email address.");
-      }
+      if (!mapSnap.exists()) throw new Error("No account found with that email address.");
       setUid(mapSnap.data().uid);
       setStep("mpin");
-    } catch (err: any) {
-      toast(err.message || "Email lookup failed", "error");
+    } catch (err) {
+      toast(err instanceof Error ? err.message : "Email lookup failed", "error");
     } finally {
       setLoading(false);
     }
@@ -52,107 +50,89 @@ export default function ForgotPasswordPage() {
       const profileSnap = await getDoc(doc(db, "users", uid, "profile", "main"));
       if (!profileSnap.exists()) throw new Error("Profile not found.");
 
-      const data = profileSnap.data();
-      const savedHash = data.mpinHash || "";
-      const enteredHash = await hashMPIN(mpin);
-
-      if (enteredHash !== savedHash) {
-        throw new Error("Incorrect MPIN. If you never set one, try the default: 0000");
+      const savedHash = profileSnap.data().mpinHash || "";
+      if ((await hashMPIN(mpin)) !== savedHash) {
+        throw new Error("Incorrect PIN. If you never set one, try the default: 0000");
       }
 
-      // MPIN verified — send a Firebase password reset email to the user's address
       await sendPasswordResetEmail(auth, email.toLowerCase());
       setStep("done");
-    } catch (err: any) {
-      toast(err.message, "error");
+    } catch (err) {
+      toast(err instanceof Error ? err.message : "Verification failed", "error");
     } finally {
       setLoading(false);
     }
   }
 
   return (
-    <div className="max-w-[400px] mx-auto mt-12 p-6 rounded-lg border bg-surface border-border">
-      <Link href="/login" className="flex items-center gap-1 text-xs text-muted hover:text-text mb-6">
-        <ArrowLeft className="h-3 w-3" /> Back to login
+    <div className="mx-auto mt-4 max-w-md sm:mt-12">
+      <Link href="/login" className="btn-ghost btn-sm -ml-2.5 mb-4">
+        <ArrowLeft className="h-4 w-4" aria-hidden />
+        Back to sign in
       </Link>
 
-      <h1 className="text-xl font-semibold text-text text-center mb-2">Recover Account</h1>
-
-      {/* Step indicators */}
-      <div className="flex items-center gap-2 justify-center mb-6">
-        {(["email", "mpin", "done"] as Step[]).map((s, i) => (
-          <div key={s} className="flex items-center gap-2">
-            <div
-              className="h-2 w-2 rounded-full transition-colors"
-              style={{ backgroundColor: step === s ? "rgb(var(--accent))" : "rgb(var(--border2))" }}
-            />
-            {i < 2 && <div className="h-px w-6" style={{ backgroundColor: "rgb(var(--border2))" }} />}
-          </div>
-        ))}
-      </div>
+      <p className="overline">Step {STEP_NUMBER[step]} of 3</p>
+      <h1 className="display mt-3 text-3xl">Recover your account</h1>
 
       {step === "email" && (
-        <form onSubmit={handleEmailSubmit} className="flex flex-col gap-4">
-          <p className="text-sm text-muted text-center mb-2">Enter the email address you used to sign up.</p>
+        <form onSubmit={handleEmailSubmit} className="panel mt-6 space-y-4">
           <div>
-            <label className="block text-xs font-medium text-text mb-1">Email address</label>
+            <label htmlFor="email" className="field-label">Email address</label>
             <input
+              id="email"
               type="email"
               required
               autoFocus
-              className="input w-full"
+              autoComplete="email"
+              className="input"
               placeholder="you@example.com"
               value={email}
-              onChange={e => setEmail(e.target.value)}
+              onChange={(e) => setEmail(e.target.value)}
             />
+            <p className="field-hint">The address you signed up with.</p>
           </div>
-          <button type="submit" disabled={loading} className="btn-primary w-full justify-center">
-            {loading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-            Next
+          <button type="submit" disabled={loading} className="btn-primary w-full">
+            {loading ? "Checking…" : "Continue"}
           </button>
         </form>
       )}
 
       {step === "mpin" && (
-        <form onSubmit={handleMpinSubmit} className="flex flex-col gap-4">
-          <p className="text-sm text-muted text-center mb-2">
-            Enter your recovery MPIN. If you never set one, try <strong className="text-text">0000</strong>.
-          </p>
+        <form onSubmit={handleMpinSubmit} className="panel mt-6 space-y-4">
           <div>
-            <label className="block text-xs font-medium text-text mb-1">Recovery MPIN</label>
+            <label htmlFor="mpin" className="field-label">Recovery PIN</label>
             <input
+              id="mpin"
               type="text"
               inputMode="numeric"
               pattern="[0-9]*"
               required
               autoFocus
-              className="input w-full"
+              autoComplete="off"
+              className="input"
               placeholder="e.g. 0000"
               value={mpin}
-              onChange={e => setMpin(e.target.value)}
+              onChange={(e) => setMpin(e.target.value)}
             />
+            <p className="field-hint">If you never set one, try <strong>0000</strong>.</p>
           </div>
-          <p className="text-[11px] text-muted text-center">
-            ⚠️ If the MPIN is wrong and you have no way to recover it, the account cannot be accessed.
+          <p className="notice notice-info">
+            Without the PIN this account cannot be recovered.
           </p>
-          <button type="submit" disabled={loading} className="btn-primary w-full justify-center">
-            {loading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-            Verify MPIN
+          <button type="submit" disabled={loading} className="btn-primary w-full">
+            {loading ? "Checking…" : "Verify PIN"}
           </button>
         </form>
       )}
 
       {step === "done" && (
-        <div className="text-center space-y-4">
-          <p className="text-sm text-muted">
-            A password reset link has been sent to <strong className="text-text">{email}</strong>.
-            Check your inbox and follow the link to set a new password.
+        <div className="panel mt-6 space-y-4">
+          <p className="notice notice-ok">
+            A password reset link was sent to <strong>{email}</strong>. Open it to set a new
+            password. Check your spam folder if it does not arrive shortly.
           </p>
-          <button
-            onClick={() => router.push("/login")}
-            className="btn-primary w-full justify-center"
-          >
-            Back to login
+          <button onClick={() => router.push("/login")} className="btn-primary w-full">
+            Back to sign in
           </button>
         </div>
       )}

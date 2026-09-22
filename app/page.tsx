@@ -1,234 +1,134 @@
 "use client";
 
 import Link from "next/link";
-import {
-  Search, Sparkles, Library, ArrowRight, BookOpen,
-  ShieldCheck, FileText, Database, Globe
-} from "lucide-react";
+import { ArrowRight, Search, Library, Sparkles } from "lucide-react";
 import { useLiveQuery } from "dexie-react-hooks";
 import { getDb } from "@/lib/db";
-import { KEYLESS_SOURCE_COUNT } from "@/lib/sources/meta";
+import { KEYLESS_SOURCE_COUNT, SOURCE_META } from "@/lib/sources/meta";
 
-export default function DashboardPage() {
-  const libraryCount = useLiveQuery(async () => {
+const SOURCE_NAMES = Object.values(SOURCE_META)
+  .filter((s) => !s.needsKey)
+  .map((s) => s.label);
+
+const FEATURES = [
+  {
+    icon: Search,
+    title: "Multi-source search",
+    body: `One topic, ${KEYLESS_SOURCE_COUNT} databases. Results are merged, de-duplicated and ranked by how well the title and abstract match your words.`,
+    href: "/search",
+    cta: "Search papers",
+  },
+  {
+    icon: Library,
+    title: "Reference manager",
+    body: "Save papers into chapter collections, take notes, compare them in a synthesis matrix, and export APA, MLA, IEEE, Chicago, BibTeX or RIS.",
+    href: "/library",
+    cta: "Open library",
+  },
+  {
+    icon: Sparkles,
+    title: "AI self-check",
+    body: "Paste a paragraph to see which patterns make writing read as AI-generated — uniform sentences, stock openers, transition overuse — and how to fix each one.",
+    href: "/ai-check",
+    cta: "Check writing",
+  },
+];
+
+const FAQ = [
+  {
+    q: "Can't find recent papers on your topic?",
+    a: `Type it once. ThesisWeb queries ${KEYLESS_SOURCE_COUNT} free databases at the same time, removes duplicates and ranks what is left. Defaults to the last 5 years, which is what most rubrics ask for.`,
+  },
+  {
+    q: "Hitting paywalls?",
+    a: "Every result is labelled when a legal open-access copy exists. For papers with a DOI but no free link, \"Find free PDF\" asks Unpaywall for one.",
+  },
+  {
+    q: "Worried a strict professor will flag your writing?",
+    a: "The AI self-check reports six writing-style signals and names the exact words and sentences to revise. It is a writing coach, not a detection-evasion tool.",
+  },
+];
+
+export default function HomePage() {
+  const savedCount = useLiveQuery(async () => {
     if (typeof window === "undefined") return 0;
     return getDb().papers.count();
   }, []);
 
   return (
-    <div className="max-w-[860px] mx-auto">
+    <div>
+      {/* Hero */}
+      <section className="py-8 sm:py-16">
+        <p className="overline">Thesis research toolkit</p>
 
-      {/* Hero card */}
-      <div
-        className="rounded-lg p-5 sm:p-8 mb-5 border"
-        style={{
-          borderColor: "rgb(var(--border))",
-          backgroundColor: "rgb(var(--surface2))",
-        }}
-      >
-        <div className="flex flex-col sm:flex-row items-start gap-4">
-          {/* Icon + title */}
-          <div
-            className="flex h-12 w-12 sm:h-14 sm:w-14 shrink-0 items-center justify-center rounded-lg"
-            style={{
-              backgroundColor: "rgba(56,139,253,0.1)",
-              border: "1px solid rgba(56,139,253,0.3)",
-            }}
-          >
-            <BookOpen className="h-6 w-6 sm:h-7 sm:w-7" style={{ color: "#388bfd" }} />
-          </div>
+        <h1 className="display mt-4 text-[2.5rem] sm:text-6xl lg:text-7xl">
+          Find your literature
+          <br />
+          <span className="text-subtle">in one search.</span>
+        </h1>
 
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 flex-wrap">
-              <h1 className="text-lg sm:text-xl font-semibold" style={{ color: "rgb(var(--text))" }}>
-                ThesisWeb
-              </h1>
-              <span
-                className="rounded-full px-2 py-0.5 text-xs font-medium"
-                style={{
-                  color: "rgb(var(--muted))",
-                  border: "1px solid rgb(var(--border))",
-                  backgroundColor: "rgba(139,148,158,0.1)",
-                }}
-              >
-                Free · Global
-              </span>
-            </div>
-            <p className="mt-1 text-xs sm:text-sm" style={{ color: "rgb(var(--muted))" }}>
-              Search global academic papers across {KEYLESS_SOURCE_COUNT} free databases, manage references, and pre-check your thesis for AI-likeness.
-            </p>
+        <p className="mt-6 max-w-xl text-base text-muted sm:text-lg">
+          Search {KEYLESS_SOURCE_COUNT} free academic databases at once, keep what matters, and
+          check your own writing before you submit.
+        </p>
 
-            {/* CTA buttons */}
-            <div className="mt-4 flex flex-wrap gap-2">
-              <Link href="/search" className="btn-primary">
-                <Search className="h-4 w-4" />
-                Find RRLs
-              </Link>
-              <Link href="/ai-check" className="btn-secondary">
-                <Sparkles className="h-4 w-4" />
-                AI Self-Check
-              </Link>
-              <Link href="/library" className="btn-secondary">
-                <Library className="h-4 w-4" />
-                Library
-                {libraryCount ? <span className="counter ml-1">{libraryCount}</span> : null}
-              </Link>
-            </div>
-          </div>
+        <div className="mt-8 flex flex-wrap gap-3">
+          <Link href="/search" className="btn-primary">
+            Start searching
+          </Link>
+          <Link href="/library" className="btn-secondary">
+            Open library
+            {savedCount ? <span className="counter">{savedCount}</span> : null}
+            <ArrowRight className="h-4 w-4" aria-hidden />
+          </Link>
         </div>
 
-        {/* DB coverage — mobile-friendly chips */}
-        <div
-          className="mt-5 pt-4 flex flex-wrap items-center gap-2"
-          style={{ borderTop: "1px solid rgb(var(--border))" }}
-        >
-          <Globe className="h-3.5 w-3.5 shrink-0" style={{ color: "rgb(var(--subtle))" }} />
-          <span className="text-xs" style={{ color: "rgb(var(--subtle))" }}>Sources:</span>
-          {["OpenAlex", "Crossref", "Semantic Scholar", "DOAJ", "Europe PMC", "PubMed", "arXiv", "CORE", "BASE", "Google Scholar"].map((db) => (
-            <span
-              key={db}
-              className="rounded-full px-2.5 py-0.5 text-[11px] font-medium"
-              style={{
-                backgroundColor: "rgba(139,148,158,0.1)",
-                color: "rgb(var(--muted))",
-                border: "1px solid rgb(var(--border))",
-              }}
-            >
-              {db}
-            </span>
-          ))}
-        </div>
-      </div>
-
-      {/* Feature cards — 1 col mobile, 3 col sm+ */}
-      <div className="grid gap-3 sm:grid-cols-3 mb-5">
-        <FeatureCard
-          icon={Search}
-          title="Multi-source search"
-          desc="OpenAlex, Crossref, Semantic Scholar, DOAJ, Europe PMC, PubMed, arXiv, CORE, BASE & Google Scholar — merged into one ranked list with 5-year recency."
-          href="/search"
-          count={null}
-          label="Find RRLs"
-        />
-        <FeatureCard
-          icon={Library}
-          title="Reference manager"
-          desc="Save papers, take notes, and export to APA, MLA, IEEE, BibTeX or RIS."
-          href="/library"
-          count={libraryCount ?? 0}
-          label="Open library"
-        />
-        <FeatureCard
-          icon={Sparkles}
-          title="AI self-check"
-          desc="Flag text that reads too uniform and get concrete rewrite suggestions to avoid false positives."
-          href="/ai-check"
-          count={null}
-          label="Check writing"
-        />
-      </div>
-
-      {/* README-style panel */}
-      <div
-        className="rounded-lg border p-4 sm:p-5"
-        style={{ borderColor: "rgb(var(--border))", backgroundColor: "rgb(var(--surface))" }}
-      >
-        <div
-          className="flex items-center gap-2 mb-4 pb-3 text-sm font-semibold"
-          style={{ borderBottom: "1px solid rgb(var(--border))", color: "rgb(var(--text))" }}
-        >
-          <BookOpen className="h-4 w-4" style={{ color: "rgb(var(--muted))" }} />
-          README.md
-        </div>
-
-        <div className="flex items-center gap-2 mb-3">
-          <ShieldCheck className="h-4 w-4 shrink-0" style={{ color: "#3fb950" }} />
-          <h2 className="text-sm font-semibold" style={{ color: "rgb(var(--text))" }}>
-            Built for thesis struggles
-          </h2>
-        </div>
-
-        <ul className="space-y-3">
-          {[
-            {
-              icon: FileText,
-              title: "Hard to find RRLs?",
-              body: "Type your topic — we pull recent papers from " + KEYLESS_SOURCE_COUNT + " free global databases, dedupe, and rank by relevance. Defaults to last 5 years.",
-            },
-            {
-              icon: Database,
-              title: "Paywalled papers?",
-              body: "The \"Free PDF\" button checks Unpaywall, DOAJ and Europe PMC for a legal open-access copy before you give up.",
-            },
-            {
-              icon: Sparkles,
-              title: "Strict prof on AI detection?",
-              body: "Paste a paragraph into the self-checker. It flags low burstiness, transition-word overuse, and stock openers — then tells you exactly what to fix.",
-            },
-          ].map(({ icon: Icon, title, body }) => (
-            <li key={title} className="flex gap-3 text-xs sm:text-sm">
-              <Icon className="h-4 w-4 mt-0.5 shrink-0" style={{ color: "#58a6ff" }} />
-              <span style={{ color: "rgb(var(--muted))" }}>
-                <strong style={{ color: "rgb(var(--text))" }}>{title} </strong>
-                {body}
-              </span>
-            </li>
+        <ul className="mt-10 flex flex-wrap gap-2">
+          {SOURCE_NAMES.map((name) => (
+            <li key={name} className="chip">{name}</li>
           ))}
         </ul>
+      </section>
 
-        <p className="mt-5 text-xs" style={{ color: "rgb(var(--subtle))" }}>
-          ThesisWeb uses only <strong>free, legal academic APIs</strong> and only links to{" "}
-          <strong>open-access</strong> full text. The AI self-check is a{" "}
-          <strong>writing coach, not a detection-evasion tool</strong>.
+      {/* What it does */}
+      <section className="border-t border-border py-10 sm:py-14" aria-labelledby="features">
+        <h2 id="features" className="sr-only">Features</h2>
+        <div className="grid gap-4 sm:grid-cols-3">
+          {FEATURES.map(({ icon: Icon, title, body, href, cta }) => (
+            <Link key={href} href={href} className="panel flex flex-col hover:border-border2">
+              <Icon className="h-5 w-5 text-accent" aria-hidden />
+              <h3 className="mt-4 text-lg">{title}</h3>
+              <p className="mt-2 flex-1 text-sm text-muted">{body}</p>
+              <span className="mt-5 inline-flex items-center gap-1.5 text-sm font-medium">
+                {cta}
+                <ArrowRight className="h-4 w-4" aria-hidden />
+              </span>
+            </Link>
+          ))}
+        </div>
+      </section>
+
+      {/* Why */}
+      <section className="border-t border-border py-10 sm:py-14" aria-labelledby="why">
+        <p className="overline">Built for thesis work</p>
+        <h2 id="why" className="display mt-3 text-2xl sm:text-3xl">
+          Three problems, solved
+        </h2>
+
+        <dl className="mt-8 grid gap-8 sm:grid-cols-3">
+          {FAQ.map(({ q, a }) => (
+            <div key={q}>
+              <dt className="font-semibold">{q}</dt>
+              <dd className="mt-2 text-sm text-muted">{a}</dd>
+            </div>
+          ))}
+        </dl>
+
+        <p className="mt-10 max-w-3xl text-sm text-subtle">
+          ThesisWeb uses only free, public academic APIs and links exclusively to open-access full
+          text from publishers, repositories and preprint servers. It never links to pirated copies.
         </p>
-      </div>
+      </section>
     </div>
-  );
-}
-
-function FeatureCard({
-  icon: Icon, title, desc, href, count, label,
-}: {
-  icon: React.ElementType;
-  title: string;
-  desc: string;
-  href: string;
-  count: number | null;
-  label: string;
-}) {
-  return (
-    <Link
-      href={href}
-      className="group flex flex-col rounded-lg border p-4 transition-colors"
-      style={{ borderColor: "rgb(var(--border))", backgroundColor: "rgb(var(--surface))" }}
-      onMouseEnter={(e) => {
-        (e.currentTarget as HTMLElement).style.borderColor = "#58a6ff";
-        (e.currentTarget as HTMLElement).style.backgroundColor = "rgb(var(--surface2))";
-      }}
-      onMouseLeave={(e) => {
-        (e.currentTarget as HTMLElement).style.borderColor = "rgb(var(--border))";
-        (e.currentTarget as HTMLElement).style.backgroundColor = "rgb(var(--surface))";
-      }}
-    >
-      <div className="flex items-center gap-2 mb-2">
-        <Icon className="h-4 w-4 shrink-0" style={{ color: "#58a6ff" }} />
-        <span className="text-sm font-semibold" style={{ color: "rgb(var(--text))" }}>
-          {title}
-        </span>
-        {count != null && count > 0 && (
-          <span className="counter ml-auto">{count}</span>
-        )}
-      </div>
-      <p className="text-xs leading-relaxed flex-1" style={{ color: "rgb(var(--muted))" }}>
-        {desc}
-      </p>
-      <div
-        className="mt-3 flex items-center gap-1 text-xs font-medium"
-        style={{ color: "#58a6ff" }}
-      >
-        {label}
-        <ArrowRight className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity" />
-      </div>
-    </Link>
   );
 }

@@ -11,19 +11,15 @@ export const metadata: Metadata = {
     "Find recent related literature, organize it, and pre-check your writing for AI-likeness before submitting.",
 };
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className="dark" suppressHydrationWarning>
-      <body className="font-sans antialiased min-h-screen" style={{ backgroundColor: "rgb(var(--bg))", color: "rgb(var(--text))" }}>
+    <html lang="en" suppressHydrationWarning>
+      <body className="min-h-screen antialiased">
         <Providers>
-          {/* GitHub-style top header bar */}
+          <a href="#main" className="skip-link">Skip to content</a>
           <Header />
-          {/* Page content */}
-          <main className="mx-auto w-full max-w-[1280px] px-3 sm:px-6 lg:px-8 py-4 sm:py-6 pb-24 sm:pb-6">
+          {/* pb-24 clears the mobile tab bar; sm+ has no bar. */}
+          <main id="main" className="mx-auto w-full max-w-6xl px-4 pb-24 pt-6 sm:px-6 sm:pb-12 sm:pt-8">
             {children}
           </main>
           <Toaster />

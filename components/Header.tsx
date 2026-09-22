@@ -2,228 +2,174 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Search, Library, Sparkles, BookOpen, Settings, LogOut } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Search, Library, Sparkles, Home, BookOpen, LogOut } from "lucide-react";
 import { useLiveQuery } from "dexie-react-hooks";
 import { getDb } from "@/lib/db";
-import { useEffect, useState } from "react";
 import { useAuth } from "@/lib/auth-store";
 import { auth, db } from "@/lib/firebase";
 import { signOut } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
 
 const NAV = [
-  { href: "/search",   label: "Find RRLs",    icon: Search   },
-  { href: "/library",  label: "Library",       icon: Library  },
-  { href: "/ai-check", label: "AI Self-Check", icon: Sparkles },
+  { href: "/search", label: "Search", icon: Search },
+  { href: "/library", label: "Library", icon: Library },
+  { href: "/ai-check", label: "AI check", icon: Sparkles },
 ];
 
-export function Header() {
-  const pathname = usePathname();
+/** Count of saved papers, from whichever store this user is on. */
+function useSavedCount() {
   const { user } = useAuth();
 
-  // IndexedDB count (for logged-out users)
-  const localCount = useLiveQuery(async () => {
+  const local = useLiveQuery(async () => {
     if (typeof window === "undefined") return 0;
     return getDb().papers.count();
   }, []);
 
-  // Firestore count (for logged-in users)
-  const [cloudCount, setCloudCount] = useState<number | null>(null);
+  const [cloud, setCloud] = useState<number | null>(null);
   useEffect(() => {
-    if (!user) { setCloudCount(null); return; }
-    import("@/lib/db").then(({ allPapers }) => {
-      allPapers().then((p) => setCloudCount(p.length));
-    });
+    if (!user) { setCloud(null); return; }
+    import("@/lib/db")
+      .then(({ allPapers }) => allPapers())
+      .then((p) => setCloud(p.length))
+      .catch(() => setCloud(0));
   }, [user]);
 
-  const count = user ? (cloudCount ?? 0) : (localCount ?? 0);
+  return user ? cloud ?? 0 : local ?? 0;
+}
+
+export function Header() {
+  const pathname = usePathname();
+  const count = useSavedCount();
+
+  const isOn = (href: string) =>
+    href === "/" ? pathname === "/" : pathname.startsWith(href);
 
   return (
     <>
-      {/* Top bar */}
-      <header
-        className="sticky top-0 z-50 w-full"
-        style={{
-          backgroundColor: "rgb(var(--surface))",
-          borderBottom: "1px solid rgb(var(--border))",
-        }}
-      >
-        <div className="flex h-[54px] items-center gap-3 px-4 max-w-[1280px] mx-auto">
-
-          {/* Logo */}
-          <Link
-            href="/"
-            className="flex shrink-0 items-center gap-2"
-            style={{ color: "rgb(var(--text))" }}
-          >
-            <span
-              className="flex h-8 w-8 items-center justify-center rounded-md shrink-0"
-              style={{ backgroundColor: "#238636" }}
-            >
-              <BookOpen className="h-4 w-4 text-white" />
+      <header className="sticky top-0 z-40 border-b border-border bg-surface">
+        <div className="mx-auto flex h-16 w-full max-w-6xl items-center gap-4 px-4 sm:px-6">
+          <Link href="/" className="flex shrink-0 items-center gap-2.5">
+            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-text">
+              <BookOpen className="h-[18px] w-[18px] text-bg" aria-hidden />
             </span>
-            <span className="hidden xs:block text-sm font-semibold">ThesisWeb</span>
+            <span className="text-[17px] font-bold tracking-tight">ThesisWeb</span>
+            <span className="hidden rounded-full border border-border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-muted xs:inline">
+              Free
+            </span>
           </Link>
 
-          {/* Divider */}
-          <span
-            className="hidden sm:block h-5 w-px shrink-0"
-            style={{ backgroundColor: "rgb(var(--border2))" }}
-          />
-
-          {/* Desktop nav */}
-          <nav className="hidden sm:flex items-center gap-0.5">
-            {NAV.map((item) => {
-              const active = pathname.startsWith(item.href);
-              const Icon = item.icon;
-              return (
+          <nav className="ml-2 hidden sm:block" aria-label="Main">
+            <div className="seg">
+              {NAV.map(({ href, label, icon: Icon }) => (
                 <Link
-                  key={item.href}
-                  href={item.href}
-                  className="relative flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition-colors"
-                  style={{
-                    color: active ? "rgb(var(--text))" : "rgb(var(--muted))",
-                  }}
-                  onMouseEnter={(e) => {
-                    if (!active)
-                      (e.currentTarget as HTMLElement).style.backgroundColor = "rgb(var(--surface3))";
-                  }}
-                  onMouseLeave={(e) => {
-                    (e.currentTarget as HTMLElement).style.backgroundColor = "";
-                  }}
+                  key={href}
+                  href={href}
+                  data-on={isOn(href)}
+                  aria-current={isOn(href) ? "page" : undefined}
                 >
-                  <Icon className="h-4 w-4" />
-                  <span>{item.label}</span>
-                  {item.href === "/library" && count ? (
-                    <span className="counter">{count}</span>
-                  ) : null}
-                  {/* Active underline */}
-                  {active && (
-                    <span
-                      className="absolute bottom-[-1px] left-0 h-0.5 w-full rounded-t-sm"
-                      style={{ backgroundColor: "rgb(var(--accent))" }}
-                    />
-                  )}
+                  <Icon className="h-4 w-4" aria-hidden />
+                  {label}
+                  {href === "/library" && count > 0 && <span className="counter ml-0.5">{count}</span>}
                 </Link>
-              );
-            })}
+              ))}
+            </div>
           </nav>
 
-          {/* Spacer */}
           <div className="flex-1" />
-
-          {/* Auth area — username link or sign in */}
           <UserArea />
         </div>
       </header>
 
-      {/* Mobile bottom tab bar */}
-      <div
-        className="fixed bottom-0 left-0 right-0 z-50 flex sm:hidden items-center"
-        style={{
-          backgroundColor: "rgb(var(--surface))",
-          borderTop: "1px solid rgb(var(--border))",
-        }}
+      {/* Mobile tab bar. Sits above the iOS home indicator via safe-area padding. */}
+      <nav
+        className="fixed bottom-0 left-0 right-0 z-40 flex border-t border-border bg-surface sm:hidden"
+        style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
+        aria-label="Main"
       >
-        {[{ href: "/", label: "Home", icon: BookOpen }, ...NAV].map((item) => {
-          const active =
-            item.href === "/"
-              ? pathname === "/"
-              : pathname.startsWith(item.href);
-          const Icon = item.icon;
+        {[{ href: "/", label: "Home", icon: Home }, ...NAV].map(({ href, label, icon: Icon }) => {
+          const on = isOn(href);
           return (
             <Link
-              key={item.href}
-              href={item.href}
-              className="relative flex flex-1 flex-col items-center justify-center gap-0.5 py-2 transition-colors"
-              style={{ color: active ? "rgb(var(--accent))" : "rgb(var(--muted))" }}
+              key={href}
+              href={href}
+              aria-current={on ? "page" : undefined}
+              className="relative flex flex-1 flex-col items-center justify-center gap-1 py-2.5 text-[11px] font-medium"
+              style={{ color: on ? "rgb(var(--text))" : "rgb(var(--subtle))" }}
             >
-              <Icon className="h-5 w-5" />
-              <span style={{ fontSize: "10px", fontWeight: 500 }}>{item.label}</span>
-              {item.href === "/library" && count ? (
-                <span
-                  className="absolute right-1/4 top-1 flex h-4 min-w-[16px] items-center justify-center rounded-full px-1 text-[9px] font-bold text-white"
-                  style={{ backgroundColor: "#238636" }}
-                >
+              {/* Top bar marks the active tab, so colour is not the only cue. */}
+              {on && <span className="absolute inset-x-5 top-0 h-0.5 rounded-b bg-accent" aria-hidden />}
+              <Icon className="h-5 w-5" aria-hidden />
+              {label}
+              {href === "/library" && count > 0 && (
+                <span className="absolute right-[22%] top-1.5 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-accent px-1 text-[10px] font-bold text-bg">
                   {count}
                 </span>
-              ) : null}
+              )}
             </Link>
           );
         })}
-      </div>
-
+      </nav>
     </>
   );
 }
 
-/** Shows username + settings/logout links. No avatar bubble. */
 function UserArea() {
   const { user, initialized } = useAuth();
   const [username, setUsername] = useState<string | null>(null);
 
   useEffect(() => {
     if (!user) { setUsername(null); return; }
-    // Try localStorage cache first for instant render
     const cached = localStorage.getItem(`tw_username_${user.uid}`);
     if (cached) { setUsername(cached); return; }
-    // Otherwise fetch from Firestore once
-    getDoc(doc(db, "users", user.uid, "profile", "main")).then(snap => {
-      const name = snap.exists() ? (snap.data().username || user.email || "") : (user.email || "");
-      setUsername(name);
-      localStorage.setItem(`tw_username_${user.uid}`, name);
-    }).catch(() => setUsername(user.email || ""));
+    getDoc(doc(db, "users", user.uid, "profile", "main"))
+      .then((snap) => {
+        const name = (snap.exists() ? snap.data().username : "") || user.email || "";
+        setUsername(name);
+        localStorage.setItem(`tw_username_${user.uid}`, name);
+      })
+      .catch(() => setUsername(user.email || ""));
   }, [user]);
 
-  // Listen for username changes made in Settings page
+  // Settings renames the account; reflect it without a reload.
   useEffect(() => {
-    function onUsernameChanged(e: Event) {
+    function onChange(e: Event) {
       const name = (e as CustomEvent<string>).detail;
       if (name) setUsername(name);
     }
-    window.addEventListener("tw:usernameChanged", onUsernameChanged);
-    return () => window.removeEventListener("tw:usernameChanged", onUsernameChanged);
+    window.addEventListener("tw:usernameChanged", onChange);
+    return () => window.removeEventListener("tw:usernameChanged", onChange);
   }, []);
 
   if (!initialized) return null;
 
   if (!user) {
     return (
-      <Link href="/login" className="btn-primary !py-1.5 !px-3 !text-xs">
-        Sign In
+      <Link href="/login" className="btn-primary btn-sm">
+        Sign in
       </Link>
     );
   }
 
-  const displayName = username || user.email || "Account";
-
   return (
     <div className="flex items-center gap-1">
-      {/* Username — links to settings */}
       <Link
         href="/settings"
-        className="flex items-center gap-1.5 rounded-md px-2 py-1.5 text-sm font-medium transition-colors"
-        style={{ color: "rgb(var(--muted))" }}
-        onMouseEnter={e => (e.currentTarget as HTMLElement).style.color = "rgb(var(--text))"}
-        onMouseLeave={e => (e.currentTarget as HTMLElement).style.color = "rgb(var(--muted))"}
+        className="btn-ghost btn-sm max-w-[160px]"
+        title="Account settings"
       >
-        <Settings className="h-3.5 w-3.5 shrink-0" />
-        <span className="max-w-[120px] truncate">{displayName}</span>
+        <span className="truncate">{username || user.email || "Account"}</span>
       </Link>
-
-      {/* Sign out button */}
       <button
         onClick={() => {
-          if (user) localStorage.removeItem(`tw_username_${user.uid}`);
+          localStorage.removeItem(`tw_username_${user.uid}`);
           signOut(auth);
         }}
-        className="flex items-center rounded-md p-1.5 transition-colors"
-        style={{ color: "rgb(var(--muted))" }}
+        className="btn-ghost btn-sm !px-2"
+        aria-label="Sign out"
         title="Sign out"
-        onMouseEnter={e => (e.currentTarget as HTMLElement).style.color = "#ef4444"}
-        onMouseLeave={e => (e.currentTarget as HTMLElement).style.color = "rgb(var(--muted))"}
       >
-        <LogOut className="h-4 w-4" />
+        <LogOut className="h-4 w-4" aria-hidden />
       </button>
     </div>
   );

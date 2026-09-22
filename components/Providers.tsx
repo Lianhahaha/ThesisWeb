@@ -1,7 +1,7 @@
 "use client";
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { DexieHooksProvider } from "@/components/DexieHooksProvider";
 
 export function Providers({ children }: { children: React.ReactNode }) {
@@ -13,11 +13,6 @@ export function Providers({ children }: { children: React.ReactNode }) {
         },
       })
   );
-
-  // Always use dark mode (GitHub theme)
-  useEffect(() => {
-    document.documentElement.classList.add("dark");
-  }, []);
 
   return (
     <QueryClientProvider client={queryClient}>
