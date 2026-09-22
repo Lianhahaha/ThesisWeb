@@ -121,9 +121,9 @@ export default function HomePage() {
         <h2 id="readme-h" className="eyebrow !text-sm !font-semibold !text-text">READ ME</h2>
         <p className="mt-2 text-muted">How to go from a topic to a reference list.</p>
 
-        <ol className="mt-6 grid gap-3 sm:grid-cols-2">
+        <ol className="mt-4 divide-y divide-border border-t border-border">
           {STEPS.map((s, i) => (
-            <li key={s.title} className="panel flex gap-4">
+            <li key={s.title} className="flex gap-4 py-4">
               <span className="serif text-2xl leading-none text-subtle" aria-hidden>
                 {i + 1}
               </span>
@@ -135,9 +135,15 @@ export default function HomePage() {
           ))}
         </ol>
 
-        <div className="notice notice-info mt-6">
+        <div className="mt-6 border-t border-border pt-4">
           <p className="font-semibold">Good to know</p>
-          <ul className="mt-1 list-disc space-y-1 pl-5 text-muted">
+          <ul className="mt-2 list-disc space-y-1 pl-5 text-muted">
+            <li>
+              <strong>Abstract ≠ RRL.</strong>{" "}
+              The abstract is the authors&apos; own summary — use it to judge whether
+              a paper fits your study, then read the paper and write your RRL in your own words. Copying abstracts
+              into your chapter counts as plagiarism.
+            </li>
             <li>Only free, legal sources. Full-text links go to publishers, repositories and preprint servers.</li>
             <li>Some databases are slow or down at times. The Databases list shows which ones answered.</li>
             <li>Preprints (arXiv, some Zenodo records) are not peer-reviewed. Check before you cite.</li>
