@@ -278,7 +278,7 @@ export default function PaperDetailPage({ params }: { params: Promise<{ id: stri
           )}
 
           {p.abstract ? (
-            <p className="prose-serif mt-4 whitespace-pre-line text-base">{p.abstract}</p>
+            <p className="prose-read mt-4 whitespace-pre-line text-base">{p.abstract}</p>
           ) : (
             <p className="mt-3 text-muted">No abstract is available for this paper.</p>
           )}
@@ -317,7 +317,7 @@ export default function PaperDetailPage({ params }: { params: Promise<{ id: stri
 
         <div className="panel mt-3">
           <p
-            className="prose-serif text-[15px]"
+            className="prose-read text-[15px]"
             dangerouslySetInnerHTML={{ __html: formatCitation(p, style, 1) }}
           />
           <p className="mt-3 border-t border-border pt-3 text-sm text-muted">
@@ -365,7 +365,7 @@ export default function PaperDetailPage({ params }: { params: Promise<{ id: stri
           onChange={(e) => setNotes(e.target.value)}
           placeholder="Why this paper matters to your thesis, key quotes with page numbers…"
           rows={5}
-          className="input prose-serif mt-3 resize-y"
+          className="input prose-read mt-3 resize-y"
         />
         <button
           onClick={saveNotes}
@@ -384,7 +384,7 @@ export default function PaperDetailPage({ params }: { params: Promise<{ id: stri
           <h2 id="keywords" className="text-lg">Keywords</h2>
           <ul className="mt-3 flex flex-wrap gap-1.5">
             {p.keywords.map((k) => (
-              <li key={k} className="chip">{k}</li>
+              <li key={k} className="chip max-w-full" title={k}><span className="truncate">{k}</span></li>
             ))}
           </ul>
         </section>

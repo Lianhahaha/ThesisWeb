@@ -50,7 +50,7 @@ export function Toaster() {
     <div
       role="status"
       aria-live="polite"
-      className="fixed inset-x-3 bottom-20 z-50 flex flex-col gap-2 sm:inset-x-auto sm:bottom-5 sm:right-5 sm:w-[360px]"
+      className="fixed inset-x-3 bottom-20 z-50 flex flex-col gap-2 sm:inset-x-auto sm:right-5 sm:w-[360px] md:bottom-5"
     >
       {items.map((t) => {
         const s = STYLES[t.type];

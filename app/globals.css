@@ -17,17 +17,52 @@
     --border2:  204 200 180;   /* #ccc8b4  stronger edges           */
 
     --text:      28  27  24;   /* #1c1b18  ink                      */
-    --muted:     88  85  76;   /* #58554c                           */
-    --subtle:   112 108  97;   /* #706c61  still 4.5:1 on cream     */
+    --muted:     74  71  63;   /* #4a473f                           */
+    --subtle:    99  95  85;   /* #635f55  ~5.9:1 on cream          */
 
     --accent:   104  76 150;   /* #684c96  lavender ink: text, focus */
     --accent-d: 237 225 252;   /* #ede1fc  lavender fill            */
+    --accent-h: 226 208 250;   /* #e2d0fa  lavender fill, hovered   */
 
     /* Kept as names for existing markup; both map into the one palette. */
     --ok:        88  85  76;
     --ok-d:     243 241 227;
     --danger:   104  76 150;
     --danger-d: 237 225 252;
+  }
+
+
+  /* Soft dark: warm charcoal, never pure black, so text doesn't glare. */
+  :root[data-theme="dark"] {
+    --bg:        25  24  22;   /* #191816                           */
+    --surface:   33  32  29;   /* #21201d                           */
+    --surface2:  41  39  36;   /* #292724                           */
+    --surface3:  52  50  46;   /* #34322e                           */
+    --border:    60  58  53;   /* #3c3a35                           */
+    --border2:   86  83  76;   /* #56534c                           */
+    --text:     237 233 224;   /* #ede9e0                           */
+    --muted:    190 184 172;   /* #beb8ac                           */
+    --subtle:   158 152 141;   /* #9e988d  ~6:1 on the page         */
+    --accent:   198 180 240;   /* #c6b4f0  soft lavender            */
+    --accent-d:  54  46  74;   /* #362e4a                           */
+    --accent-h:  67  57  92;   /* #43395c                           */
+    --ok:       190 184 172;
+    --ok-d:      41  39  36;
+    --danger:   198 180 240;
+    --danger-d:  54  46  74;
+  }
+  :root[data-theme="dark"] { color-scheme: dark; }
+
+  /* Before the theme script runs (or with JS off), follow the OS setting. */
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme]) {
+      --bg: 25 24 22; --surface: 33 32 29; --surface2: 41 39 36; --surface3: 52 50 46;
+      --border: 60 58 53; --border2: 86 83 76;
+      --text: 237 233 224; --muted: 190 184 172; --subtle: 158 152 141;
+      --accent: 198 180 240; --accent-d: 54 46 74; --accent-h: 67 57 92;
+      --ok: 190 184 172; --ok-d: 41 39 36; --danger: 198 180 240; --danger-d: 54 46 74;
+      color-scheme: dark;
+    }
   }
 
   html {
@@ -45,13 +80,13 @@
     -webkit-font-smoothing: antialiased;
   }
 
-  h1, h2, h3 {
+  h1, h2 {
     font-family: var(--font-serif), ui-serif, Georgia, serif;
     font-weight: 500;
     line-height: 1.2;
     letter-spacing: -0.01em;
   }
-  h4 { font-weight: 600; }
+  h3, h4 { font-weight: 600; line-height: 1.35; }
 
   a { color: inherit; text-decoration: none; }
 
@@ -118,7 +153,7 @@
     border-color: rgb(var(--text));
     color: rgb(var(--text));
   }
-  .btn-primary:hover:not(:disabled) { background-color: #e2d0fa; }
+  .btn-primary:hover:not(:disabled) { background-color: rgb(var(--accent-h)); }
 
   .btn-secondary { @apply btn border-border2 bg-surface text-text; }
   .btn-secondary:hover:not(:disabled) { background-color: rgb(var(--surface2)); }
@@ -221,10 +256,9 @@
     letter-spacing: -0.015em;
     line-height: 1.1;
   }
-  .prose-serif {
-    @apply serif;
-    font-size: 1.06em;
-    line-height: 1.65;
+  .prose-read {
+    font-size: 1.02em;
+    line-height: 1.75;
   }
 
   .skip-link { @apply sr-only; }

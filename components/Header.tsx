@@ -10,8 +10,10 @@ import { useAuth } from "@/lib/auth-store";
 import { auth, db } from "@/lib/firebase";
 import { signOut } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 const NAV = [
+  { href: "/", label: "Home", icon: Home },
   { href: "/search", label: "Search", icon: Search },
   { href: "/library", label: "Library", icon: Library },
   { href: "/cite", label: "Cite", icon: Quote },
@@ -48,15 +50,15 @@ export function Header() {
   return (
     <>
       <header className="sticky top-0 z-40 border-b border-border bg-surface">
-        <div className="mx-auto flex h-14 w-full max-w-6xl items-center gap-4 px-4 sm:grid sm:grid-cols-[1fr_auto_1fr] sm:px-6">
-          <Link href="/" className="flex shrink-0 items-center gap-3" aria-label="thesisweb ph home">
-            <span className="serif text-[21px] font-medium leading-none">thesisweb ph</span>
-            <span className="hidden rounded-full border border-border px-2 py-0.5 text-[10px] font-medium uppercase tracking-[0.14em] text-subtle xs:inline">
+        <div className="mx-auto flex h-14 w-full max-w-6xl items-center gap-3 px-4 md:grid md:grid-cols-[1fr_auto_1fr] md:px-6">
+          <Link href="/" className="flex min-w-0 items-center gap-2 sm:gap-3" aria-label="Thesisweb home">
+            <span className="serif text-[21px] font-medium leading-none">Thesisweb</span>
+            <span className="whitespace-nowrap rounded-full border border-border px-1.5 py-0.5 text-[9px] font-medium uppercase tracking-[0.12em] text-subtle sm:px-2 sm:text-[10px]">
               RRL toolkit
             </span>
           </Link>
 
-          <nav className="hidden sm:block" aria-label="Main">
+          <nav className="hidden md:block" aria-label="Main">
             <div className="seg">
               {NAV.map(({ href, label, icon: Icon }) => (
                 <Link
@@ -73,7 +75,8 @@ export function Header() {
             </div>
           </nav>
 
-          <div className="flex flex-1 justify-end">
+          <div className="flex flex-1 items-center justify-end gap-1">
+            <ThemeToggle />
             <UserArea />
           </div>
         </div>
@@ -81,11 +84,11 @@ export function Header() {
 
       {/* Mobile tab bar. Sits above the iOS home indicator via safe-area padding. */}
       <nav
-        className="fixed bottom-0 left-0 right-0 z-40 flex border-t border-border bg-surface sm:hidden"
+        className="fixed bottom-0 left-0 right-0 z-40 flex border-t border-border bg-surface md:hidden"
         style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
         aria-label="Main"
       >
-        {[{ href: "/", label: "Home", icon: Home }, ...NAV].map(({ href, label, icon: Icon }) => {
+        {NAV.map(({ href, label, icon: Icon }) => {
           const on = isOn(href);
           return (
             <Link
@@ -153,7 +156,7 @@ function UserArea() {
     <div className="flex items-center gap-1">
       <Link
         href="/settings"
-        className="btn-ghost btn-sm max-w-[160px]"
+        className="btn-ghost btn-sm max-w-[96px] sm:max-w-[160px]"
         title="Account settings"
       >
         <span className="truncate">{username || user.email || "Account"}</span>

@@ -174,7 +174,7 @@ export default function CitePage() {
               return (
                 <li key={r.paper.id} className="panel">
                   <p
-                    className="prose-serif"
+                    className="prose-read"
                     dangerouslySetInnerHTML={{ __html: formatCitation(r.paper, style, n) }}
                   />
                   <p className="mt-2 text-sm text-muted">

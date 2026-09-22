@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { useMutation } from "@tanstack/react-query";
+import { ChevronDown } from "lucide-react";
 import { PaperCard } from "@/components/PaperCard";
 import { SearchPanel, DEFAULT_FROM_YEAR } from "@/components/SearchPanel";
 import { toast } from "@/components/Toaster";
@@ -23,6 +24,8 @@ export default function SearchPage() {
   const [result, setResult] = useState<SearchResult | null>(null);
   const [sortKey, setSortKey] = useState<SortKey>("relevance");
   const [selectedSources, setSelectedSources] = useState<Set<string>>(new Set());
+  // Phones only: the database list is folded so results start near the top.
+  const [sourcesOpen, setSourcesOpen] = useState(false);
 
   // Suggestions come from the whole result set for the query that produced it —
   // the input may have been edited since.
@@ -114,7 +117,24 @@ export default function SearchPage() {
       {result && !search.isPending && (
         <aside className="min-w-0 space-y-6 lg:sticky lg:top-20 lg:col-start-2 lg:row-span-2 lg:row-start-1 lg:max-h-[calc(100vh-6rem)] lg:overflow-y-auto lg:pr-1">
           <section aria-labelledby="sources-h">
-            <div className="flex items-baseline justify-between">
+            <button
+              type="button"
+              onClick={() => setSourcesOpen((v) => !v)}
+              aria-expanded={sourcesOpen}
+              aria-controls="sources-list"
+              className="list-row justify-between lg:hidden"
+            >
+              <span>
+                <span className="font-medium">Databases</span>
+                <span className="ml-2 text-xs text-subtle">
+                  {selectedSources.size > 0
+                    ? `${selectedSources.size} selected`
+                    : `${Object.values(result.sources).filter((st) => st === "ok").length} with results`}
+                </span>
+              </span>
+              <ChevronDown className={`h-4 w-4 text-subtle ${sourcesOpen ? "rotate-180" : ""}`} aria-hidden />
+            </button>
+            <div className="hidden items-baseline justify-between lg:flex">
               <h2 id="sources-h" className="eyebrow">Databases</h2>
               {selectedSources.size > 0 && (
                 <button
@@ -126,8 +146,22 @@ export default function SearchPage() {
                 </button>
               )}
             </div>
-            <p className="mt-1 text-xs text-subtle">Select one or more to narrow the list.</p>
-            <ul className="mt-3 grid grid-cols-2 gap-1.5 lg:grid-cols-1">
+            <p className={`${sourcesOpen ? "block" : "hidden"} mt-2 text-xs text-subtle lg:mt-1 lg:block`}>
+              Select one or more to narrow the list.
+              {selectedSources.size > 0 && (
+                <button
+                  type="button"
+                  onClick={() => setSelectedSources(new Set())}
+                  className="ml-2 underline lg:hidden"
+                >
+                  Show all
+                </button>
+              )}
+            </p>
+            <ul
+              id="sources-list"
+              className={`${sourcesOpen ? "grid" : "hidden"} mt-3 grid-cols-2 gap-1.5 sm:grid-cols-3 lg:grid lg:grid-cols-1`}
+            >
               {Object.entries(result.sources).map(([name, status]) => {
                 const failed = status === "error";
                 const n = sourceCounts[name] ?? 0;

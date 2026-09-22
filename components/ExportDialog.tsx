@@ -74,7 +74,7 @@ export function ExportDialog({ papers, onClose }: { papers: SavedPaper[]; onClos
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end justify-center bg-text/40 p-0 sm:items-center sm:p-4"
+      className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 p-0 sm:items-center sm:p-4"
       onClick={onClose}
     >
       <div

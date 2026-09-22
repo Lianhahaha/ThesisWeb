@@ -150,7 +150,7 @@ export default function LoginPage() {
           </div>
           {mode === "signup" && (
             <p className="field-hint">
-              At least 6 characters. Use a new password made for thesisweb ph, never your email password.
+              At least 6 characters. Use a new password made for Thesisweb, never your email password.
             </p>
           )}
         </div>

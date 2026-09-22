@@ -1,4 +1,4 @@
-# thesisweb ph
+# Thesisweb
 
 A free web app that helps thesis students find related literature (RRL), keep it organised, and cite it correctly.
 
@@ -6,7 +6,7 @@ A free web app that helps thesis students find related literature (RRL), keep it
 - **Library** — save papers, group them by chapter, take notes, compare them in a synthesis matrix.
 - **Cite** — paste DOIs and get references in APA, MLA, IEEE or Chicago, or export your whole library.
 
-No account needed to search. Only links to legal open-access full text.
+No account needed to search. Only links to legal open-access full text. Light and soft dark themes.
 
 ---
 
@@ -27,7 +27,7 @@ Below the form you also get your **Recent** searches (one click to re-run) and *
 ### 2. Narrow the results
 
 - **Sort**: best match, most cited, newest or oldest.
-- **Databases** (right side, or above the results on a phone): shows how many papers each database returned. Click one or more to show only their papers. A database marked *failed* timed out; the rest still worked.
+- **Databases** (right side; on a phone, tap **Databases** above the results to open the list): shows how many papers each database returned. Click one or more to show only their papers. A database marked *failed* timed out; the rest still worked.
 - **Narrow with**: terms that appear often in your results. Click one to add it to your search.
 - Each result shows authors, year, journal, a **Free full text** label when a legal copy exists, citation count, and a **Match** score (how closely the title and abstract match your words, out of 100).
 
@@ -61,6 +61,10 @@ Click a title to open it. You get:
 ### 6. Your account (optional)
 
 **Sign in → Sign up** with a display name, email and a new password. In **Account settings** you can change your name, password and email, and set a **recovery PIN**. New accounts start with PIN `0000`, so change it. If you forget your password, **Forgot password?** asks for your email and PIN, then emails a reset link.
+
+### Light or dark
+
+Press the moon (or sun) button at the top right to switch between the light theme and a soft dark theme. Your choice is remembered on that device. Until you choose, the site follows your phone or computer's own setting.
 
 ### Good to know
 
@@ -188,7 +192,7 @@ lib/
 
 ### How it works
 
-- **Next.js App Router, React 19, TypeScript, Tailwind CSS.** Light cream theme with one lavender accent; tokens are CSS variables in [`app/globals.css`](app/globals.css). No animations.
+- **Next.js App Router, React 19, TypeScript, Tailwind CSS.** Light cream and soft dark themes, one lavender accent each; tokens are CSS variables in [`app/globals.css`](app/globals.css), switched by `data-theme` on `<html>`. A small script in `<head>` ([`lib/theme.ts`](lib/theme.ts)) applies the saved or system theme before first paint, so there is no flash. No animations.
 - **Server-side proxy.** The browser calls `/api/*`; the server calls the databases. Keeps API keys off the client and avoids CORS.
 - **Time limits.** Each database has a deadline (12 s, 15 s for Figshare, 6 s for Google Scholar), so one slow source never blocks the rest.
 - **Rate limiting.** Semantic Scholar calls are queued 1.1 s apart and a 429 is retried once.

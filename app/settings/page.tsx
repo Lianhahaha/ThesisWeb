@@ -382,7 +382,7 @@ export default function SettingsPage() {
           Your saved papers stay in your account. On a shared computer, sign out when you finish.
         </p>
         <button onClick={handleSignOut} className="btn-danger mt-4 w-full sm:w-auto">
-          Sign out of thesisweb ph
+          Sign out of Thesisweb
         </button>
       </Section>
     </div>

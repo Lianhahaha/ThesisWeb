@@ -100,7 +100,7 @@ export function PaperCard({ paper, showScore, refNum }: Props) {
           {paper.keywords && paper.keywords.length > 0 && (
             <ul className="mt-3 flex flex-wrap gap-1.5">
               {paper.keywords.slice(0, 4).map((k) => (
-                <li key={k} className="chip">{k}</li>
+                <li key={k} className="chip max-w-full" title={k}><span className="truncate">{k}</span></li>
               ))}
             </ul>
           )}
