@@ -12,6 +12,7 @@ import { KEYLESS_SOURCE_COUNT, sourceLabel, SOURCE_META } from "@/lib/sources/me
 import { suggestTerms } from "@/lib/related-terms";
 import { addSearchHistory } from "@/lib/search-history";
 import { buildSearchParams, parseSearchParams, type SearchInput } from "@/lib/search-params";
+import { fromYearFor, getPreferences } from "@/lib/preferences";
 import { SORT_OPTIONS, countBySource, filterBySources, sortPapers, type SortKey } from "@/lib/result-view";
 
 export default function SearchPage() {
@@ -84,8 +85,13 @@ export default function SearchPage() {
 
   // Opened from the home page, a shared link or a refresh: restore and run.
   useEffect(() => {
-    const input = parseSearchParams(window.location.search, { fromYear: DEFAULT_FROM_YEAR });
-    if (!input) return;
+    const prefs = getPreferences();
+    const input = parseSearchParams(window.location.search, { fromYear: fromYearFor(prefs) });
+    if (!input) {
+      // Fresh visit: start from the saved defaults.
+      setForm((f) => ({ ...f, fromYear: fromYearFor(prefs), country: prefs.country, openAccessOnly: prefs.openAccessOnly }));
+      return;
+    }
     run(input);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

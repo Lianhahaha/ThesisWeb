@@ -30,6 +30,45 @@ export function getDb(): ThesisDB {
   return _db;
 }
 
+/** Fired after any library change so counters (e.g. the header) can refresh. */
+export const LIBRARY_EVENT = "tw:library";
+function changed(): void {
+  if (typeof window !== "undefined") window.dispatchEvent(new Event(LIBRARY_EVENT));
+}
+
+/** Fired after updatePaper, with { id, changes }, so in-memory copies can patch themselves. */
+export const PAPER_UPDATED_EVENT = "tw:paper-updated";
+export interface PaperUpdate {
+  id: string;
+  changes: Partial<SavedPaper>;
+}
+
+/**
+ * Apply an update to an in-memory copy the way the stores do: dotted keys
+ * ("matrix.method") set nested fields, undefined removes a field.
+ */
+export function applyPaperUpdate(p: SavedPaper, changes: Partial<SavedPaper>): SavedPaper {
+  const next: Record<string, unknown> = { ...p };
+  for (const [key, value] of Object.entries(changes)) {
+    const [head, sub] = key.split(".", 2);
+    if (sub) {
+      next[head] = { ...((next[head] as Record<string, unknown>) ?? {}), [sub]: value };
+    } else if (value === undefined) {
+      delete next[head];
+    } else {
+      next[head] = value;
+    }
+  }
+  return next as unknown as SavedPaper;
+}
+
+/** Number of saved papers, cheaply. */
+export async function countPapers(): Promise<number> {
+  const uid = auth.currentUser?.uid;
+  if (uid) return fs.fsCountPapers(uid);
+  return getDb().papers.count();
+}
+
 // --- CRUD wrappers (routing to correct backend) ---
 
 export async function savePaper(p: SavedPaper): Promise<void> {
@@ -39,6 +78,24 @@ export async function savePaper(p: SavedPaper): Promise<void> {
   } else {
     await getDb().papers.put(p);
   }
+  changed();
+}
+
+/** Save many papers at once (backup import, moving browser papers to an account). */
+export async function savePapers(papers: SavedPaper[]): Promise<void> {
+  if (papers.length === 0) return;
+  const uid = auth.currentUser?.uid;
+  if (uid) {
+    await fs.fsSaveMany(uid, papers);
+  } else {
+    await getDb().papers.bulkPut(papers);
+  }
+  changed();
+}
+
+/** Papers saved in this browser (IndexedDB), whatever the sign-in state. */
+export async function localPapers(): Promise<SavedPaper[]> {
+  return getDb().papers.toArray();
 }
 
 export async function unsavePaper(id: string): Promise<void> {
@@ -48,6 +105,7 @@ export async function unsavePaper(id: string): Promise<void> {
   } else {
     await getDb().papers.delete(id);
   }
+  changed();
 }
 
 export async function getPaper(id: string): Promise<SavedPaper | undefined> {
@@ -72,6 +130,9 @@ export async function updatePaper(id: string, changes: Partial<SavedPaper>): Pro
     await fs.fsUpdatePaper(uid, id, changes);
   } else {
     await getDb().papers.update(id, changes);
+  }
+  if (typeof window !== "undefined") {
+    window.dispatchEvent(new CustomEvent<PaperUpdate>(PAPER_UPDATED_EVENT, { detail: { id, changes } }));
   }
 }
 

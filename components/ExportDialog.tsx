@@ -11,6 +11,7 @@ import {
   toRis,
   type CitationStyle,
 } from "@/lib/citations";
+import { getPreferences } from "@/lib/preferences";
 
 const STYLES: { id: CitationStyle; label: string }[] = [
   { id: "apa", label: "APA 7" },
@@ -20,7 +21,7 @@ const STYLES: { id: CitationStyle; label: string }[] = [
 ];
 
 export function ExportDialog({ papers, onClose }: { papers: SavedPaper[]; onClose: () => void }) {
-  const [style, setStyle] = useState<CitationStyle>("apa");
+  const [style, setStyle] = useState<CitationStyle>(() => getPreferences().citationStyle);
   const [copied, setCopied] = useState<string | null>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
 

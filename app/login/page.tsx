@@ -9,9 +9,7 @@ import { Eye, EyeOff } from "lucide-react";
 import { auth, db } from "@/lib/firebase";
 import { useAuth } from "@/lib/auth-store";
 import { toast } from "@/components/Toaster";
-import { hashMPIN } from "@/lib/utils";
-
-const DEFAULT_MPIN = "0000";
+import { DEFAULT_MPIN, setRecoveryPin, writeEmailMap } from "@/lib/recovery";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -45,25 +43,31 @@ export default function LoginPage() {
         toast("Signed in", "success");
         router.push("/library");
       } else {
+        // Signing up signs the user in straight away; no email verification.
         const cred = await createUserWithEmailAndPassword(auth, email, password);
         const uid = cred.user.uid;
-        const normalizedEmail = email.toLowerCase().replace(/\./g, "_");
+        const name = username.trim().slice(0, 60);
 
-        // Profile holds the display name and a hashed recovery PIN. Never a password.
-        await setDoc(doc(db, "users", uid, "profile", "main"), {
-          username,
-          mpinHash: await hashMPIN(DEFAULT_MPIN),
-          createdAt: Date.now(),
-        });
-        // email → uid map, used by the forgot-password flow.
-        await setDoc(doc(db, "email_map", normalizedEmail), { uid, email: email.toLowerCase() });
+        // The account exists at this point. If a profile write fails (offline,
+        // rules not published yet) the user can still use the app, so warn
+        // instead of failing the sign-up.
+        const results = await Promise.allSettled([
+          setDoc(doc(db, "users", uid, "profile", "main"), { username: name, createdAt: Date.now() }),
+          setRecoveryPin(uid, DEFAULT_MPIN),
+          writeEmailMap(uid, email),
+        ]);
+        if (results.some((r) => r.status === "rejected")) {
+          toast("Account created, but your profile could not be saved yet. You can set it in Settings.", "info");
+        }
 
-        localStorage.setItem(`tw_username_${uid}`, username);
+        localStorage.setItem(`tw_username_${uid}`, name);
+        // The header may have looked before the profile existed; tell it now.
+        window.dispatchEvent(new CustomEvent("tw:usernameChanged", { detail: name }));
         toast("Account created", "success");
         router.push("/library");
       }
     } catch (err) {
-      toast(err instanceof Error ? err.message : "Authentication failed", "error");
+      toast(authMessage(err), "error");
     } finally {
       setLoading(false);
     }
@@ -168,4 +172,28 @@ export default function LoginPage() {
       </form>
     </div>
   );
+}
+
+/** Firebase error codes in plain words. */
+function authMessage(err: unknown): string {
+  const code = (err as { code?: string })?.code ?? "";
+  switch (code) {
+    case "auth/invalid-credential":
+    case "auth/invalid-login-credentials":
+    case "auth/wrong-password":
+    case "auth/user-not-found":
+      return "Wrong email or password.";
+    case "auth/email-already-in-use":
+      return "An account with this email already exists. Sign in instead.";
+    case "auth/invalid-email":
+      return "That email address doesn't look right.";
+    case "auth/weak-password":
+      return "Use a password of at least 6 characters.";
+    case "auth/too-many-requests":
+      return "Too many attempts. Wait a few minutes and try again.";
+    case "auth/network-request-failed":
+      return "No connection. Check your internet and try again.";
+    default:
+      return err instanceof Error ? err.message : "Sign-in failed. Try again.";
+  }
 }

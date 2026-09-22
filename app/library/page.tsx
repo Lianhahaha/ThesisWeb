@@ -4,7 +4,16 @@ import { useState, useMemo, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { useLiveQuery } from "dexie-react-hooks";
 import { Download, Search as SearchIcon, Trash2 } from "lucide-react";
-import { getDb, unsavePaper, updatePaper, allPapers as loadAllPapers } from "@/lib/db";
+import {
+  getDb,
+  unsavePaper,
+  updatePaper,
+  savePapers,
+  allPapers as loadAllPapers,
+  applyPaperUpdate,
+  PAPER_UPDATED_EVENT,
+  type PaperUpdate,
+} from "@/lib/db";
 import { PaperCard } from "@/components/PaperCard";
 import { SynthesisMatrix } from "@/components/SynthesisMatrix";
 import { ExportDialog } from "@/components/ExportDialog";
@@ -44,6 +53,17 @@ export default function LibraryPage() {
     if (user) refreshCloud();
   }, [user, refreshCloud]);
 
+  // Keep the cloud copy in step with edits (matrix cells, collections) without
+  // re-reading every paper from Firestore after each change.
+  useEffect(() => {
+    function onUpdate(e: Event) {
+      const { id, changes } = (e as CustomEvent<PaperUpdate>).detail;
+      setCloudPapers((prev) => prev?.map((p) => (p.id === id ? applyPaperUpdate(p, changes) : p)) ?? prev);
+    }
+    window.addEventListener(PAPER_UPDATED_EVENT, onUpdate);
+    return () => window.removeEventListener(PAPER_UPDATED_EVENT, onUpdate);
+  }, []);
+
   const papers: SavedPaper[] | undefined = user
     ? cloudPapers ?? undefined
     : (localPapers as SavedPaper[] | undefined);
@@ -78,16 +98,40 @@ export default function LibraryPage() {
   }, [papers, filter, collectionFilter]);
 
   async function assignCollection(id: string, collection: string) {
-    await updatePaper(id, { collection: collection || undefined });
-    toast(collection ? `Moved to “${collection}”` : "Removed from collection", "info");
-    if (user) refreshCloud();
+    try {
+      await updatePaper(id, { collection: collection.trim().slice(0, 100) || undefined });
+      toast(collection ? `Moved to “${collection}”` : "Removed from collection", "info");
+    } catch {
+      toast("Could not change the collection. Try again.", "error");
+    }
+  }
+
+  // Papers saved while signed out stay in this browser; offer to bring them along.
+  const browserOnly = user ? ((localPapers as SavedPaper[] | undefined) ?? []) : [];
+  const [copying, setCopying] = useState(false);
+  async function copyBrowserPapers() {
+    setCopying(true);
+    try {
+      await savePapers(browserOnly);
+      toast(`Copied ${browserOnly.length} papers to your account`, "success");
+      refreshCloud();
+    } catch {
+      toast("Could not copy the papers. Try again.", "error");
+    } finally {
+      setCopying(false);
+    }
   }
 
   async function remove(id: string) {
     if (!confirm("Remove this paper from your library?")) return;
-    await unsavePaper(id);
+    try {
+      await unsavePaper(id);
+    } catch {
+      toast("Could not remove the paper. Try again.", "error");
+      return;
+    }
     toast("Removed from library", "info");
-    if (user) refreshCloud();
+    if (user) setCloudPapers((prev) => prev?.filter((p) => p.id !== id) ?? prev);
   }
 
   if (isLoading) {
@@ -122,6 +166,18 @@ export default function LibraryPage() {
           to keep
           them on every device.
         </p>
+      )}
+
+      {user && browserOnly.length > 0 && (
+        <div className="notice notice-info mb-4 flex flex-wrap items-center justify-between gap-3">
+          <p>
+            This browser has <strong>{browserOnly.length}</strong> paper
+            {browserOnly.length === 1 ? "" : "s"} you saved before signing in.
+          </p>
+          <button onClick={copyBrowserPapers} disabled={copying} className="btn-secondary btn-sm">
+            {copying ? "Copying…" : "Copy to my account"}
+          </button>
+        </div>
       )}
 
       {total === 0 ? (

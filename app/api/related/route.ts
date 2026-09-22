@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { rateLimit } from "@/lib/rate-limit";
 import { getRelatedPapers } from "@/lib/sources/openalex";
 
 export const dynamic = "force-dynamic";
@@ -13,6 +14,9 @@ const DOI_PATTERN = /^10\.\d{4,9}\/\S{1,200}$/;
  * OpenAlex, for snowballing a literature review from one good paper.
  */
 export async function GET(req: NextRequest) {
+  const limited = rateLimit(req, "related");
+  if (limited) return limited;
+
   const doi = (new URL(req.url).searchParams.get("doi") ?? "").trim();
   if (!DOI_PATTERN.test(doi)) {
     return NextResponse.json({ error: "Provide a valid DOI." }, { status: 400 });

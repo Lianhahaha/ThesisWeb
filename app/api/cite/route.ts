@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { rateLimit } from "@/lib/rate-limit";
 import { getCrossrefByDoi } from "@/lib/sources/crossref";
 import { getOpenAlexByDoi } from "@/lib/sources/openalex";
 import { extractDoi } from "@/lib/text";
@@ -23,13 +24,17 @@ export interface CiteResult {
  * first; OpenAlex fills in when Crossref has no entry.
  */
 export async function POST(req: NextRequest) {
+  const limited = rateLimit(req, "cite");
+  if (limited) return limited;
+
   const body = await req.json().catch(() => null);
   const items: unknown = body?.items;
   if (!Array.isArray(items) || items.some((i) => typeof i !== "string")) {
     return NextResponse.json({ error: "Send { items: string[] }" }, { status: 400 });
   }
 
-  const lines = (items as string[]).map((s) => s.trim()).filter(Boolean);
+  // Long lines are never DOIs; cap them so a request stays small.
+  const lines = (items as string[]).map((s) => s.trim().slice(0, 300)).filter(Boolean);
   if (lines.length === 0) return NextResponse.json({ error: "Paste at least one DOI." }, { status: 400 });
   if (lines.length > MAX_ITEMS) {
     return NextResponse.json({ error: `Up to ${MAX_ITEMS} at a time.` }, { status: 400 });

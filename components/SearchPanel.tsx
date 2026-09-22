@@ -18,12 +18,38 @@ const YEAR_PRESETS = [
   { value: 0, label: "Any year" },
 ];
 
+/** A few of these are shown at random on each visit. */
 const EXAMPLE_TOPICS = [
   "vendor challenges supply chain",
   "mental health impact of social media students",
   "microplastics freshwater ecosystems",
   "blockchain supply chain transparency",
+  "reading comprehension strategies senior high school",
+  "financial literacy college students",
+  "online learning readiness Philippines",
+  "sari-sari store sustainability",
+  "teacher burnout public schools",
+  "climate change adaptation farmers",
+  "customer satisfaction fast food",
+  "ChatGPT use in academic writing",
+  "sleep quality academic performance",
+  "e-wallet adoption small businesses",
+  "flood risk management urban",
+  "nurse workload patient safety",
+  "tourism impact local communities",
+  "mother tongue based education",
 ];
+
+const EXAMPLES_SHOWN = 4;
+
+function pickExamples(): string[] {
+  const pool = [...EXAMPLE_TOPICS];
+  for (let i = pool.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [pool[i], pool[j]] = [pool[j], pool[i]];
+  }
+  return pool.slice(0, EXAMPLES_SHOWN);
+}
 
 /**
  * The search form: topic, year range, country focus, full-text filter,
@@ -45,7 +71,12 @@ export function SearchPanel({
 }) {
   // localStorage isn't available while server rendering, so read it after mount.
   const [history, setHistory] = useState<string[]>([]);
-  useEffect(() => setHistory(getSearchHistory()), []);
+  // Random picks differ between server and browser, so choose after mount.
+  const [examples, setExamples] = useState<string[]>([]);
+  useEffect(() => {
+    setHistory(getSearchHistory());
+    setExamples(pickExamples());
+  }, []);
 
   const set = (patch: Partial<SearchInput>) => onChange({ ...value, ...patch });
   const canSearch = value.query.trim().length >= MIN_QUERY_LENGTH && !pending;
@@ -143,10 +174,10 @@ export function SearchPanel({
                 onChange(next);
                 onSearch(next);
               }}
-              className="chip-btn max-w-[240px] truncate"
+              className="chip-btn max-w-[240px]"
               title={h}
             >
-              {h}
+              <span className="truncate">{h}</span>
             </button>
           ))}
           <button
@@ -159,14 +190,21 @@ export function SearchPanel({
         </div>
       )}
 
-      {showSuggestions && (
+      {showSuggestions && examples.length > 0 && (
         <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-border pt-4">
           <span className="text-xs text-subtle">Try</span>
-          {EXAMPLE_TOPICS.map((t) => (
+          {examples.map((t) => (
             <button key={t} type="button" onClick={() => set({ query: t })} className="chip-btn">
               {t}
             </button>
           ))}
+          <button
+            type="button"
+            onClick={() => setExamples(pickExamples())}
+            className="text-xs text-subtle underline"
+          >
+            Shuffle
+          </button>
         </div>
       )}
     </form>

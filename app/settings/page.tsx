@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { doc, getDoc, setDoc } from "firebase/firestore";
+import { doc, getDoc, setDoc, deleteDoc } from "firebase/firestore";
 import {
   updatePassword,
   reauthenticateWithCredential,
@@ -11,16 +11,50 @@ import {
   verifyBeforeUpdateEmail,
   signOut,
 } from "firebase/auth";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, Download, Upload, X } from "lucide-react";
 import { auth, db } from "@/lib/firebase";
 import { useAuth } from "@/lib/auth-store";
 import { toast } from "@/components/Toaster";
-import { hashMPIN } from "@/lib/utils";
+import { CountryCombobox } from "@/components/CountryCombobox";
+import { allPapers, localPapers, savePapers } from "@/lib/db";
+import { emailKey, migrateRecoveryPin, setRecoveryPin, writeEmailMap } from "@/lib/recovery";
+import { getPreferences, setPreferences, type Preferences } from "@/lib/preferences";
+import { clearSearchHistory } from "@/lib/search-history";
+import { applyTheme, savedThemeChoice, type ThemeChoice } from "@/lib/theme";
+import type { CitationStyle } from "@/lib/citations";
+import type { SavedPaper } from "@/lib/types";
 
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
+const YEAR_OPTIONS = [
+  { value: 1, label: "Last 2 years" },
+  { value: 3, label: "Last 3 years" },
+  { value: 5, label: "Last 5 years" },
+  { value: 10, label: "Last 10 years" },
+  { value: 0, label: "Any year" },
+];
+
+const STYLES: { id: CitationStyle; label: string }[] = [
+  { id: "apa", label: "APA 7" },
+  { id: "mla", label: "MLA 9" },
+  { id: "ieee", label: "IEEE" },
+  { id: "chicago", label: "Chicago" },
+];
+
+/** Most papers one backup import may add. */
+const MAX_IMPORT = 2000;
+
+function Section({
+  title,
+  description,
+  children,
+}: {
+  title: string;
+  description?: string;
+  children: React.ReactNode;
+}) {
   return (
     <section className="panel" aria-label={title}>
-      <h2 className="text-lg">{title}</h2>
+      <h2 className="text-xl">{title}</h2>
+      {description && <p className="mt-1 text-sm text-muted">{description}</p>}
       <div className="mt-4">{children}</div>
     </section>
   );
@@ -65,20 +99,74 @@ function PasswordField({
   );
 }
 
+function downloadJson(data: unknown, filename: string) {
+  const url = URL.createObjectURL(new Blob([JSON.stringify(data, null, 2)], { type: "application/json" }));
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+/** Turn untrusted backup JSON into papers; skips anything malformed. */
+function parseBackup(raw: unknown): SavedPaper[] {
+  const list = Array.isArray(raw) ? raw : (raw as { papers?: unknown })?.papers;
+  if (!Array.isArray(list)) throw new Error("This file isn't a Thesisweb library backup.");
+  const out: SavedPaper[] = [];
+  for (const item of list.slice(0, MAX_IMPORT)) {
+    if (!item || typeof item !== "object") continue;
+    const p = item as Partial<SavedPaper>;
+    if (typeof p.id !== "string" || typeof p.title !== "string" || !p.id || !p.title) continue;
+    out.push({
+      ...p,
+      id: p.id.slice(0, 300),
+      title: p.title.slice(0, 1000),
+      authors: Array.isArray(p.authors) ? p.authors.filter((a) => typeof a === "string").slice(0, 50) : [],
+      year: typeof p.year === "number" ? p.year : null,
+      sources: Array.isArray(p.sources) ? p.sources.filter((s) => typeof s === "string") : [],
+      savedAt: typeof p.savedAt === "number" ? p.savedAt : Date.now(),
+      tags: Array.isArray(p.tags) ? p.tags.filter((t) => typeof t === "string") : [],
+      readingStatus: p.readingStatus === "reading" || p.readingStatus === "done" ? p.readingStatus : "to-read",
+    } as SavedPaper);
+  }
+  return out;
+}
+
 export default function SettingsPage() {
   const router = useRouter();
   const { user, initialized } = useAuth();
 
+  // ── Preferences (everyone) ────────────────────────────────────────────
+  const [prefs, setPrefs] = useState<Preferences | null>(null);
+  const [theme, setTheme] = useState<ThemeChoice>("system");
+  useEffect(() => {
+    setPrefs(getPreferences());
+    setTheme(savedThemeChoice());
+  }, []);
+
+  function savePrefs(e: React.FormEvent) {
+    e.preventDefault();
+    if (!prefs) return;
+    setPreferences(prefs);
+    toast("Preferences saved on this device", "success");
+  }
+
+  function chooseTheme(next: ThemeChoice) {
+    setTheme(next);
+    applyTheme(next);
+  }
+
+  // ── Account (signed in) ───────────────────────────────────────────────
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
+  const [savingUsername, setSavingUsername] = useState(false);
+
+  const [mpin, setMpin] = useState("");
+  const [savingMpin, setSavingMpin] = useState(false);
 
   const [currentPass, setCurrentPass] = useState("");
   const [newPass, setNewPass] = useState("");
   const [savingPass, setSavingPass] = useState(false);
-
-  const [mpin, setMpin] = useState("");
-  const [savingMpin, setSavingMpin] = useState(false);
-  const [savingUsername, setSavingUsername] = useState(false);
 
   const [newEmail, setNewEmail] = useState("");
   const [emailPass, setEmailPass] = useState("");
@@ -87,16 +175,11 @@ export default function SettingsPage() {
   const [reloading, setReloading] = useState(false);
 
   useEffect(() => {
-    if (initialized && !user) router.replace("/login");
-  }, [initialized, user, router]);
-
-  // Show the cached name instantly, then refresh it from Firestore.
-  useEffect(() => {
     if (!user) return;
     setEmail(user.email || "");
-
     const cached = localStorage.getItem(`tw_username_${user.uid}`);
-    if (cached) setUsername(cached);
+    // Older builds could cache the email as the name; don't show that.
+    if (cached && cached !== user.email) setUsername(cached);
 
     getDoc(doc(db, "users", user.uid, "profile", "main"))
       .then((snap) => {
@@ -106,31 +189,19 @@ export default function SettingsPage() {
         localStorage.setItem(`tw_username_${user.uid}`, name);
       })
       .catch(() => {});
+    // Older accounts stored the PIN in the profile; copy it to recovery/{uid}.
+    migrateRecoveryPin(user.uid).catch(() => {});
   }, [user]);
 
   async function saveUsername(e: React.FormEvent) {
     e.preventDefault();
-    if (!user || !username.trim()) return;
+    const name = username.trim().slice(0, 60);
+    if (!user || !name) return;
     setSavingUsername(true);
     try {
-      const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 5000);
-      await Promise.race([
-        setDoc(
-          doc(db, "users", user.uid, "profile", "main"),
-          { username: username.trim(), createdAt: Date.now() },
-          { merge: true }
-        ),
-        new Promise<never>((_, reject) => {
-          controller.signal.addEventListener("abort", () =>
-            reject(new Error("Request timed out. Is Firestore enabled in your Firebase console?"))
-          );
-        }),
-      ]);
-      clearTimeout(timeout);
-      localStorage.setItem(`tw_username_${user.uid}`, username.trim());
-      // Tell the header to re-read the name.
-      window.dispatchEvent(new CustomEvent("tw:usernameChanged", { detail: username.trim() }));
+      await setDoc(doc(db, "users", user.uid, "profile", "main"), { username: name }, { merge: true });
+      localStorage.setItem(`tw_username_${user.uid}`, name);
+      window.dispatchEvent(new CustomEvent("tw:usernameChanged", { detail: name }));
       toast("Display name updated", "success");
     } catch (err) {
       toast(err instanceof Error ? err.message : "Could not update the display name", "error");
@@ -142,17 +213,13 @@ export default function SettingsPage() {
   async function saveMpin(e: React.FormEvent) {
     e.preventDefault();
     if (!user || !mpin) return;
-    if (!/^\d+$/.test(mpin) || mpin.length < 4) {
-      toast("The PIN must be at least 4 digits, numbers only.", "error");
+    if (!/^\d{4,12}$/.test(mpin)) {
+      toast("The PIN must be 4 to 12 digits, numbers only.", "error");
       return;
     }
     setSavingMpin(true);
     try {
-      await setDoc(
-        doc(db, "users", user.uid, "profile", "main"),
-        { mpinHash: await hashMPIN(mpin) },
-        { merge: true }
-      );
+      await setRecoveryPin(user.uid, mpin);
       setMpin("");
       toast("Recovery PIN saved", "success");
     } catch {
@@ -167,7 +234,6 @@ export default function SettingsPage() {
     if (!user?.email) return;
     if (!currentPass) { toast("Enter your current password first.", "error"); return; }
     if (newPass.length < 6) { toast("The new password must be at least 6 characters.", "error"); return; }
-
     setSavingPass(true);
     try {
       await reauthenticateWithCredential(user, EmailAuthProvider.credential(user.email, currentPass));
@@ -176,7 +242,13 @@ export default function SettingsPage() {
       setNewPass("");
       toast("Password updated", "success");
     } catch (err) {
-      toast(err instanceof Error ? err.message : "Could not update the password", "error");
+      const code = (err as { code?: string })?.code;
+      toast(
+        code === "auth/invalid-credential" || code === "auth/wrong-password"
+          ? "Your current password is wrong."
+          : err instanceof Error ? err.message : "Could not update the password",
+        "error"
+      );
     } finally {
       setSavingPass(false);
     }
@@ -188,23 +260,13 @@ export default function SettingsPage() {
     setSavingEmail(true);
     try {
       await reauthenticateWithCredential(user, EmailAuthProvider.credential(user.email, emailPass));
-
-      // continueUrl brings the user back here after they verify.
-      const continueUrl =
-        typeof window !== "undefined"
-          ? `${window.location.origin}/settings`
-          : "http://localhost:3000/settings";
-
-      await verifyBeforeUpdateEmail(user, newEmail.toLowerCase(), {
-        url: continueUrl,
+      await verifyBeforeUpdateEmail(user, newEmail.trim().toLowerCase(), {
+        url: `${window.location.origin}/settings`,
         handleCodeInApp: false,
       });
-
-      // Stage the new lookup entry; the old one is removed only once verified.
-      const newKey = newEmail.toLowerCase().replace(/\./g, "_");
-      await setDoc(doc(db, "email_map", newKey), { uid: user.uid, email: newEmail.toLowerCase() });
-
-      setPendingEmail(newEmail.toLowerCase());
+      // Stage the new lookup entry; the old one is removed once verified.
+      await writeEmailMap(user.uid, newEmail);
+      setPendingEmail(newEmail.trim().toLowerCase());
       setNewEmail("");
       setEmailPass("");
       toast(`Verification link sent to ${newEmail}. Open it, then press Refresh here.`, "success");
@@ -222,10 +284,7 @@ export default function SettingsPage() {
       await user.reload();
       const fresh = auth.currentUser;
       if (fresh?.email && fresh.email !== email) {
-        // Verified: the old lookup entry can go now.
-        const oldKey = email.toLowerCase().replace(/\./g, "_");
-        const { deleteDoc } = await import("firebase/firestore");
-        await deleteDoc(doc(db, "email_map", oldKey)).catch(() => {});
+        await deleteDoc(doc(db, "email_map", emailKey(email))).catch(() => {});
         setEmail(fresh.email);
         setPendingEmail("");
         toast("Email updated", "success");
@@ -245,146 +304,316 @@ export default function SettingsPage() {
     router.push("/");
   }
 
-  if (!initialized || !user) {
+  // ── Your data (everyone) ──────────────────────────────────────────────
+  const fileRef = useRef<HTMLInputElement>(null);
+  const [busy, setBusy] = useState(false);
+  const [browserCount, setBrowserCount] = useState(0);
+  useEffect(() => {
+    localPapers().then((p) => setBrowserCount(p.length)).catch(() => setBrowserCount(0));
+  }, []);
+
+  async function downloadBackup() {
+    try {
+      const papers = await allPapers();
+      downloadJson(
+        { app: "Thesisweb", exportedAt: new Date().toISOString(), papers },
+        `thesisweb-library-${new Date().toISOString().slice(0, 10)}.json`
+      );
+      toast(`Backup of ${papers.length} papers downloaded`, "success");
+    } catch {
+      toast("Could not read your library.", "error");
+    }
+  }
+
+  async function importBackup(file: File) {
+    setBusy(true);
+    try {
+      if (file.size > 20 * 1024 * 1024) throw new Error("That file is too large to be a library backup.");
+      const papers = parseBackup(JSON.parse(await file.text()));
+      if (papers.length === 0) throw new Error("No papers found in this file.");
+      await savePapers(papers);
+      toast(`Imported ${papers.length} papers into your library`, "success");
+    } catch (err) {
+      toast(err instanceof SyntaxError ? "This file isn't valid JSON." : err instanceof Error ? err.message : "Import failed", "error");
+    } finally {
+      setBusy(false);
+      if (fileRef.current) fileRef.current.value = "";
+    }
+  }
+
+  async function copyBrowserPapers() {
+    setBusy(true);
+    try {
+      const papers = await localPapers();
+      await savePapers(papers);
+      toast(`Copied ${papers.length} papers to your account`, "success");
+    } catch {
+      toast("Could not copy the papers. Try again.", "error");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  if (!initialized) {
     return <p role="status" className="py-20 text-center text-muted">Loading…</p>;
   }
 
   return (
-    <div className="mx-auto max-w-xl space-y-4">
+    <div className="mx-auto max-w-2xl space-y-4">
       <header className="mb-2">
-        <p className="eyebrow">Account</p>
-        <h1 className="display mt-3 text-3xl">{username || email || "Account"}</h1>
-        <p className="mt-2 text-muted">{email}</p>
+        <p className="eyebrow">{user ? "Your profile" : "Settings"}</p>
+        <h1 className="display mt-2 text-3xl sm:text-4xl">{user ? username || "Your account" : "Settings"}</h1>
+        {user ? (
+          <p className="mt-2 break-all text-muted">{email}</p>
+        ) : (
+          <p className="mt-2 text-muted">
+            Preferences and backups work without an account.{" "}
+            <Link href="/login" className="text-accent underline">Sign in</Link> to keep your library on every
+            device.
+          </p>
+        )}
       </header>
 
-      <Section title="Display name">
-        <form onSubmit={saveUsername} className="flex flex-col gap-2 sm:flex-row">
-          <label htmlFor="display-name" className="sr-only">Display name</label>
-          <input
-            id="display-name"
-            className="input flex-1"
-            value={username}
-            placeholder="Your display name"
-            autoComplete="nickname"
-            onChange={(e) => setUsername(e.target.value)}
-          />
-          <button type="submit" disabled={savingUsername} className="btn-primary">
-            {savingUsername ? "Saving…" : "Save"}
-          </button>
-        </form>
-      </Section>
+      <Section title="Preferences" description="Saved on this device. Used every time you start a search or a citation.">
+        {prefs && (
+          <form onSubmit={savePrefs} className="space-y-4">
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div>
+                <label htmlFor="pref-year" className="field-label">Default “Published since”</label>
+                <select
+                  id="pref-year"
+                  value={prefs.yearsBack}
+                  onChange={(e) => setPrefs({ ...prefs, yearsBack: Number(e.target.value) })}
+                  className="input"
+                >
+                  {YEAR_OPTIONS.map((o) => (
+                    <option key={o.value} value={o.value}>{o.label}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label htmlFor="pref-country" className="field-label">Default country focus</label>
+                <div className="flex items-center gap-1">
+                  <div className="flex-1">
+                    <CountryCombobox
+                      id="pref-country"
+                      value={prefs.country}
+                      onChange={(c) => setPrefs({ ...prefs, country: c })}
+                    />
+                  </div>
+                  {prefs.country && (
+                    <button
+                      type="button"
+                      onClick={() => setPrefs({ ...prefs, country: null })}
+                      className="btn-ghost btn-sm !px-2"
+                      aria-label="Clear default country"
+                    >
+                      <X className="h-4 w-4" aria-hidden />
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
 
-      <Section title="Recovery PIN">
-        <form onSubmit={saveMpin}>
-          <label htmlFor="mpin" className="field-label">New PIN</label>
-          <div className="flex flex-col gap-2 sm:flex-row">
-            <input
-              id="mpin"
-              type="text"
-              inputMode="numeric"
-              pattern="[0-9]*"
-              autoComplete="off"
-              className="input flex-1"
-              placeholder="At least 4 digits"
-              value={mpin}
-              onChange={(e) => setMpin(e.target.value)}
-            />
-            <button type="submit" disabled={savingMpin} className="btn-primary">
-              {savingMpin ? "Saving…" : "Save PIN"}
-            </button>
-          </div>
-          <p className="field-hint">
-            Digits only. You need this to recover the account if you forget your password. New
-            accounts start at <strong>0000</strong>, so change it.
-          </p>
-        </form>
-      </Section>
+            <label className="flex cursor-pointer items-center gap-2 text-sm">
+              <input
+                type="checkbox"
+                checked={prefs.openAccessOnly}
+                onChange={(e) => setPrefs({ ...prefs, openAccessOnly: e.target.checked })}
+                className="h-4 w-4"
+                style={{ accentColor: "rgb(var(--accent))" }}
+              />
+              Show only papers with free full text by default
+            </label>
 
-      <Section title="Change password">
-        <form onSubmit={savePassword} className="space-y-4">
-          <PasswordField
-            id="cur-pass"
-            label="Current password"
-            value={currentPass}
-            onChange={setCurrentPass}
-            autoComplete="current-password"
-          />
-          <PasswordField
-            id="new-pass"
-            label="New password (at least 6 characters)"
-            value={newPass}
-            onChange={setNewPass}
-            autoComplete="new-password"
-          />
-          <button type="submit" disabled={savingPass} className="btn-primary w-full sm:w-auto">
-            {savingPass ? "Updating…" : "Update password"}
-          </button>
-        </form>
-      </Section>
+            <div>
+              <span className="field-label">Default citation style</span>
+              <div className="seg" role="group" aria-label="Default citation style">
+                {STYLES.map((s) => (
+                  <button
+                    key={s.id}
+                    type="button"
+                    data-on={prefs.citationStyle === s.id}
+                    onClick={() => setPrefs({ ...prefs, citationStyle: s.id })}
+                  >
+                    {s.label}
+                  </button>
+                ))}
+              </div>
+            </div>
 
-      <Section title="Change email">
-        <form onSubmit={saveEmail} className="space-y-4">
-          <div>
-            <label htmlFor="new-email" className="field-label">New email address</label>
-            <input
-              id="new-email"
-              type="email"
-              autoComplete="email"
-              className="input"
-              placeholder="new@email.com"
-              value={newEmail}
-              onChange={(e) => setNewEmail(e.target.value)}
-            />
-          </div>
-          <PasswordField
-            id="email-pass"
-            label="Current password, to confirm it is you"
-            value={emailPass}
-            onChange={setEmailPass}
-            autoComplete="current-password"
-          />
-          <p className="field-hint">
-            We send a link to the new address. Your email does not change until you open it.
-          </p>
-          <button type="submit" disabled={savingEmail} className="btn-primary w-full sm:w-auto">
-            {savingEmail ? "Sending…" : "Send verification link"}
-          </button>
-        </form>
+            <div>
+              <span className="field-label">Appearance</span>
+              <div className="seg" role="group" aria-label="Appearance">
+                {([
+                  ["light", "Light"],
+                  ["dark", "Dark"],
+                  ["system", "Match device"],
+                ] as [ThemeChoice, string][]).map(([t, label]) => (
+                  <button key={t} type="button" data-on={theme === t} onClick={() => chooseTheme(t)}>
+                    {label}
+                  </button>
+                ))}
+              </div>
+              <p className="field-hint">Applies straight away.</p>
+            </div>
 
-        {pendingEmail && (
-          <div className="notice notice-info mt-4">
-            <p>
-              <strong>Waiting for verification.</strong>{" "}Open the link sent to{" "}
-              <strong>{pendingEmail}</strong>, then press the button below.
-            </p>
-            <button
-              onClick={reloadSession}
-              disabled={reloading}
-              className="btn-secondary btn-sm mt-3"
-            >
-              {reloading ? "Checking…" : "I opened the link. Refresh."}
-            </button>
-          </div>
+            <button type="submit" className="btn-primary">Save preferences</button>
+          </form>
         )}
       </Section>
 
-      <Section title="Forgot your password?">
-        <p className="text-muted">
-          Use your recovery PIN to get a reset email without knowing the old password.
-        </p>
-        <Link href="/forgot-password" className="btn-secondary mt-4 w-full sm:w-auto">
-          Open account recovery
-        </Link>
+      {user && (
+        <>
+          <Section title="Display name">
+            <form onSubmit={saveUsername} className="flex flex-col gap-2 sm:flex-row">
+              <label htmlFor="display-name" className="sr-only">Display name</label>
+              <input
+                id="display-name"
+                className="input flex-1"
+                value={username}
+                maxLength={60}
+                placeholder="Your display name"
+                autoComplete="nickname"
+                onChange={(e) => setUsername(e.target.value)}
+              />
+              <button type="submit" disabled={savingUsername} className="btn-primary">
+                {savingUsername ? "Saving…" : "Save"}
+              </button>
+            </form>
+          </Section>
+
+          <Section
+            title="Recovery PIN"
+            description="Needed on the Forgot password page. New accounts start with 0000, so change it."
+          >
+            <form onSubmit={saveMpin}>
+              <label htmlFor="mpin" className="field-label">New PIN (4 to 12 digits)</label>
+              <div className="flex flex-col gap-2 sm:flex-row">
+                <input
+                  id="mpin"
+                  type="password"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
+                  maxLength={12}
+                  autoComplete="off"
+                  className="input flex-1"
+                  value={mpin}
+                  onChange={(e) => setMpin(e.target.value.replace(/\D/g, ""))}
+                />
+                <button type="submit" disabled={savingMpin} className="btn-primary">
+                  {savingMpin ? "Saving…" : "Save PIN"}
+                </button>
+              </div>
+            </form>
+          </Section>
+
+          <Section title="Change password">
+            <form onSubmit={savePassword} className="space-y-4">
+              <PasswordField id="cur-pass" label="Current password" value={currentPass} onChange={setCurrentPass} autoComplete="current-password" />
+              <PasswordField id="new-pass" label="New password (at least 6 characters)" value={newPass} onChange={setNewPass} autoComplete="new-password" />
+              <button type="submit" disabled={savingPass} className="btn-primary w-full sm:w-auto">
+                {savingPass ? "Updating…" : "Update password"}
+              </button>
+            </form>
+          </Section>
+
+          <Section title="Change email" description="We send a link to the new address. Your email only changes after you open it.">
+            <form onSubmit={saveEmail} className="space-y-4">
+              <div>
+                <label htmlFor="new-email" className="field-label">New email address</label>
+                <input
+                  id="new-email"
+                  type="email"
+                  autoComplete="email"
+                  className="input"
+                  placeholder="new@email.com"
+                  value={newEmail}
+                  onChange={(e) => setNewEmail(e.target.value)}
+                />
+              </div>
+              <PasswordField id="email-pass" label="Current password, to confirm it is you" value={emailPass} onChange={setEmailPass} autoComplete="current-password" />
+              <button type="submit" disabled={savingEmail} className="btn-primary w-full sm:w-auto">
+                {savingEmail ? "Sending…" : "Send verification link"}
+              </button>
+            </form>
+            {pendingEmail && (
+              <div className="notice notice-info mt-4">
+                <p>
+                  <strong>Waiting for verification.</strong> Open the link sent to{" "}
+                  <strong className="break-all">{pendingEmail}</strong>, then press the button below.
+                </p>
+                <button onClick={reloadSession} disabled={reloading} className="btn-secondary btn-sm mt-3">
+                  {reloading ? "Checking…" : "I opened the link. Refresh."}
+                </button>
+              </div>
+            )}
+          </Section>
+        </>
+      )}
+
+      <Section title="Your data" description={user ? "Your library is stored in your account." : "Your library is stored in this browser only."}>
+        <div className="space-y-4">
+          <div className="flex flex-wrap gap-2">
+            <button onClick={downloadBackup} className="btn-secondary btn-sm">
+              <Download className="h-3.5 w-3.5" aria-hidden />
+              Download library backup
+            </button>
+            <button onClick={() => fileRef.current?.click()} disabled={busy} className="btn-secondary btn-sm">
+              <Upload className="h-3.5 w-3.5" aria-hidden />
+              {busy ? "Working…" : "Import backup"}
+            </button>
+            <input
+              ref={fileRef}
+              type="file"
+              accept="application/json,.json"
+              className="hidden"
+              onChange={(e) => {
+                const f = e.target.files?.[0];
+                if (f) importBackup(f);
+              }}
+            />
+          </div>
+          <p className="field-hint !mt-0">
+            A backup is a .json file with every saved paper, its notes, collection and synthesis matrix.
+            Importing adds to your library; papers already in it are updated.
+          </p>
+
+          {user && browserCount > 0 && (
+            <div className="notice notice-info">
+              <p>
+                This browser also has <strong>{browserCount}</strong> paper{browserCount === 1 ? "" : "s"} you saved
+                while signed out.
+              </p>
+              <button onClick={copyBrowserPapers} disabled={busy} className="btn-secondary btn-sm mt-3">
+                Copy them to my account
+              </button>
+            </div>
+          )}
+
+          <button
+            onClick={() => { clearSearchHistory(); toast("Search history cleared", "info"); }}
+            className="btn-ghost btn-sm -ml-2.5"
+          >
+            Clear search history
+          </button>
+        </div>
       </Section>
 
-      <Section title="Sign out">
-        <p className="text-muted">
-          Your saved papers stay in your account. On a shared computer, sign out when you finish.
-        </p>
-        <button onClick={handleSignOut} className="btn-danger mt-4 w-full sm:w-auto">
-          Sign out of Thesisweb
-        </button>
-      </Section>
+      {user ? (
+        <>
+          <Section title="Forgot your password?" description="Use your recovery PIN to get a reset email without the old password.">
+            <Link href="/forgot-password" className="btn-secondary">Open account recovery</Link>
+          </Section>
+          <Section title="Sign out" description="Your saved papers stay in your account.">
+            <button onClick={handleSignOut} className="btn-danger w-full sm:w-auto">Sign out of Thesisweb</button>
+          </Section>
+        </>
+      ) : (
+        <Section title="Account" description="Free. Keeps your library, notes and matrix on every device.">
+          <Link href="/login" className="btn-primary">Sign in or create an account</Link>
+        </Section>
+      )}
     </div>
   );
 }

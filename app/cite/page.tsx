@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { Download } from "lucide-react";
 import { SaveButton } from "@/components/SaveButton";
@@ -14,6 +14,7 @@ import {
   type CitationStyle,
 } from "@/lib/citations";
 import { mergeRecentPapers } from "@/lib/recent-papers";
+import { getPreferences } from "@/lib/preferences";
 import type { Paper } from "@/lib/types";
 import type { CiteResult } from "@/app/api/cite/route";
 
@@ -45,6 +46,7 @@ function copy(text: string, label: string) {
 export default function CitePage() {
   const [text, setText] = useState("");
   const [style, setStyle] = useState<CitationStyle>("apa");
+  useEffect(() => setStyle(getPreferences().citationStyle), []);
 
   const lookup = useMutation({
     mutationFn: async (items: string[]) => {

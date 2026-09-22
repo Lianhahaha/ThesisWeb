@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Moon, Sun } from "lucide-react";
-import { THEME_KEY, type Theme } from "@/lib/theme";
+import { applyTheme, type Theme } from "@/lib/theme";
 
 export function ThemeToggle() {
   // Unknown until mounted: the server can't see the visitor's choice.
@@ -13,14 +13,7 @@ export function ThemeToggle() {
   }, []);
 
   function toggle() {
-    const next: Theme = theme === "dark" ? "light" : "dark";
-    document.documentElement.dataset.theme = next;
-    try {
-      localStorage.setItem(THEME_KEY, next);
-    } catch {
-      // Storage blocked: the switch still applies for this visit.
-    }
-    setTheme(next);
+    setTheme(applyTheme(theme === "dark" ? "light" : "dark"));
   }
 
   const label = theme === "dark" ? "Switch to light mode" : "Switch to dark mode";

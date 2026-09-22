@@ -22,7 +22,7 @@ On the home page or **Search**:
 4. Optional: tick **Free full text only** to hide paywalled papers.
 5. Press **Search**. It takes about 5 to 15 seconds because every database is asked at the same time.
 
-Below the form you also get your **Recent** searches (one click to re-run) and **Try** examples.
+Below the form you also get your **Recent** searches (the last 8 you ran in this browser; one click re-runs one, **Clear** empties the list) and four random **Try** topics (**Shuffle** for others).
 
 ### 2. Narrow the results
 
@@ -51,7 +51,7 @@ Click a title to open it. You get:
   - **Filter** by title, author or note.
   - Put each paper in a **collection** (e.g. *Foreign studies*, *Local studies*, *Theoretical framework*). Use **New collection** to create one.
   - Switch to **Synthesis matrix** and fill in *Method*, *Findings*, *Limitations* and *Relevance to my topic* for each paper. Each box saves when you click out of it. This table is what you turn into your written RRL.
-- **Signed out**, the library is stored in this browser only. Clearing site data deletes it. **Sign in** to keep it on every device.
+- **Signed out**, the library is stored in this browser only. Clearing site data deletes it. **Sign in** to keep it on every device. Papers you saved before signing in can be copied into your account with **Copy to my account** in the Library.
 
 ### 5. Cite and export
 
@@ -60,7 +60,16 @@ Click a title to open it. You get:
 
 ### 6. Your account (optional)
 
-**Sign in → Sign up** with a display name, email and a new password. In **Account settings** you can change your name, password and email, and set a **recovery PIN**. New accounts start with PIN `0000`, so change it. If you forget your password, **Forgot password?** asks for your email and PIN, then emails a reset link.
+**Sign in → Sign up** with a display name, email and a new password. You are signed in straight away; there is no verification email to wait for.
+
+### 7. Profile and settings
+
+Click your name at the top right (or the gear icon when signed out).
+
+- **Preferences** (saved on this device, no account needed): default *Published since*, default country, free-full-text-only, default citation style, and Light / Dark / Match device.
+- **Display name**, **Recovery PIN** (4 to 12 digits), **Change password** and **Change email** (confirmed by a link sent to the new address).
+- **Your data**: download a **library backup** (.json with every paper, note, collection and matrix entry), **import** a backup, copy papers saved in this browser into your account, and clear search history.
+- **Forgot password?** on the sign-in page asks for your email and recovery PIN, then emails a reset link to that address. New accounts start with PIN `0000`, so change it.
 
 ### Light or dark
 
@@ -153,7 +162,23 @@ Copy `.env.example` to `.env.local`. `.env.local` is git-ignored; never commit i
 | `CORE_API_KEY` | Optional | Enables CORE. |
 | `BASE_API_KEY` | Optional | Enables BASE. |
 
-Firestore needs rules that let each signed-in user read and write only their own `users/{uid}` documents, plus the `email_map` lookup used for account recovery.
+### Firebase setup
+
+1. **Authentication → Sign-in method → Email/Password → Enable.** Leave "Email link" off. Users sign themselves up; no verification is required.
+2. **Firestore → Rules:** paste the contents of [`firestore.rules`](firestore.rules) and press **Publish**. Until you do, Firestore stays in locked mode: people can create accounts, but saving papers, profiles, PINs and password recovery all fail. With the Firebase CLI: `npx firebase-tools deploy --only firestore:rules --project <your-project-id>`.
+3. **Authentication → Settings → Authorized domains:** add your Vercel domain.
+
+The rules let each user read and write only their own `users/{uid}` data, cap field sizes (title 1,000 characters, notes 20,000, abstract 40,000) so one account can't fill the free quota, allow single-document lookups (never listing) of `email_map` and `recovery` for the forgot-password page, and deny everything else.
+
+**Testing rules locally:** `npx firebase-tools emulators:start --only auth,firestore` uses `firebase.json` (Auth on 9099, Firestore on 8085, with `firestore.rules`). Build or run the app with `NEXT_PUBLIC_FIREBASE_EMULATORS=1` to point it at the emulators instead of the live project. Never set that variable in Vercel.
+
+### Cost and abuse protection
+
+- **Firebase:** on the free **Spark** plan nothing is ever billed; when a daily quota is used up, Firebase stops serving until the next day. Stay on Spark unless you need more. If you upgrade to Blaze, set a **budget alert** in Google Cloud Billing.
+- **Firestore reads are kept low:** the library count uses a count query (one read per 1,000 papers), and edits update the page in place instead of re-reading the library.
+- **API rate limits** ([`lib/rate-limit.ts`](lib/rate-limit.ts)), per visitor per minute: search 12, cite 10, related 20, pdf 30, summarize 30. Search is also capped at 120 per minute for everyone combined, per server instance. Over the limit the API answers `429` with a `Retry-After` header, and the page shows "Too many requests. Please wait N seconds." Counters live in memory per server instance, so on Vercel the true ceiling is a small multiple of these.
+- **For a hard, global limit**, add a rate-limit rule in Vercel (**Project → Firewall**) if your plan offers it, e.g. 60 requests per minute per IP on paths starting with `/api/`.
+- Inputs are capped: search text 300 characters, 25 DOIs per Cite request, 2,000 papers per backup import.
 
 ### Deploy to Vercel
 
@@ -171,7 +196,8 @@ app/
   library/            Saved papers, collections, synthesis matrix
   paper/[id]/         Abstract, citation, notes, citation explorer
   cite/               DOI citation generator
-  login/ forgot-password/ settings/
+  login/ forgot-password/
+  settings/           Preferences, profile, PIN, password, email, backups
   api/
     search/           Meta-search across all databases
     cite/             DOI lookup (Crossref, then OpenAlex)
@@ -187,6 +213,12 @@ lib/
   dedupe.ts           De-duplication and relevance scoring
   citations.ts        APA, MLA, IEEE, Chicago, BibTeX, RIS
   db.ts               Library storage (IndexedDB or Firestore)
+  firestore-library.ts  Firestore reads and writes for the library
+  recovery.ts         Recovery PIN and email lookup
+  preferences.ts      Per-device defaults
+  rate-limit.ts       API rate limiter
+  theme.ts            Light/dark switching
+firestore.rules       Firestore security rules (publish in the Firebase console)
   sources/            One adapter per database; meta.ts lists them all
 ```
 
@@ -195,7 +227,7 @@ lib/
 - **Next.js App Router, React 19, TypeScript, Tailwind CSS.** Light cream and soft dark themes, one lavender accent each; tokens are CSS variables in [`app/globals.css`](app/globals.css), switched by `data-theme` on `<html>`. A small script in `<head>` ([`lib/theme.ts`](lib/theme.ts)) applies the saved or system theme before first paint, so there is no flash. No animations.
 - **Server-side proxy.** The browser calls `/api/*`; the server calls the databases. Keeps API keys off the client and avoids CORS.
 - **Time limits.** Each database has a deadline (12 s, 15 s for Figshare, 6 s for Google Scholar), so one slow source never blocks the rest.
-- **Rate limiting.** Semantic Scholar calls are queued 1.1 s apart and a 429 is retried once.
+- **Rate limiting.** Each API route is limited per visitor (see *Cost and abuse protection*). Semantic Scholar calls are also queued 1.1 s apart and a 429 is retried once.
 
 ### Adding a database
 
@@ -210,7 +242,8 @@ lib/
 
 - **Signed out:** saved papers stay in your browser's IndexedDB on that device.
 - **Signed in:** saved papers and notes are stored in Firestore under your account.
-- **Recovery PIN:** stored only as a SHA-256 hash.
+- **Recovery PIN:** stored only as a SHA-256 hash, in its own `recovery/{uid}` document so the rest of the profile stays private. It only gates sending the reset email, which always goes to the account's own inbox, so a guessed PIN can't take over an account.
+- **Preferences and search history** stay in your browser.
 - **Search text and DOIs** are sent only to the databases listed above. Vercel Analytics counts page views.
 
 ## Ethics

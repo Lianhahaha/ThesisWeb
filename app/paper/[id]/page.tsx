@@ -13,6 +13,7 @@ import type { Paper, SavedPaper } from "@/lib/types";
 import { useAuth } from "@/lib/auth-store";
 import { RelatedPapers } from "@/components/RelatedPapers";
 import { sourceLabel } from "@/lib/sources/meta";
+import { getPreferences } from "@/lib/preferences";
 
 const STYLES: { id: CitationStyle; label: string }[] = [
   { id: "apa", label: "APA" },
@@ -42,10 +43,15 @@ export default function PaperDetailPage({ params }: { params: Promise<{ id: stri
 
   useEffect(() => {
     if (!user) { setCloudSaved(null); setCloudSavedData(null); return; }
-    getPaper(decodedId).then((p) => {
-      setCloudSaved(!!p);
-      setCloudSavedData(p ?? null);
-    });
+    getPaper(decodedId)
+      .then((p) => {
+        setCloudSaved(!!p);
+        setCloudSavedData(p ?? null);
+      })
+      .catch(() => {
+        setCloudSaved(false);
+        setCloudSavedData(null);
+      });
   }, [user, decodedId]);
 
   const saved = user
@@ -68,6 +74,7 @@ export default function PaperDetailPage({ params }: { params: Promise<{ id: stri
   const isSavedData = isSaved && typeof saved === "object" ? (saved as SavedPaper) : null;
 
   const [style, setStyle] = useState<CitationStyle>("apa");
+  useEffect(() => setStyle(getPreferences().citationStyle), []);
   const [notes, setNotes] = useState("");
 
   // Mirror the stored notes, including "none" — a truthy check used to leave the

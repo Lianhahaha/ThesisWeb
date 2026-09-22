@@ -3,12 +3,11 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { doc, getDoc } from "firebase/firestore";
 import { sendPasswordResetEmail } from "firebase/auth";
 import { ArrowLeft } from "lucide-react";
-import { auth, db } from "@/lib/firebase";
+import { auth } from "@/lib/firebase";
 import { toast } from "@/components/Toaster";
-import { hashMPIN } from "@/lib/utils";
+import { checkRecoveryPin, lookupUid } from "@/lib/recovery";
 
 type Step = "email" | "mpin" | "done";
 
@@ -29,11 +28,9 @@ export default function ForgotPasswordPage() {
     if (!email) return;
     setLoading(true);
     try {
-      // email_map is written at signup and maps an address to its uid.
-      const normalizedEmail = email.toLowerCase().replace(/\./g, "_");
-      const mapSnap = await getDoc(doc(db, "email_map", normalizedEmail));
-      if (!mapSnap.exists()) throw new Error("No account found with that email address.");
-      setUid(mapSnap.data().uid);
+      const found = await lookupUid(email);
+      if (!found) throw new Error("No account found with that email address.");
+      setUid(found);
       setStep("mpin");
     } catch (err) {
       toast(err instanceof Error ? err.message : "Email lookup failed", "error");
@@ -47,11 +44,7 @@ export default function ForgotPasswordPage() {
     if (!mpin || !uid) return;
     setLoading(true);
     try {
-      const profileSnap = await getDoc(doc(db, "users", uid, "profile", "main"));
-      if (!profileSnap.exists()) throw new Error("Profile not found.");
-
-      const savedHash = profileSnap.data().mpinHash || "";
-      if ((await hashMPIN(mpin)) !== savedHash) {
+      if (!(await checkRecoveryPin(uid, mpin))) {
         throw new Error("Incorrect PIN. If you never set one, try the default: 0000");
       }
 

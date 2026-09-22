@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { rateLimit } from "@/lib/rate-limit";
 import { summarize } from "@/lib/summarize";
 
 export const dynamic = "force-dynamic";
@@ -12,6 +13,9 @@ export const dynamic = "force-dynamic";
  * pattern is consistent with the other routes.)
  */
 export async function POST(req: NextRequest) {
+  const limited = rateLimit(req, "summarize");
+  if (limited) return limited;
+
   // Untrusted input: the body can be any JSON value (even null), not just our shape.
   let body: { text?: unknown; sentences?: unknown };
   try {

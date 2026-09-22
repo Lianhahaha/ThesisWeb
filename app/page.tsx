@@ -1,11 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { SearchPanel, DEFAULT_FROM_YEAR } from "@/components/SearchPanel";
 import { KEYLESS_SOURCE_COUNT, SOURCE_META } from "@/lib/sources/meta";
 import { buildSearchParams, type SearchInput } from "@/lib/search-params";
+import { fromYearFor, getPreferences } from "@/lib/preferences";
 
 const SOURCE_NAMES = Object.values(SOURCE_META)
   .filter((s) => !s.needsKey)
@@ -79,6 +80,12 @@ export default function HomePage() {
     openAccessOnly: false,
     country: null,
   });
+
+  // Saved defaults live in localStorage, so apply them after mount.
+  useEffect(() => {
+    const p = getPreferences();
+    setForm((f) => ({ ...f, fromYear: fromYearFor(p), country: p.country, openAccessOnly: p.openAccessOnly }));
+  }, []);
 
   return (
     <div>

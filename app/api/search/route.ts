@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { rateLimit } from "@/lib/rate-limit";
 import { metaSearch } from "@/lib/search";
 
 export const dynamic = "force-dynamic";
@@ -16,11 +17,15 @@ export const maxDuration = 30;
  *  - Keep the source adapters out of the client bundle (smaller, no secret keys)
  */
 export async function GET(req: NextRequest) {
+  const limited = rateLimit(req, "search");
+  if (limited) return limited;
+
   const { searchParams } = new URL(req.url);
-  const query = (searchParams.get("q") || "").trim();
+  // Caps keep a single request from fanning huge strings out to ~19 APIs.
+  const query = (searchParams.get("q") || "").trim().slice(0, 300);
   const fromYear = searchParams.get("fromYear");
   const openAccessOnly = searchParams.get("openAccessOnly") === "1";
-  const country = (searchParams.get("country") || "").trim() || null;
+  const country = (searchParams.get("country") || "").trim().slice(0, 60) || null;
 
   if (!query || query.length < 3) {
     return NextResponse.json(

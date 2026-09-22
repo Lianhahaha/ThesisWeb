@@ -3,9 +3,9 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Search, Library, Quote, Home, LogOut } from "lucide-react";
+import { Search, Library, Quote, Home, LogOut, Settings } from "lucide-react";
 import { useLiveQuery } from "dexie-react-hooks";
-import { getDb } from "@/lib/db";
+import { getDb, LIBRARY_EVENT } from "@/lib/db";
 import { useAuth } from "@/lib/auth-store";
 import { auth, db } from "@/lib/firebase";
 import { signOut } from "firebase/auth";
@@ -31,10 +31,15 @@ function useSavedCount() {
   const [cloud, setCloud] = useState<number | null>(null);
   useEffect(() => {
     if (!user) { setCloud(null); return; }
-    import("@/lib/db")
-      .then(({ allPapers }) => allPapers())
-      .then((p) => setCloud(p.length))
-      .catch(() => setCloud(0));
+    const load = () =>
+      import("@/lib/db")
+        .then(({ countPapers }) => countPapers())
+        .then(setCloud)
+        .catch(() => setCloud(0));
+    load();
+    // Firestore has no live query here, so refresh after each library change.
+    window.addEventListener(LIBRARY_EVENT, load);
+    return () => window.removeEventListener(LIBRARY_EVENT, load);
   }, [user]);
 
   return user ? cloud ?? 0 : local ?? 0;
@@ -125,9 +130,11 @@ function UserArea() {
     if (cached) { setUsername(cached); return; }
     getDoc(doc(db, "users", user.uid, "profile", "main"))
       .then((snap) => {
-        const name = (snap.exists() ? snap.data().username : "") || user.email || "";
-        setUsername(name);
-        localStorage.setItem(`tw_username_${user.uid}`, name);
+        const name = snap.exists() ? (snap.data().username as string | undefined) : undefined;
+        // Cache only a real name. Right after sign-up the profile may not be
+        // written yet; caching the email here would stick it in as the name.
+        if (name) localStorage.setItem(`tw_username_${user.uid}`, name);
+        setUsername(name || user.email || "");
       })
       .catch(() => setUsername(user.email || ""));
   }, [user]);
@@ -146,9 +153,14 @@ function UserArea() {
 
   if (!user) {
     return (
-      <Link href="/login" className="btn-primary btn-sm">
-        Sign in
-      </Link>
+      <div className="flex items-center gap-1">
+        <Link href="/settings" className="btn-ghost btn-sm !h-9 !w-9 !px-0" aria-label="Settings" title="Settings">
+          <Settings className="h-4 w-4" aria-hidden />
+        </Link>
+        <Link href="/login" className="btn-primary btn-sm">
+          Sign in
+        </Link>
+      </div>
     );
   }
 
@@ -157,7 +169,7 @@ function UserArea() {
       <Link
         href="/settings"
         className="btn-ghost btn-sm max-w-[96px] sm:max-w-[160px]"
-        title="Account settings"
+        title="Profile and settings"
       >
         <span className="truncate">{username || user.email || "Account"}</span>
       </Link>

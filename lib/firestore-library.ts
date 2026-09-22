@@ -7,7 +7,10 @@ import {
   getDocs,
   query,
   orderBy,
-  updateDoc
+  updateDoc,
+  deleteField,
+  writeBatch,
+  getCountFromServer,
 } from "firebase/firestore";
 import { db } from "./firebase";
 import type { SavedPaper } from "./types";
@@ -46,13 +49,34 @@ export async function fsIsSaved(uid: string, id: string): Promise<boolean> {
 
 export async function fsUpdatePaper(uid: string, id: string, changes: Partial<SavedPaper>): Promise<void> {
   const ref = doc(db, "users", uid, "papers", safeId(id));
-  await updateDoc(ref, changes);
+  // undefined means "clear this field" (e.g. remove from a collection). The
+  // SDK is set to ignore undefined, so say so explicitly.
+  const patch: Record<string, unknown> = {};
+  for (const [k, v] of Object.entries(changes)) patch[k] = v === undefined ? deleteField() : v;
+  await updateDoc(ref, patch);
+}
+
+/** Save many papers; Firestore batches hold at most 500 writes. */
+export async function fsSaveMany(uid: string, papers: SavedPaper[]): Promise<void> {
+  for (let i = 0; i < papers.length; i += 400) {
+    const batch = writeBatch(db);
+    for (const p of papers.slice(i, i + 400)) {
+      batch.set(doc(db, "users", uid, "papers", safeId(p.id)), { ...p, _fsId: safeId(p.id) });
+    }
+    await batch.commit();
+  }
 }
 
 export async function fsAllPapers(uid: string): Promise<SavedPaper[]> {
   const q = query(collection(db, "users", uid, "papers"), orderBy("savedAt", "desc"));
   const snap = await getDocs(q);
   return snap.docs.map(d => d.data() as SavedPaper);
+}
+
+/** Count without downloading: billed as one read per 1,000 papers. */
+export async function fsCountPapers(uid: string): Promise<number> {
+  const snap = await getCountFromServer(collection(db, "users", uid, "papers"));
+  return snap.data().count;
 }
 
 export async function fsListCollections(uid: string): Promise<string[]> {

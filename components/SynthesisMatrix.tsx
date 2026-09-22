@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import type { SavedPaper } from "@/lib/types";
 import { updatePaper } from "@/lib/db";
+import { toast } from "@/components/Toaster";
 
 /**
  * The synthesis matrix: one row per saved paper, with the four columns a
@@ -52,8 +53,8 @@ export function SynthesisMatrix({ papers }: { papers: SavedPaper[] }) {
             <div className="mt-3 space-y-3">
               {FIELDS.map((f) => (
                 <div key={f.key}>
-                  <label htmlFor={`${p.id}-${f.key}`} className="field-label">{f.label}</label>
-                  <Cell paper={p} field={f} />
+                  <label htmlFor={`m-${p.id}-${f.key}`} className="field-label">{f.label}</label>
+                  <Cell idPrefix="m" paper={p} field={f} />
                 </div>
               ))}
             </div>
@@ -86,10 +87,10 @@ export function SynthesisMatrix({ papers }: { papers: SavedPaper[] }) {
                 </th>
                 {FIELDS.map((f) => (
                   <td key={f.key} className="p-2 align-top">
-                    <label htmlFor={`${p.id}-${f.key}`} className="sr-only">
+                    <label htmlFor={`t-${p.id}-${f.key}`} className="sr-only">
                       {f.label} for {p.title}
                     </label>
-                    <Cell paper={p} field={f} />
+                    <Cell idPrefix="t" paper={p} field={f} />
                   </td>
                 ))}
               </tr>
@@ -102,9 +103,12 @@ export function SynthesisMatrix({ papers }: { papers: SavedPaper[] }) {
 }
 
 function Cell({
+  idPrefix,
   paper,
   field,
 }: {
+  /** The phone and desktop layouts both render; keeps element ids unique. */
+  idPrefix: string;
   paper: SavedPaper;
   field: { key: Field; label: string; placeholder: string };
 }) {
@@ -118,15 +122,21 @@ function Cell({
 
   async function commit() {
     if (!dirty) return;
-    await updatePaper(paper.id, {
-      matrix: { ...paper.matrix, [field.key]: value } as SavedPaper["matrix"],
-    });
-    setDirty(false);
+    try {
+      // Update only this cell ("matrix.method"). Writing the whole matrix from
+      // this row's copy could overwrite a neighbouring cell saved moments ago.
+      // Dexie and Firestore both accept dotted paths.
+      await updatePaper(paper.id, { [`matrix.${field.key}`]: value } as Partial<SavedPaper>);
+      setDirty(false);
+    } catch {
+      // Keep it dirty so the next blur retries.
+      toast(`Could not save “${field.label}”. Check your connection and click out of the box again.`, "error");
+    }
   }
 
   return (
     <textarea
-      id={`${paper.id}-${field.key}`}
+      id={`${idPrefix}-${paper.id}-${field.key}`}
       value={value}
       onChange={(e) => { setValue(e.target.value); setDirty(true); }}
       onBlur={commit}

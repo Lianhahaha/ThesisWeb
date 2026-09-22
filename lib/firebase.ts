@@ -1,8 +1,8 @@
 "use client";
 
 import { initializeApp, getApps } from "firebase/app";
-import { getAuth } from "firebase/auth";
-import { getFirestore } from "firebase/firestore";
+import { getAuth, connectAuthEmulator } from "firebase/auth";
+import { getFirestore, initializeFirestore, connectFirestoreEmulator, type Firestore } from "firebase/firestore";
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -17,4 +17,30 @@ const firebaseConfig = {
 // Initialize Firebase only once
 export const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
 export const auth = getAuth(app);
-export const db = getFirestore(app);
+
+// Search results often carry optional fields left undefined (no TL;DR, no
+// DOI). Firestore rejects undefined values outright, so drop them on write.
+// initializeFirestore may only run once per app; hot reload re-evaluates this.
+function initDb(): Firestore {
+  try {
+    return initializeFirestore(app, {
+      ignoreUndefinedProperties: true,
+      // The emulator's streaming channel is unreliable in some browsers.
+      ...(process.env.NEXT_PUBLIC_FIREBASE_EMULATORS === "1" ? { experimentalForceLongPolling: true } : {}),
+    });
+  } catch {
+    return getFirestore(app);
+  }
+}
+export const db = initDb();
+
+// Local testing only: `NEXT_PUBLIC_FIREBASE_EMULATORS=1` points the app at the
+// Auth (9099) and Firestore (8085) emulators instead of the live project.
+if (process.env.NEXT_PUBLIC_FIREBASE_EMULATORS === "1" && typeof window !== "undefined") {
+  try {
+    connectAuthEmulator(auth, "http://127.0.0.1:9099", { disableWarnings: true });
+    connectFirestoreEmulator(db, "127.0.0.1", 8085);
+  } catch {
+    // Already connected (hot reload).
+  }
+}

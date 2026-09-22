@@ -1,0 +1,90 @@
+rules_version = '2';
+
+// Thesisweb Firestore rules.
+// Publish: Firebase console → Firestore Database → Rules → paste → Publish.
+//
+// Layout:
+//   users/{uid}/profile/main     display name, preferences      (owner only)
+//   users/{uid}/papers/{paperId} saved papers                   (owner only)
+//   recovery/{uid}               hashed recovery PIN            (public get, owner write)
+//   email_map/{email_key}        email → uid, for recovery      (public get, owner write)
+//
+// Anything not matched here is denied. Size checks stop one account from
+// filling the free-tier quota with junk.
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(uid) {
+      return signedIn() && request.auth.uid == uid;
+    }
+
+    // Field is absent, null, or a string no longer than max.
+    function optString(d, key, max) {
+      return !(key in d) || d[key] == null || (d[key] is string && d[key].size() <= max);
+    }
+
+    // ── Profile ──────────────────────────────────────────────────────────
+    match /users/{uid}/profile/{docId} {
+      allow read, delete: if isOwner(uid);
+      allow create, update: if isOwner(uid)
+        && docId == 'main'
+        && request.resource.data.keys().hasOnly(['username', 'createdAt', 'prefs', 'mpinHash'])
+        && optString(request.resource.data, 'username', 60)
+        && (!('prefs' in request.resource.data) || request.resource.data.prefs is map)
+        && (!('prefs' in request.resource.data) || request.resource.data.prefs.keys().size() <= 20);
+    }
+
+    // ── Saved papers ─────────────────────────────────────────────────────
+    match /users/{uid}/papers/{paperId} {
+      allow read, delete: if isOwner(uid);
+      allow create, update: if isOwner(uid)
+        && request.resource.data.keys().size() <= 40
+        && request.resource.data.title is string
+        && request.resource.data.title.size() <= 1000
+        && optString(request.resource.data, 'abstract', 40000)
+        && optString(request.resource.data, 'tldr', 2000)
+        && optString(request.resource.data, 'notes', 20000)
+        && optString(request.resource.data, 'collection', 100)
+        && (!('matrix' in request.resource.data) || request.resource.data.matrix is map);
+    }
+
+    // ── Recovery PIN (SHA-256 hex) ───────────────────────────────────────
+    // Readable one document at a time so the signed-out recovery page can
+    // check a PIN. Listing is never allowed.
+    match /recovery/{uid} {
+      allow get: if true;
+      allow list: if false;
+      allow delete: if isOwner(uid);
+      allow create, update: if isOwner(uid)
+        && request.resource.data.keys().hasOnly(['mpinHash'])
+        && request.resource.data.mpinHash is string
+        && request.resource.data.mpinHash.size() == 64;
+    }
+
+    // ── Email lookup for recovery ────────────────────────────────────────
+    // Key is the lower-cased email with "." replaced by "_". An entry can be
+    // claimed only for your own uid, and only you can change or remove it.
+    match /email_map/{key} {
+      allow get: if true;
+      allow list: if false;
+
+      function validEntry() {
+        return request.resource.data.keys().hasOnly(['uid', 'email'])
+          && request.resource.data.uid == request.auth.uid
+          && request.resource.data.email is string
+          && request.resource.data.email.size() <= 254
+          && request.resource.data.email == request.resource.data.email.lower()
+          && key == request.resource.data.email.replace('[.]', '_');
+      }
+
+      allow create: if signedIn() && validEntry();
+      allow update: if signedIn() && resource.data.uid == request.auth.uid && validEntry();
+      allow delete: if signedIn() && resource.data.uid == request.auth.uid;
+    }
+  }
+}
