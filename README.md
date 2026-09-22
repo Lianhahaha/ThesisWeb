@@ -2,7 +2,7 @@
 
 ThesisWeb helps thesis students find related literature (RRL) fast, keep the papers they need, and check their own writing before submitting.
 
-- **Find** — one search box queries 18 free academic databases at once, merges duplicates and ranks the results.
+- **Find** — one search box queries 19 free academic databases at once, merges duplicates and ranks the results.
 - **Keep** — save papers, group them by chapter, take notes, compare them in a synthesis matrix and export citations.
 - **Check** — paste a paragraph and see which writing patterns make it read as AI-generated, with suggested edits.
 
@@ -88,6 +88,7 @@ All are free to use. Databases marked **key** are skipped until their API key is
 | [PLOS](https://plos.org) | PLOS ONE, Medicine, Biology, more | Science and health, always open |
 | [DataCite Theses](https://commons.datacite.org) | Theses from university repositories | Local and foreign thesis studies |
 | [OAPEN Books](https://oapen.org) | Open-access academic books | Theoretical frameworks |
+| [Figshare](https://figshare.com) | University and publisher repository items | Journal articles, theses, conference papers |
 | [CORE](https://core.ac.uk) — **key** | Open-access repositories and theses | Repository copies |
 | [BASE](https://www.base-search.net) — **key** | Institutional repositories | Theses, grey literature |
 | [Google Scholar](https://scholar.google.com) | Broad web index | Papers others miss |

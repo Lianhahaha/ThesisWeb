@@ -17,6 +17,7 @@ import { searchInspire } from "@/lib/sources/inspire";
 import { searchPlos } from "@/lib/sources/plos";
 import { searchDataCite } from "@/lib/sources/datacite";
 import { searchOapen } from "@/lib/sources/oapen";
+import { searchFigshare } from "@/lib/sources/figshare";
 import { dedupePapers, scoreRelevance } from "@/lib/dedupe";
 
 export interface SearchOpts {
@@ -121,6 +122,8 @@ const ADAPTERS: { id: string; run: SourceSearch; boolean: boolean; deadlineMs?: 
   { id: "plos",             run: searchPlos,             boolean: false },
   { id: "datacite",         run: searchDataCite,         boolean: false },
   { id: "oapen",            run: searchOapen,            boolean: false },
+  // Search + per-item detail fetches, so it needs more room than the default.
+  { id: "figshare",         run: searchFigshare,         boolean: false, deadlineMs: 15000 },
 ];
 
 /** Hard cap per source, so one slow or retrying API can't stall the whole search. */
