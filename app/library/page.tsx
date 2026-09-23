@@ -9,6 +9,7 @@ import {
   unsavePaper,
   updatePaper,
   savePapers,
+  removeLocalPapers,
   allPapers as loadAllPapers,
   applyPaperUpdate,
   PAPER_UPDATED_EVENT,
@@ -113,6 +114,7 @@ export default function LibraryPage() {
     setCopying(true);
     try {
       await savePapers(browserOnly);
+      await removeLocalPapers(browserOnly.map((p) => p.id));
       toast(`Copied ${browserOnly.length} papers to your account`, "success");
       refreshCloud();
     } catch {

@@ -98,6 +98,16 @@ export async function localPapers(): Promise<SavedPaper[]> {
   return getDb().papers.toArray();
 }
 
+/**
+ * Drop browser-only copies once they have been moved into an account.
+ * Without this the "papers saved before you signed in" offer never clears.
+ */
+export async function removeLocalPapers(ids: string[]): Promise<void> {
+  if (ids.length === 0) return;
+  await getDb().papers.bulkDelete(ids);
+  changed();
+}
+
 export async function unsavePaper(id: string): Promise<void> {
   const uid = auth.currentUser?.uid;
   if (uid) {

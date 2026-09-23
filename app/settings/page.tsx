@@ -16,7 +16,7 @@ import { auth, db } from "@/lib/firebase";
 import { useAuth } from "@/lib/auth-store";
 import { toast } from "@/components/Toaster";
 import { CountryCombobox } from "@/components/CountryCombobox";
-import { allPapers, localPapers, savePapers } from "@/lib/db";
+import { allPapers, localPapers, removeLocalPapers, savePapers } from "@/lib/db";
 import { emailKey, migrateRecoveryPin, setRecoveryPin, writeEmailMap } from "@/lib/recovery";
 import { getPreferences, setPreferences, type Preferences } from "@/lib/preferences";
 import { clearSearchHistory } from "@/lib/search-history";
@@ -118,14 +118,31 @@ function parseBackup(raw: unknown): SavedPaper[] {
     if (!item || typeof item !== "object") continue;
     const p = item as Partial<SavedPaper>;
     if (typeof p.id !== "string" || typeof p.title !== "string" || !p.id || !p.title) continue;
+    // Spreading the raw item would carry any stray keys the file happens to
+    // hold, and the security rules cap a paper at 40 of them. Take only the
+    // fields the app defines.
+    const str = (v: unknown, max: number) =>
+      typeof v === "string" && v ? v.slice(0, max) : undefined;
     out.push({
-      ...p,
       id: p.id.slice(0, 300),
       title: p.title.slice(0, 1000),
       authors: Array.isArray(p.authors) ? p.authors.filter((a) => typeof a === "string").slice(0, 50) : [],
       year: typeof p.year === "number" ? p.year : null,
+      publishedDate: str(p.publishedDate, 40),
+      venue: str(p.venue, 500),
+      doi: str(p.doi, 300),
+      abstract: str(p.abstract, 40000),
+      tldr: str(p.tldr, 2000),
+      openAccessUrl: str(p.openAccessUrl, 2000),
+      isOpenAccess: p.isOpenAccess === true,
+      citedByCount: typeof p.citedByCount === "number" ? p.citedByCount : undefined,
+      keywords: Array.isArray(p.keywords) ? p.keywords.filter((k) => typeof k === "string").slice(0, 50) : undefined,
+      retracted: p.retracted === true,
       sources: Array.isArray(p.sources) ? p.sources.filter((s) => typeof s === "string") : [],
       savedAt: typeof p.savedAt === "number" ? p.savedAt : Date.now(),
+      collection: str(p.collection, 100),
+      notes: str(p.notes, 20000),
+      matrix: p.matrix && typeof p.matrix === "object" ? p.matrix : undefined,
       tags: Array.isArray(p.tags) ? p.tags.filter((t) => typeof t === "string") : [],
       readingStatus: p.readingStatus === "reading" || p.readingStatus === "done" ? p.readingStatus : "to-read",
     } as SavedPaper);
@@ -265,8 +282,9 @@ export default function SettingsPage() {
         url: `${window.location.origin}/settings`,
         handleCodeInApp: false,
       });
-      // Stage the new lookup entry; the old one is removed once verified.
-      await writeEmailMap(user.uid, newEmail);
+      // The lookup entry is written only once the new address is verified —
+      // claiming it now would point recovery at an address the account may
+      // never own, and password reset for it would fail with user-not-found.
       setPendingEmail(newEmail.trim().toLowerCase());
       setNewEmail("");
       setEmailPass("");
@@ -285,6 +303,7 @@ export default function SettingsPage() {
       await user.reload();
       const fresh = auth.currentUser;
       if (fresh?.email && fresh.email !== email) {
+        await writeEmailMap(fresh.uid, fresh.email);
         await deleteDoc(doc(db, "email_map", emailKey(email))).catch(() => {});
         setEmail(fresh.email);
         setPendingEmail("");
@@ -347,6 +366,8 @@ export default function SettingsPage() {
     try {
       const papers = await localPapers();
       await savePapers(papers);
+      await removeLocalPapers(papers.map((p) => p.id));
+      setBrowserCount(0);
       toast(`Copied ${papers.length} papers to your account`, "success");
     } catch {
       toast("Could not copy the papers. Try again.", "error");
