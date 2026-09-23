@@ -24,9 +24,41 @@ function safeId(id: string): string {
   return id.replace(/\//g, "--");
 }
 
+/**
+ * Per-field caps from firestore.rules. A write past any of them is rejected by
+ * the server, so trim here rather than lose the whole save: repository records
+ * (Zenodo, OAPEN) routinely carry abstracts well past 40 000 characters.
+ */
+const LIMITS: Record<string, number> = {
+  title: 1000,
+  abstract: 40000,
+  tldr: 2000,
+  notes: 20000,
+  collection: 100,
+};
+
+/** The same rules cap a document at 40 keys. */
+const MAX_KEYS = 40;
+
+function clampValue(key: string, value: unknown): unknown {
+  const max = LIMITS[key.split(".")[0]];
+  return max && typeof value === "string" && value.length > max ? value.slice(0, max) : value;
+}
+
+/** A copy of the paper that the security rules will accept. */
+function forFirestore(p: SavedPaper, id: string): Record<string, unknown> {
+  const out: Record<string, unknown> = { _fsId: id };
+  for (const [k, v] of Object.entries(p)) {
+    if (v === undefined) continue;
+    if (Object.keys(out).length >= MAX_KEYS) break;
+    out[k] = clampValue(k, v);
+  }
+  return out;
+}
+
 export async function fsSavePaper(uid: string, p: SavedPaper): Promise<void> {
-  const ref = doc(db, "users", uid, "papers", safeId(p.id));
-  await setDoc(ref, { ...p, _fsId: safeId(p.id) });
+  const id = safeId(p.id);
+  await setDoc(doc(db, "users", uid, "papers", id), forFirestore(p, id));
 }
 
 export async function fsUnsavePaper(uid: string, id: string): Promise<void> {
@@ -52,18 +84,32 @@ export async function fsUpdatePaper(uid: string, id: string, changes: Partial<Sa
   // undefined means "clear this field" (e.g. remove from a collection). The
   // SDK is set to ignore undefined, so say so explicitly.
   const patch: Record<string, unknown> = {};
-  for (const [k, v] of Object.entries(changes)) patch[k] = v === undefined ? deleteField() : v;
+  for (const [k, v] of Object.entries(changes)) {
+    patch[k] = v === undefined ? deleteField() : clampValue(k, v);
+  }
   await updateDoc(ref, patch);
 }
 
-/** Save many papers; Firestore batches hold at most 500 writes. */
+/**
+ * Save many papers; Firestore batches hold at most 500 writes. A batch is
+ * atomic, so one record the rules reject would lose the other 399 — on failure,
+ * retry the chunk one document at a time and skip only what genuinely fails.
+ */
 export async function fsSaveMany(uid: string, papers: SavedPaper[]): Promise<void> {
   for (let i = 0; i < papers.length; i += 400) {
+    const chunk = papers.slice(i, i + 400);
     const batch = writeBatch(db);
-    for (const p of papers.slice(i, i + 400)) {
-      batch.set(doc(db, "users", uid, "papers", safeId(p.id)), { ...p, _fsId: safeId(p.id) });
+    for (const p of chunk) {
+      const id = safeId(p.id);
+      batch.set(doc(db, "users", uid, "papers", id), forFirestore(p, id));
     }
-    await batch.commit();
+    try {
+      await batch.commit();
+    } catch {
+      for (const p of chunk) {
+        await fsSavePaper(uid, p).catch(() => {});
+      }
+    }
   }
 }
 

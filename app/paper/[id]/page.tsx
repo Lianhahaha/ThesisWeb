@@ -153,33 +153,41 @@ export default function PaperDetailPage({ params }: { params: Promise<{ id: stri
   }
 
   async function toggleSave() {
-    if (isSavedData) {
-      await unsavePaper(decodedId);
-      setCloudSaved(false);
-      setCloudSavedData(null);
-      toast("Removed from library", "info");
-    } else if (paper) {
-      const sp = toSaved(paper);
-      await savePaper(sp);
-      setCloudSaved(true);
-      setCloudSavedData(sp);
-      toast("Saved to library", "success");
+    try {
+      if (isSavedData) {
+        await unsavePaper(decodedId);
+        setCloudSaved(false);
+        setCloudSavedData(null);
+        toast("Removed from library", "info");
+      } else if (paper) {
+        const sp = toSaved(paper);
+        await savePaper(sp);
+        setCloudSaved(true);
+        setCloudSavedData(sp);
+        toast("Saved to library", "success");
+      }
+    } catch {
+      toast("Could not reach your library. Check your connection and try again.", "error");
     }
   }
 
   async function saveNotes() {
-    if (!isSavedData && paper) {
-      const sp = toSaved(paper, { notes });
-      await savePaper(sp);
-      setCloudSaved(true);
-      setCloudSavedData(sp);
-    } else {
-      await updatePaper(decodedId, { notes });
-      // Signed-in users read from cloudSavedData, which updatePaper doesn't
-      // touch — without this the button never re-disables.
-      if (user) setCloudSavedData((prev) => (prev ? { ...prev, notes } : prev));
+    try {
+      if (!isSavedData && paper) {
+        const sp = toSaved(paper, { notes });
+        await savePaper(sp);
+        setCloudSaved(true);
+        setCloudSavedData(sp);
+      } else {
+        await updatePaper(decodedId, { notes });
+        // Signed-in users read from cloudSavedData, which updatePaper doesn't
+        // touch — without this the button never re-disables.
+        if (user) setCloudSavedData((prev) => (prev ? { ...prev, notes } : prev));
+      }
+      toast("Notes saved", "success");
+    } catch {
+      toast("Could not save your notes. Copy them somewhere safe and try again.", "error");
     }
-    toast("Notes saved", "success");
   }
 
   const p: Paper = isSavedData ?? paper;
@@ -372,6 +380,7 @@ export default function PaperDetailPage({ params }: { params: Promise<{ id: stri
           onChange={(e) => setNotes(e.target.value)}
           placeholder="Why this paper matters to your thesis, key quotes with page numbers…"
           rows={5}
+          maxLength={20000}
           className="input prose-read mt-3 resize-y"
         />
         <button
