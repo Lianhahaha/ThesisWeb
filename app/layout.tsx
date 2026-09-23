@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { EB_Garamond } from "next/font/google";
 import "./globals.css";
 import { Header } from "@/components/Header";
+import { Footer } from "@/components/Footer";
 import { Providers } from "@/components/Providers";
 import { Toaster } from "@/components/Toaster";
 import { Analytics } from "@vercel/analytics/react";
@@ -32,10 +33,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <Providers>
           <a href="#main" className="skip-link">Skip to content</a>
           <Header />
-          {/* pb-24 clears the mobile tab bar; md+ has no bar. */}
-          <main id="main" className="mx-auto w-full max-w-6xl px-4 pb-24 pt-6 sm:px-6 sm:pt-8 md:pb-12">
+          <main id="main" className="mx-auto w-full max-w-6xl px-4 pt-6 sm:px-6 sm:pt-8">
             {children}
           </main>
+          {/* The footer carries the bottom padding that clears the mobile tab bar. */}
+          <Footer />
           <Toaster />
         </Providers>
         <Analytics />
