@@ -14,6 +14,7 @@ import { addSearchHistory } from "@/lib/search-history";
 import { buildSearchParams, parseSearchParams, type SearchInput } from "@/lib/search-params";
 import { fromYearFor, getPreferences } from "@/lib/preferences";
 import { SORT_OPTIONS, countBySource, filterBySources, sortPapers, type SortKey } from "@/lib/result-view";
+import { trackEvent } from "@/lib/analytics-events";
 
 export default function SearchPage() {
   const [form, setForm] = useState<SearchInput>({
@@ -74,6 +75,7 @@ export default function SearchPage() {
       const ok = Object.values(data.sources).filter((s) => s === "ok").length;
       if (ok === 0) toast("No database returned results. Try different words.", "error");
       else toast(`${data.papers.length} papers in ${(data.tookMs / 1000).toFixed(1)}s`, "success");
+      trackEvent("search", { search_term: input.query, results: data.papers.length });
     },
     onError: (e: Error) => toast(e.message, "error"),
   });

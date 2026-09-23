@@ -10,6 +10,7 @@ import { auth, db } from "@/lib/firebase";
 import { useAuth } from "@/lib/auth-store";
 import { toast } from "@/components/Toaster";
 import { DEFAULT_MPIN, setRecoveryPin, writeEmailMap } from "@/lib/recovery";
+import { trackEvent } from "@/lib/analytics-events";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -41,6 +42,7 @@ export default function LoginPage() {
       if (mode === "login") {
         await signInWithEmailAndPassword(auth, email, password);
         toast("Signed in", "success");
+        trackEvent("login", { method: "password" });
         router.push("/library");
       } else {
         // Signing up signs the user in straight away; no email verification.
@@ -64,6 +66,7 @@ export default function LoginPage() {
         // The header may have looked before the profile existed; tell it now.
         window.dispatchEvent(new CustomEvent("tw:usernameChanged", { detail: name }));
         toast("Account created", "success");
+        trackEvent("sign_up", { method: "password" });
         router.push("/library");
       }
     } catch (err) {

@@ -3,6 +3,7 @@
 import { initializeApp, getApps } from "firebase/app";
 import { getAuth, connectAuthEmulator } from "firebase/auth";
 import { getFirestore, initializeFirestore, connectFirestoreEmulator, type Firestore } from "firebase/firestore";
+import { getAnalytics, isSupported, type Analytics } from "firebase/analytics";
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -43,4 +44,29 @@ if (process.env.NEXT_PUBLIC_FIREBASE_EMULATORS === "1" && typeof window !== "und
   } catch {
     // Already connected (hot reload).
   }
+}
+
+/**
+ * Firebase Analytics. Browser-only (it reads window/document), needs
+ * measurementId, and isSupported() rules out browsers that block it
+ * (Safari private mode, some ad/tracker blockers, non-browser environments).
+ * Skipped against the emulators — there's no Analytics emulator and local
+ * testing shouldn't add rows to production data.
+ */
+let _analytics: Analytics | null = null;
+export function getFirebaseAnalytics(): Analytics | null {
+  return _analytics;
+}
+if (
+  typeof window !== "undefined" &&
+  firebaseConfig.measurementId &&
+  process.env.NEXT_PUBLIC_FIREBASE_EMULATORS !== "1"
+) {
+  isSupported()
+    .then((ok) => {
+      if (ok) _analytics = getAnalytics(app);
+    })
+    .catch(() => {
+      // Unsupported or blocked: analytics silently stays off.
+    });
 }
