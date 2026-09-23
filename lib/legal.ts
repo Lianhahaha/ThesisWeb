@@ -10,4 +10,4 @@ export const LEGAL_UPDATED = "23 September 2026";
  * NEXT_PUBLIC_CONTACT_EMAIL overrides it per deployment.
  */
 export const CONTACT_EMAIL =
-  process.env.NEXT_PUBLIC_CONTACT_EMAIL || "peojectneodevcoe@gmail.com";
+  process.env.NEXT_PUBLIC_CONTACT_EMAIL || "projectneodevcoe@gmail.com";
