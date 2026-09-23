@@ -8,13 +8,15 @@ import { MIN_QUERY_LENGTH, type SearchInput } from "@/lib/search-params";
 
 const CURRENT_YEAR = new Date().getFullYear();
 
-export const DEFAULT_FROM_YEAR = CURRENT_YEAR - 5;
+export const DEFAULT_FROM_YEAR = CURRENT_YEAR - 4;
 
+// The year filter is inclusive, so "last N years" counts this one: N years back
+// is an offset of N - 1.
 const YEAR_PRESETS = [
   { value: CURRENT_YEAR - 1, label: `Last 2 years (${CURRENT_YEAR - 1}+)` },
-  { value: CURRENT_YEAR - 3, label: `Last 3 years (${CURRENT_YEAR - 3}+)` },
-  { value: CURRENT_YEAR - 5, label: `Last 5 years (${CURRENT_YEAR - 5}+)` },
-  { value: CURRENT_YEAR - 10, label: `Last 10 years (${CURRENT_YEAR - 10}+)` },
+  { value: CURRENT_YEAR - 2, label: `Last 3 years (${CURRENT_YEAR - 2}+)` },
+  { value: CURRENT_YEAR - 4, label: `Last 5 years (${CURRENT_YEAR - 4}+)` },
+  { value: CURRENT_YEAR - 9, label: `Last 10 years (${CURRENT_YEAR - 9}+)` },
   { value: 0, label: "Any year" },
 ];
 

@@ -24,11 +24,12 @@ import { applyTheme, savedThemeChoice, type ThemeChoice } from "@/lib/theme";
 import type { CitationStyle } from "@/lib/citations";
 import type { SavedPaper } from "@/lib/types";
 
+// Offsets are one less than the span because the year filter is inclusive.
 const YEAR_OPTIONS = [
   { value: 1, label: "Last 2 years" },
-  { value: 3, label: "Last 3 years" },
-  { value: 5, label: "Last 5 years" },
-  { value: 10, label: "Last 10 years" },
+  { value: 2, label: "Last 3 years" },
+  { value: 4, label: "Last 5 years" },
+  { value: 9, label: "Last 10 years" },
   { value: 0, label: "Any year" },
 ];
 
