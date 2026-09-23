@@ -87,7 +87,14 @@ export default function LoginPage() {
         An account keeps your saved papers on every device. Searching works without one.
       </p>
 
-      <div className="seg mt-6 w-full" role="group" aria-label="Sign in or sign up">
+      <p role="status" className="notice notice-danger mt-6">
+        <strong>Accounts are still under development.</strong>{" "}
+        Sign-in works, but expect rough edges, and saved papers could be lost while this is being
+        built. Keep your own copy of anything important — <em>Export references</em> in Library
+        downloads your whole library. Searching works without an account.
+      </p>
+
+      <div className="seg mt-4 w-full" role="group" aria-label="Sign in or sign up">
         <button type="button" className="flex-1" data-on={mode === "login"} onClick={() => setMode("login")}>
           Sign in
         </button>

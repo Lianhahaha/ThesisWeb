@@ -6,7 +6,8 @@
 export const LEGAL_UPDATED = "23 September 2026";
 
 /**
- * Where privacy and account-deletion requests go. A privacy policy needs a
- * reachable address, so set NEXT_PUBLIC_CONTACT_EMAIL before deploying.
+ * Where privacy and account-deletion requests go.
+ * NEXT_PUBLIC_CONTACT_EMAIL overrides it per deployment.
  */
-export const CONTACT_EMAIL = process.env.NEXT_PUBLIC_CONTACT_EMAIL || "set-your-email@example.com";
+export const CONTACT_EMAIL =
+  process.env.NEXT_PUBLIC_CONTACT_EMAIL || "peojectneodevcoe@gmail.com";
