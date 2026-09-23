@@ -14,58 +14,34 @@ const SOURCE_NAMES = Object.values(SOURCE_META)
 
 const STEPS: { title: string; body: React.ReactNode }[] = [
   {
-    title: "Search",
+    title: "Search and narrow",
     body: (
       <>
         Type three to six words about your topic. Set <em>Published since</em>{" "}(most rubrics want
         the last 5 years), a <em>Country focus</em>{" "}for local studies, or tick{" "}
-        <em>Free full text only</em>. Press Search.
+        <em>Free full text only</em>. On the results, sort by best match, citations or date, pick a
+        single database from the <em>Databases</em>{" "}list, or add a <em>Narrow with</em>{" "}term.
       </>
     ),
   },
   {
-    title: "Narrow",
-    body: (
-      <>
-        Sort by best match, citations or date. Use the <em>Databases</em>{" "}list to show one
-        database&apos;s results, or a <em>Narrow with</em>{" "}term to refine the search.
-      </>
-    ),
-  },
-  {
-    title: "Read",
+    title: "Read and save",
     body: (
       <>
         Open a title for its abstract, a free PDF link (or <em>Find free PDF</em>), a ready
-        citation, related papers and a notes box.
+        citation, related papers and a notes box. Press <em>Save</em>{" "}to keep it. Your library
+        lives in this browser; sign in to keep it on every device.
       </>
     ),
   },
   {
-    title: "Save",
-    body: (
-      <>
-        Press <em>Save</em>{" "}on any paper. Your library lives in this browser; sign in to keep it
-        on every device.
-      </>
-    ),
-  },
-  {
-    title: "Organise",
+    title: "Organise and cite",
     body: (
       <>
         In <Link href="/library" className="underline">Library</Link>, group papers into
-        collections (e.g. <em>Local studies</em>) and fill the synthesis matrix: method,
-        findings, limitations, relevance.
-      </>
-    ),
-  },
-  {
-    title: "Cite",
-    body: (
-      <>
-        <em>Export references</em>{" "}gives APA, MLA, IEEE or Chicago, plus .bib and .ris for Zotero
-        or Mendeley. Have DOIs already? Paste them into{" "}
+        collections (e.g. <em>Local studies</em>) and fill the synthesis matrix: method, findings,
+        limitations, relevance. <em>Export references</em>{" "}gives APA, MLA, IEEE or Chicago, plus
+        .bib and .ris for Zotero or Mendeley. Have DOIs already? Paste them into{" "}
         <Link href="/cite" className="underline">Cite</Link>.
       </>
     ),
@@ -118,11 +94,11 @@ export default function HomePage() {
           <h2 id="readme-h" className="eyebrow !text-sm !font-semibold !text-text">READ ME</h2>
           <p className="mt-1 text-sm text-muted">How to go from a topic to a reference list.</p>
 
-          <ol className="mt-4 grid gap-x-8 gap-y-0 sm:grid-cols-2">
+          <ol className="mt-4 grid gap-x-8 gap-y-0 md:grid-cols-3">
             {STEPS.map((s, i) => (
               <li
                 key={s.title}
-                className="flex gap-3 border-t border-border py-3 first:border-t-0 sm:[&:nth-child(2)]:border-t-0"
+                className="flex gap-3 border-t border-border py-3 first:border-t-0 md:border-t-0"
               >
                 <span className="serif text-xl leading-none text-subtle" aria-hidden>
                   {i + 1}
@@ -148,6 +124,13 @@ export default function HomePage() {
               <li>Some databases are slow or down at times. The Databases list shows which ones answered.</li>
               <li>Preprints (arXiv, some Zenodo records) are not peer-reviewed. Check before you cite.</li>
               <li>Always check a generated citation against your school&apos;s style guide.</li>
+              <li>
+                Your recovery PIN starts as <strong>0000</strong>. Change it in{" "}
+                <Link href="/settings" className="underline">Settings</Link> — it is what unlocks a
+                password reset.
+              </li>
+              <li>No results? Drop a word, widen <em>Published since</em>, or untick <em>Free full text only</em>.</li>
+              <li>Search with keywords, not a full question. &ldquo;Senior high school anxiety&rdquo; beats a sentence.</li>
             </ul>
           </div>
         </div>
