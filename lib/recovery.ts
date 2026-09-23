@@ -13,7 +13,13 @@ import { hashMPIN } from "@/lib/utils";
  * account.
  */
 
-export const DEFAULT_MPIN = "0000";
+/** Raised when an account has no PIN, so the UI can say what to do instead. */
+export class NoRecoveryPinError extends Error {
+  constructor() {
+    super("This account has no recovery PIN, so it cannot be recovered this way.");
+    this.name = "NoRecoveryPinError";
+  }
+}
 
 /** email_map key: lower-cased, "." → "_" (Firestore rules check the same). */
 export function emailKey(email: string): string {
@@ -36,25 +42,31 @@ export async function lookupUid(email: string): Promise<string | null> {
 }
 
 /**
- * True if the PIN matches. Accounts that never stored a recovery document
- * (made before it existed) accept the default PIN.
+ * True if the PIN matches. There is no default PIN: an account that never set
+ * one has no recovery path, rather than one every reader of this code knows.
  */
 export async function checkRecoveryPin(uid: string, pin: string): Promise<boolean> {
   const snap = await getDoc(doc(db, "recovery", uid));
-  const stored = snap.exists() ? (snap.data().mpinHash as string) : await hashMPIN(DEFAULT_MPIN);
-  return (await hashMPIN(pin)) === stored;
+  if (!snap.exists()) throw new NoRecoveryPinError();
+  return (await hashMPIN(pin)) === (snap.data().mpinHash as string);
+}
+
+/** True once the account has a PIN, so the UI can nudge the owner to set one. */
+export async function hasRecoveryPin(uid: string): Promise<boolean> {
+  return (await getDoc(doc(db, "recovery", uid))).exists();
 }
 
 /**
  * Older accounts kept the PIN hash inside the (now private) profile. When the
- * owner is signed in, copy it across so recovery keeps their chosen PIN.
+ * owner is signed in, copy it across so recovery keeps their chosen PIN. An
+ * account with no PIN anywhere is left alone for the owner to set one.
  */
 export async function migrateRecoveryPin(uid: string): Promise<void> {
   const rec = await getDoc(doc(db, "recovery", uid));
   if (rec.exists()) return;
   const profile = await getDoc(doc(db, "users", uid, "profile", "main"));
   const legacy = profile.exists() ? profile.data().mpinHash : undefined;
-  await setDoc(doc(db, "recovery", uid), {
-    mpinHash: typeof legacy === "string" && legacy.length === 64 ? legacy : await hashMPIN(DEFAULT_MPIN),
-  });
+  if (typeof legacy === "string" && legacy.length === 64) {
+    await setDoc(doc(db, "recovery", uid), { mpinHash: legacy });
+  }
 }

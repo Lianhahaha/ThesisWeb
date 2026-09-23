@@ -17,7 +17,7 @@ import { useAuth } from "@/lib/auth-store";
 import { toast } from "@/components/Toaster";
 import { CountryCombobox } from "@/components/CountryCombobox";
 import { allPapers, localPapers, removeLocalPapers, savePapers } from "@/lib/db";
-import { emailKey, migrateRecoveryPin, setRecoveryPin, writeEmailMap } from "@/lib/recovery";
+import { emailKey, hasRecoveryPin, migrateRecoveryPin, setRecoveryPin, writeEmailMap } from "@/lib/recovery";
 import { getPreferences, setPreferences, type Preferences } from "@/lib/preferences";
 import { clearSearchHistory } from "@/lib/search-history";
 import { applyTheme, savedThemeChoice, type ThemeChoice } from "@/lib/theme";
@@ -181,6 +181,8 @@ export default function SettingsPage() {
 
   const [mpin, setMpin] = useState("");
   const [savingMpin, setSavingMpin] = useState(false);
+  // null until the account has been checked, so the warning never flashes.
+  const [hasPin, setHasPin] = useState<boolean | null>(null);
 
   const [currentPass, setCurrentPass] = useState("");
   const [newPass, setNewPass] = useState("");
@@ -207,8 +209,13 @@ export default function SettingsPage() {
         localStorage.setItem(`tw_username_${user.uid}`, name);
       })
       .catch(() => {});
-    // Older accounts stored the PIN in the profile; copy it to recovery/{uid}.
-    migrateRecoveryPin(user.uid).catch(() => {});
+    // Older accounts stored the PIN in the profile; copy it to recovery/{uid},
+    // then find out whether this account has a PIN at all.
+    migrateRecoveryPin(user.uid)
+      .catch(() => {})
+      .then(() => hasRecoveryPin(user.uid))
+      .then(setHasPin)
+      .catch(() => {});
   }, [user]);
 
   async function saveUsername(e: React.FormEvent) {
@@ -239,6 +246,7 @@ export default function SettingsPage() {
     try {
       await setRecoveryPin(user.uid, mpin);
       setMpin("");
+      setHasPin(true);
       toast("Recovery PIN saved", "success");
     } catch {
       toast("Could not save the PIN. Try again.", "error");
@@ -507,8 +515,14 @@ export default function SettingsPage() {
 
           <Section
             title="Recovery PIN"
-            description="Needed on the Forgot password page. New accounts start with 0000, so change it."
+            description="Needed on the Forgot password page. It is the only way back into your account if you forget your password."
           >
+            {hasPin === false && (
+              <p role="alert" className="notice notice-danger mb-3">
+                <strong>You have no recovery PIN yet.</strong>{" "}
+                Set one now — without it a forgotten password cannot be reset.
+              </p>
+            )}
             <form onSubmit={saveMpin}>
               <label htmlFor="mpin" className="field-label">New PIN (4 to 12 digits)</label>
               <div className="flex flex-col gap-2 sm:flex-row">

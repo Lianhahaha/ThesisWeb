@@ -9,7 +9,7 @@ import { Eye, EyeOff } from "lucide-react";
 import { auth, db } from "@/lib/firebase";
 import { useAuth } from "@/lib/auth-store";
 import { toast } from "@/components/Toaster";
-import { DEFAULT_MPIN, setRecoveryPin, writeEmailMap } from "@/lib/recovery";
+import { writeEmailMap } from "@/lib/recovery";
 import { trackEvent } from "@/lib/analytics-events";
 
 export default function LoginPage() {
@@ -53,9 +53,10 @@ export default function LoginPage() {
         // The account exists at this point. If a profile write fails (offline,
         // rules not published yet) the user can still use the app, so warn
         // instead of failing the sign-up.
+        // No recovery PIN is set here: a PIN every reader of this code knows is
+        // worse than none. Settings prompts for one instead.
         const results = await Promise.allSettled([
           setDoc(doc(db, "users", uid, "profile", "main"), { username: name, createdAt: Date.now() }),
-          setRecoveryPin(uid, DEFAULT_MPIN),
           writeEmailMap(uid, email),
         ]);
         if (results.some((r) => r.status === "rejected")) {
@@ -105,7 +106,7 @@ export default function LoginPage() {
               autoFocus
               autoComplete="nickname"
               className="input"
-              placeholder="e.g. Lian"
+              placeholder="What we should call you"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
             />
@@ -164,8 +165,8 @@ export default function LoginPage() {
 
         {mode === "signup" && (
           <p className="notice notice-info">
-            Your recovery PIN starts as <strong>0000</strong>. Change it in Account settings once
-            you are signed in.
+            Set a <strong>recovery PIN</strong> in Account settings once you are signed in. It is
+            the only way to reset a forgotten password.
           </p>
         )}
 

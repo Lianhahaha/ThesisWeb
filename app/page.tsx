@@ -125,9 +125,9 @@ export default function HomePage() {
               <li>Preprints (arXiv, some Zenodo records) are not peer-reviewed. Check before you cite.</li>
               <li>Always check a generated citation against your school&apos;s style guide.</li>
               <li>
-                Your recovery PIN starts as <strong>0000</strong>. Change it in{" "}
-                <Link href="/settings" className="underline">Settings</Link> — it is what unlocks a
-                password reset.
+                Set a recovery PIN in{" "}
+                <Link href="/settings" className="underline">Settings</Link> as soon as you sign up.
+                Without one, a forgotten password cannot be reset.
               </li>
               <li>No results? Drop a word, widen <em>Published since</em>, or untick <em>Free full text only</em>.</li>
               <li>Search with keywords, not a full question. &ldquo;Senior high school anxiety&rdquo; beats a sentence.</li>

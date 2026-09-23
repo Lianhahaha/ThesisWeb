@@ -45,7 +45,7 @@ export default function ForgotPasswordPage() {
     setLoading(true);
     try {
       if (!(await checkRecoveryPin(uid, mpin))) {
-        throw new Error("Incorrect PIN. If you never set one, try the default: 0000");
+        throw new Error("That PIN does not match this account.");
       }
 
       await sendPasswordResetEmail(auth, email.toLowerCase());
@@ -103,11 +103,11 @@ export default function ForgotPasswordPage() {
               autoFocus
               autoComplete="off"
               className="input"
-              placeholder="e.g. 0000"
+              placeholder="4 to 12 digits"
               value={mpin}
               onChange={(e) => setMpin(e.target.value)}
             />
-            <p className="field-hint">If you never set one, try <strong>0000</strong>.</p>
+            <p className="field-hint">The PIN you chose in Settings.</p>
           </div>
           <p className="notice notice-info">
             Without the PIN this account cannot be recovered.

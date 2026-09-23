@@ -47,9 +47,10 @@ export default function TermsPage() {
       <h2 className="mt-8 text-xl">Your account</h2>
       <p className="mt-2">
         Accounts are free. Keep your password and recovery PIN to yourself — anyone holding them can
-        reach your library. Your recovery PIN starts as <strong>0000</strong> until you change it in{" "}
-        <Link href="/settings" className="underline">Settings</Link>, so change it. You are
-        responsible for what happens under your account.
+        reach your library. Set a recovery PIN in{" "}
+        <Link href="/settings" className="underline">Settings</Link> when you sign up: without one
+        a forgotten password cannot be reset. You are responsible for what happens under your
+        account.
       </p>
 
       <h2 className="mt-8 text-xl">Papers and other people&apos;s content</h2>
