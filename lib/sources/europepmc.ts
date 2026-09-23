@@ -71,8 +71,17 @@ export async function searchEuropePMC(
     const title = r.title?.replace(/\.$/, "") || "Untitled";
     const doi = r.doi || null;
     const year = r.pubYear ? parseInt(r.pubYear, 10) : null;
+    // Europe PMC gives "Smith J, Doe A." — family name first, then initials.
+    // Every other adapter yields "Given Family", and the citation formatters
+    // take the last word as the surname, so reorder here or APA renders
+    // "Smith J" as "J, S.".
     const authors = r.authorString
-      ? r.authorString.split(",").map((a) => a.trim()).slice(0, 10)
+      ? r.authorString
+          .split(",")
+          .map((a) => a.trim().replace(/\.$/, ""))
+          .filter(Boolean)
+          .map((a) => a.replace(/^(.+?)\s+([A-Za-z]{1,3})$/, "$2 $1"))
+          .slice(0, 10)
       : [];
     const pmcId = r.pmcid;
     const openAccessUrl = pmcId

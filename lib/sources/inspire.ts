@@ -53,7 +53,11 @@ export async function searchInspire(
   if (words.length === 0) return [];
 
   // `t` = title search; abstract-only matches are too noisy for a topical query.
-  let q = `t ${words.join(" and t ")}`;
+  // Requiring every word in the title matched almost nothing for a normal four-
+  // to six-word topic, and INSPIRE is `boolean: false`, so a country focus
+  // appends its name and would have to appear in the title too. Insist on the
+  // first two words and let INSPIRE rank the rest.
+  let q = `t ${words.slice(0, 2).join(" and t ")}`;
   if (fromYear && fromYear > 0) q += ` and date >= ${fromYear}`;
   // Every arXiv preprint is free to read; other records may not be.
   if (openAccessOnly) q += " and arxiv_eprints.value:*";

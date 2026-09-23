@@ -46,7 +46,11 @@ export async function searchGoogleScholar(
           year,
           venue: it.publication || it.journal || null,
           doi,
-          openAccessUrl: it.url || null,
+          // Scholar's link is usually a publisher landing page that may be
+          // paywalled, and the UI treats openAccessUrl as "free to read". A
+          // record that really is open access gets its URL when dedupe merges
+          // it with a source that knows so.
+          openAccessUrl: null,
           isOpenAccess: false,
           citedByCount: it.numCitations ?? 0,
           sources: ["google_scholar"],

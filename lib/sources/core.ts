@@ -42,11 +42,10 @@ export async function searchCore(
   const { fromYear, perSource = 15 } = opts;
 
   // CORE's search doesn't handle complex boolean queries well.
-  // Strip country-scope clauses like "AND (Philippines OR Filipino ...)".
-  const cleanQuery = query
-    .replace(/\s+AND\s+\([^)]+\)/gi, "")
-    .replace(/\s+OR\s+.*/gi, "")
-    .trim();
+  // Strip country-scope clauses like "AND (Philippines OR Filipino ...)", which
+  // is the only shape buildCountryQuery produces. Anything else is the user's
+  // own wording and has to survive intact.
+  const cleanQuery = query.replace(/\s+AND\s+\([^)]+\)/gi, "").trim();
 
   const params = new URLSearchParams({
     q: cleanQuery,
