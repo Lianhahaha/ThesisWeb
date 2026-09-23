@@ -59,18 +59,17 @@ function authorsApa(authors: string[]): string {
     .join("");
 }
 
-/** "Smith, John, and Jane Doe." (MLA / Chicago) */
-function authorsMla(authors: string[], style: "mla" | "chicago"): string {
+/**
+ * "Smith, John, and Jane Doe." (MLA 9 / Chicago bibliography)
+ *
+ * Both styles invert the first author and spell out a second one; "et al."
+ * starts only at three authors.
+ */
+function authorsMla(authors: string[]): string {
   if (!authors.length) return "";
-  if (authors.length === 1) return authors[0] + ".";
-  const first = authors[0];
-  const rest = authors.slice(1);
-  if (style === "mla") {
-    return `${first}, et al.`;
-  }
-  // Chicago: first author inverted, others normal, "and"
-  const inv = invertFirst(first);
-  if (rest.length === 1) return `${inv}, and ${rest[0]}.`;
+  const inv = invertFirst(authors[0]);
+  if (authors.length === 1) return `${inv}.`;
+  if (authors.length === 2) return `${inv}, and ${authors[1]}.`;
   return `${inv}, et al.`;
 }
 
@@ -108,7 +107,7 @@ export function formatCitation(p: Paper, style: CitationStyle, refNum?: number):
       return `${a} (${yr(p)}). ${title}.${v}.${doiPart}`.replace(/\.\./g, ".").replace(/\s+\./g, ".").trim();
     }
     case "mla": {
-      const a = esc(authorsMla(p.authors, "mla"));
+      const a = esc(authorsMla(p.authors));
       const v = venue ? ` <i>${esc(venue)},</i>` : "";
       return `${a} "${title}." ${v} ${yr(p, "")}.`.replace(/\s+\./g, ".").replace(/\s+/g, " ").trim();
     }
@@ -127,7 +126,7 @@ export function formatCitation(p: Paper, style: CitationStyle, refNum?: number):
       return `[${n}] ${parts.join(", ")}.`;
     }
     case "chicago": {
-      const a = esc(authorsMla(p.authors, "chicago"));
+      const a = esc(authorsMla(p.authors));
       const v = venue ? ` <i>${esc(venue)},</i>` : "";
       return `${a} "${title}."${v} ${yr(p, "")}.`.replace(/\s+\./g, ".").replace(/\s+/g, " ").trim();
     }
@@ -151,7 +150,7 @@ export function inTextCitation(p: Paper, style: CitationStyle, refNum?: number):
 
 /** Escape special BibTeX characters in field values. */
 function bibtexEscape(s: string): string {
-  return s.replace(/[&%#_{}\\]/g, (c) => `\\${c}`);
+  return s.replace(/[&%#_${}\\]/g, (c) => `\\${c}`);
 }
 
 /** Make a BibTeX entry. */
@@ -169,8 +168,10 @@ export function toBibtex(p: Paper): string {
     `  title = {${bibtexEscape(p.title)}}`,
     p.year ? `  year = {${p.year}}` : null,
     p.venue ? `  journal = {${bibtexEscape(p.venue)}}` : null,
-    p.doi ? `  doi = {${p.doi}}` : null,
-    p.openAccessUrl ? `  url = {${p.openAccessUrl}}` : null,
+    // DOIs and URLs carry _, &, % and # constantly; unescaped they break the
+    // .bib for LaTeX just as a title would.
+    p.doi ? `  doi = {${bibtexEscape(p.doi)}}` : null,
+    p.openAccessUrl ? `  url = {${bibtexEscape(p.openAccessUrl)}}` : null,
   ]
     .filter(Boolean)
     .join(",\n");
@@ -179,15 +180,18 @@ export function toBibtex(p: Paper): string {
 
 /** Make an RIS entry for import into Zotero/Mendeley/EndNote. */
 export function toRis(p: Paper): string {
+  // A RIS field ends at the newline, so an abstract containing one would have
+  // its remainder parsed as a tag and dropped by Zotero/Mendeley.
+  const oneLine = (s: string) => s.replace(/\s*\n+\s*/g, " ").trim();
   const lines = [
     "TY  - JOUR",
-    `TI  - ${p.title}`,
-    ...p.authors.map((a) => `AU  - ${a}`),
+    `TI  - ${oneLine(p.title)}`,
+    ...p.authors.map((a) => `AU  - ${oneLine(a)}`),
     p.year ? `PY  - ${p.year}` : null,
-    p.venue ? `JO  - ${p.venue}` : null,
-    p.doi ? `DO  - ${p.doi}` : null,
-    p.abstract ? `AB  - ${p.abstract}` : null,
-    p.openAccessUrl ? `UR  - ${p.openAccessUrl}` : null,
+    p.venue ? `JO  - ${oneLine(p.venue)}` : null,
+    p.doi ? `DO  - ${oneLine(p.doi)}` : null,
+    p.abstract ? `AB  - ${oneLine(p.abstract)}` : null,
+    p.openAccessUrl ? `UR  - ${oneLine(p.openAccessUrl)}` : null,
     "ER  -",
   ].filter(Boolean);
   return lines.join("\n");
