@@ -6,7 +6,7 @@ import { useMutation } from "@tanstack/react-query";
 import { useLiveQuery } from "dexie-react-hooks";
 import { ArrowLeft, Check, ExternalLink, FileText } from "lucide-react";
 import { getDb, savePaper, unsavePaper, updatePaper, getPaper } from "@/lib/db";
-import { getRecentPaper } from "@/lib/recent-papers";
+import { getRecentPaper, mergeRecentPapers } from "@/lib/recent-papers";
 import { formatCitation, citationToText, inTextCitation, toBibtex, type CitationStyle } from "@/lib/citations";
 import { toast } from "@/components/Toaster";
 import type { Paper, SavedPaper } from "@/lib/types";
@@ -27,11 +27,13 @@ export default function PaperDetailPage({ params }: { params: Promise<{ id: stri
   const decodedId = decodeURIComponent(id);
   const { user } = useAuth();
 
-  // IndexedDB, for signed-out users.
+  // IndexedDB, for signed-out users. undefined = still loading, null = not
+  // saved: Dexie answers a missing record with undefined, which would read as
+  // "loading" forever.
   const savedLocal = useLiveQuery(
     async () => {
       if (typeof window === "undefined") return undefined;
-      return getDb().papers.get(decodedId);
+      return (await getDb().papers.get(decodedId)) ?? null;
     },
     [decodedId],
     undefined
@@ -155,6 +157,9 @@ export default function PaperDetailPage({ params }: { params: Promise<{ id: stri
   async function toggleSave() {
     try {
       if (isSavedData) {
+        // Keep the paper on screen (and re-savable) once it leaves the library.
+        mergeRecentPapers([isSavedData]);
+        setRecent(isSavedData);
         await unsavePaper(decodedId);
         setCloudSaved(false);
         setCloudSavedData(null);
