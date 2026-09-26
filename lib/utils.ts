@@ -59,7 +59,12 @@ export function paperId(doi?: string | null, title?: string | null): string {
   // FNV-1a hash of normalized title — fast, good enough for keying
   let h1 = 0x811c9dc5;
   let h2 = 0x01000193;
-  const s = normalizeTitle(title || "");
+  // normalizeTitle keeps only a-z and 0-9, so every Chinese, Russian, Arabic
+  // (...) title reduced to "" and all of them shared one id. Hash the raw
+  // title for those; Latin titles keep their existing ids.
+  const s =
+    normalizeTitle(title || "") ||
+    (title || "").normalize("NFKC").toLowerCase().replace(/\s+/g, " ").trim();
   for (let i = 0; i < s.length; i++) {
     h1 ^= s.charCodeAt(i);
     h1 = Math.imul(h1, 0x01000193);
