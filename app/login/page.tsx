@@ -11,6 +11,7 @@ import { useAuth } from "@/lib/auth-store";
 import { toast } from "@/components/Toaster";
 import { writeEmailMap } from "@/lib/recovery";
 import { trackEvent } from "@/lib/analytics-events";
+import { authMessage } from "@/lib/auth-errors";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -71,7 +72,7 @@ export default function LoginPage() {
         router.push("/library");
       }
     } catch (err) {
-      toast(authMessage(err), "error");
+      toast(authMessage(err, "Sign-in failed. Try again."), "error");
     } finally {
       setLoading(false);
     }
@@ -183,28 +184,4 @@ export default function LoginPage() {
       </form>
     </div>
   );
-}
-
-/** Firebase error codes in plain words. */
-function authMessage(err: unknown): string {
-  const code = (err as { code?: string })?.code ?? "";
-  switch (code) {
-    case "auth/invalid-credential":
-    case "auth/invalid-login-credentials":
-    case "auth/wrong-password":
-    case "auth/user-not-found":
-      return "Wrong email or password.";
-    case "auth/email-already-in-use":
-      return "An account with this email already exists. Sign in instead.";
-    case "auth/invalid-email":
-      return "That email address doesn't look right.";
-    case "auth/weak-password":
-      return "Use a password of at least 6 characters.";
-    case "auth/too-many-requests":
-      return "Too many attempts. Wait a few minutes and try again.";
-    case "auth/network-request-failed":
-      return "No connection. Check your internet and try again.";
-    default:
-      return err instanceof Error ? err.message : "Sign-in failed. Try again.";
-  }
 }

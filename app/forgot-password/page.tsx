@@ -7,6 +7,7 @@ import { sendPasswordResetEmail } from "firebase/auth";
 import { ArrowLeft } from "lucide-react";
 import { auth } from "@/lib/firebase";
 import { toast } from "@/components/Toaster";
+import { authMessage } from "@/lib/auth-errors";
 import { checkRecoveryPin, lookupUid } from "@/lib/recovery";
 
 type Step = "email" | "mpin" | "done";
@@ -33,7 +34,7 @@ export default function ForgotPasswordPage() {
       setUid(found);
       setStep("mpin");
     } catch (err) {
-      toast(err instanceof Error ? err.message : "Email lookup failed", "error");
+      toast(errorText(err, "Email lookup failed. Try again."), "error");
     } finally {
       setLoading(false);
     }
@@ -51,7 +52,7 @@ export default function ForgotPasswordPage() {
       await sendPasswordResetEmail(auth, email.toLowerCase());
       setStep("done");
     } catch (err) {
-      toast(err instanceof Error ? err.message : "Verification failed", "error");
+      toast(errorText(err, "Verification failed. Try again."), "error");
     } finally {
       setLoading(false);
     }
@@ -131,4 +132,10 @@ export default function ForgotPasswordPage() {
       )}
     </div>
   );
+}
+
+/** Our own errors carry a readable message; Firebase ones carry a code. */
+function errorText(err: unknown, fallback: string): string {
+  if ((err as { code?: string })?.code) return authMessage(err, fallback);
+  return err instanceof Error ? err.message : fallback;
 }

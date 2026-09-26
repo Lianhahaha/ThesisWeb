@@ -15,6 +15,7 @@ import { Eye, EyeOff, Download, Upload, X } from "lucide-react";
 import { auth, db } from "@/lib/firebase";
 import { useAuth } from "@/lib/auth-store";
 import { toast } from "@/components/Toaster";
+import { authMessage } from "@/lib/auth-errors";
 import { CountryCombobox } from "@/components/CountryCombobox";
 import { allPapers, localPapers, removeLocalPapers, savePapers } from "@/lib/db";
 import { emailKey, hasRecoveryPin, migrateRecoveryPin, setRecoveryPin, writeEmailMap } from "@/lib/recovery";
@@ -272,7 +273,7 @@ export default function SettingsPage() {
       toast(
         code === "auth/invalid-credential" || code === "auth/wrong-password"
           ? "Your current password is wrong."
-          : err instanceof Error ? err.message : "Could not update the password",
+          : authMessage(err, "Could not update the password."),
         "error"
       );
     } finally {
@@ -298,7 +299,13 @@ export default function SettingsPage() {
       setEmailPass("");
       toast(`Verification link sent to ${newEmail}. Open it, then press Refresh here.`, "success");
     } catch (err) {
-      toast(err instanceof Error ? err.message : "Could not send the verification email", "error");
+      const code = (err as { code?: string })?.code;
+      toast(
+        code === "auth/invalid-credential" || code === "auth/wrong-password"
+          ? "Your current password is wrong."
+          : authMessage(err, "Could not send the verification email."),
+        "error"
+      );
     } finally {
       setSavingEmail(false);
     }
@@ -320,7 +327,7 @@ export default function SettingsPage() {
         toast("Email not changed yet. Make sure you opened the verification link.", "error");
       }
     } catch (err) {
-      toast(err instanceof Error ? err.message : "Refresh failed", "error");
+      toast(authMessage(err, "Refresh failed. Try again."), "error");
     } finally {
       setReloading(false);
     }
