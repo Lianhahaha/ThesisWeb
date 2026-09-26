@@ -102,6 +102,15 @@ function withMark(title: string, mark: string): string {
   return /[.?!]$/.test(title) ? title : title + mark;
 }
 
+/**
+ * " <i>Journal</i>, 2023." for MLA and Chicago, joining only the parts that
+ * exist: a missing year used to leave "Journal,." behind.
+ */
+function venueYear(venue: string, p: Paper): string {
+  const tail = [venue ? `<i>${esc(venue)}</i>` : "", yr(p, "")].filter(Boolean).join(", ");
+  return tail ? ` ${tail}.` : "";
+}
+
 export function formatCitation(p: Paper, style: CitationStyle, refNum?: number): string {
   const title = esc(p.title || "Untitled");
   const venue = p.venue || "";
@@ -116,8 +125,7 @@ export function formatCitation(p: Paper, style: CitationStyle, refNum?: number):
     }
     case "mla": {
       const a = esc(authorsMla(p.authors));
-      const v = venue ? ` <i>${esc(venue)},</i>` : "";
-      return `${a} "${withMark(title, ".")}" ${v} ${yr(p, "")}.`.replace(/\s+\./g, ".").replace(/\s+/g, " ").trim();
+      return `${a} "${withMark(title, ".")}"${venueYear(venue, p)}`.trim();
     }
     case "ieee": {
       const n = refNum ?? 1;
@@ -135,8 +143,7 @@ export function formatCitation(p: Paper, style: CitationStyle, refNum?: number):
     }
     case "chicago": {
       const a = esc(authorsMla(p.authors));
-      const v = venue ? ` <i>${esc(venue)},</i>` : "";
-      return `${a} "${withMark(title, ".")}"${v} ${yr(p, "")}.`.replace(/\s+\./g, ".").replace(/\s+/g, " ").trim();
+      return `${a} "${withMark(title, ".")}"${venueYear(venue, p)}`.trim();
     }
   }
 }
