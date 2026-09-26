@@ -71,12 +71,37 @@ export async function countPapers(): Promise<number> {
 
 // --- CRUD wrappers (routing to correct backend) ---
 
+/**
+ * Keep what the user added to a paper that is already saved. Save buttons
+ * build a fresh record, and they can show "Save" for a saved paper while its
+ * state is still loading or the lookup failed; writing that record as-is
+ * wiped the notes, matrix, collection, tags and reading status.
+ */
+function keepUserData(p: SavedPaper, existing: SavedPaper | undefined): SavedPaper {
+  if (!existing) return p;
+  return {
+    ...existing,
+    ...p,
+    notes: p.notes ?? existing.notes,
+    matrix: p.matrix ?? existing.matrix,
+    collection: p.collection ?? existing.collection,
+    tags: p.tags?.length ? p.tags : existing.tags ?? [],
+    readingStatus: existing.readingStatus ?? p.readingStatus,
+    savedAt: existing.savedAt ?? p.savedAt,
+  };
+}
+
 export async function savePaper(p: SavedPaper): Promise<void> {
   const uid = auth.currentUser?.uid;
   if (uid) {
-    await fs.fsSavePaper(uid, p);
+    // If this read fails (offline), the save fails too rather than risk
+    // overwriting a saved paper blind.
+    await fs.fsSavePaper(uid, keepUserData(p, await fs.fsGetPaper(uid, p.id)));
   } else {
-    await getDb().papers.put(p);
+    const local = getDb();
+    await local.transaction("rw", local.papers, async () => {
+      await local.papers.put(keepUserData(p, await local.papers.get(p.id)));
+    });
   }
   changed();
 }

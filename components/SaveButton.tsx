@@ -36,6 +36,8 @@ export function SaveButton({ paper, className }: Props) {
   }, [user, paper.id]);
 
   const saved = user ? cloudSaved ?? false : localSaved ?? false;
+  // Until the lookup answers, "Save" could be wrong; wait for it.
+  const unknown = user ? cloudSaved === null : localSaved === undefined;
 
   async function toggle() {
     if (busy) return; // ignore double-clicks while a write is in flight
@@ -68,7 +70,7 @@ export function SaveButton({ paper, className }: Props) {
   return (
     <button
       onClick={toggle}
-      disabled={busy}
+      disabled={busy || unknown}
       aria-pressed={saved}
       className={cn(saved ? "btn-secondary btn-sm" : "btn-primary btn-sm", className)}
     >
