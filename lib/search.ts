@@ -156,17 +156,23 @@ export async function metaSearch(
     ADAPTERS.map(async ({ id, run, boolean, deadlineMs }) => {
       try {
         const papers = await withDeadline(run(boolean ? booleanQuery : plainQuery, opts), deadlineMs ?? DEFAULT_DEADLINE_MS);
-        return [id, { ok: papers.length > 0 ? ("ok" as const) : ("empty" as const), papers }] as const;
-      } catch {
-        return [id, { ok: "error" as const, papers: [] as Paper[] }] as const;
+        return [id, { ok: papers.length > 0 ? ("ok" as const) : ("empty" as const), papers, error: "" }] as const;
+      } catch (e) {
+        const error = (e instanceof Error ? e.message : String(e)).slice(0, 120);
+        // Shows up in the deployment's function logs, so a source that keeps
+        // failing can be told apart from one that is only slow.
+        console.warn(`[search] ${id} failed: ${error}`);
+        return [id, { ok: "error" as const, papers: [] as Paper[], error }] as const;
       }
     })
   );
 
   const status: Record<string, "ok" | "error" | "empty"> = {};
+  const errors: Record<string, string> = {};
   let all: Paper[] = [];
-  for (const [name, { ok, papers }] of entries) {
+  for (const [name, { ok, papers, error }] of entries) {
     status[name] = ok;
+    if (error) errors[name] = error;
     all = all.concat(papers);
   }
 
@@ -179,5 +185,5 @@ export async function metaSearch(
 
   // Score relevance against the *original* user query (not the country-injected one)
   const papers = scoreRelevance(deduped, query);
-  return { papers, sources: status, tookMs: Date.now() - start };
+  return { papers, sources: status, errors, tookMs: Date.now() - start };
 }

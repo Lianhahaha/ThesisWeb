@@ -175,14 +175,18 @@ export default function SearchPage() {
                 const n = sourceCounts[name] ?? 0;
                 const on = selectedSources.has(name);
                 const clickable = !failed && n > 0;
+                const reason = result.errors?.[name];
+                // On the <li>: some browsers show no tooltip on a disabled button.
                 return (
-                  <li key={name}>
+                  <li
+                    key={name}
+                    title={failed ? `${sourceLabel(name)} failed${reason ? `: ${reason}` : " or timed out"}` : SOURCE_META[name]?.blurb ?? name}
+                  >
                     <button
                       type="button"
                       disabled={!clickable}
                       onClick={() => toggleSource(name)}
                       aria-pressed={on}
-                      title={failed ? `${sourceLabel(name)} failed or timed out` : SOURCE_META[name]?.blurb ?? name}
                       className={`list-row ${on ? "chip-on" : ""} ${clickable ? "" : "opacity-50"}`}
                     >
                       <span className="flex-1 truncate">{sourceLabel(name)}</span>

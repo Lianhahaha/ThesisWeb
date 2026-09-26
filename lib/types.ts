@@ -48,5 +48,7 @@ export interface SearchResult {
   papers: Paper[];
   /** Per-source status for the UI. */
   sources: Record<string, "ok" | "error" | "empty">;
+  /** Short reason for each source that failed, e.g. "rate limited (429)". */
+  errors?: Record<string, string>;
   tookMs: number;
 }
