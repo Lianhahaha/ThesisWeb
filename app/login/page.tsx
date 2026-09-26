@@ -9,7 +9,7 @@ import { Eye, EyeOff } from "lucide-react";
 import { auth, db } from "@/lib/firebase";
 import { useAuth } from "@/lib/auth-store";
 import { toast } from "@/components/Toaster";
-import { writeEmailMap } from "@/lib/recovery";
+import { setRecoveryPin, writeEmailMap } from "@/lib/recovery";
 import { trackEvent } from "@/lib/analytics-events";
 import { authMessage } from "@/lib/auth-errors";
 
@@ -23,6 +23,7 @@ export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
+  const [pin, setPin] = useState("");
   const [username, setUsername] = useState("");
 
   useEffect(() => {
@@ -50,6 +51,10 @@ export default function LoginPage() {
       toast("The two passwords don't match.", "error");
       return;
     }
+    if (mode === "signup" && !/^\d{4,12}$/.test(pin)) {
+      toast("The recovery PIN must be 4 to 12 digits, numbers only.", "error");
+      return;
+    }
 
     setLoading(true);
     try {
@@ -67,14 +72,15 @@ export default function LoginPage() {
         // The account exists at this point. If a profile write fails (offline,
         // rules not published yet) the user can still use the app, so warn
         // instead of failing the sign-up.
-        // No recovery PIN is set here: a PIN every reader of this code knows is
-        // worse than none. Settings prompts for one instead.
+        // The PIN is the user's own choice, never a default; it is the only
+        // way to reset a forgotten password, so ask for it up front.
         const results = await Promise.allSettled([
           setDoc(doc(db, "users", uid, "profile", "main"), { username: name, createdAt: Date.now() }),
           writeEmailMap(uid, email),
+          setRecoveryPin(uid, pin),
         ]);
         if (results.some((r) => r.status === "rejected")) {
-          toast("Account created, but your profile could not be saved yet. You can set it in Settings.", "info");
+          toast("Account created, but part of your profile could not be saved yet. Check your name and recovery PIN in Settings.", "info");
         }
 
         localStorage.setItem(`tw_username_${uid}`, name);
@@ -206,10 +212,27 @@ export default function LoginPage() {
         )}
 
         {mode === "signup" && (
-          <p className="notice notice-info">
-            Set a <strong>recovery PIN</strong> in Account settings once you are signed in. It is
-            the only way to reset a forgotten password.
-          </p>
+          <div>
+            <label htmlFor="signup-pin" className="field-label">Recovery PIN</label>
+            <input
+              id="signup-pin"
+              type="password"
+              inputMode="numeric"
+              pattern="[0-9]{4,12}"
+              required
+              minLength={4}
+              maxLength={12}
+              autoComplete="off"
+              className="input"
+              placeholder="4 to 12 digits"
+              value={pin}
+              onChange={(e) => setPin(e.target.value.replace(/\D/g, ""))}
+              aria-describedby="signup-pin-hint"
+            />
+            <p id="signup-pin-hint" className="field-hint">
+              The only way to reset a forgotten password. Write it down; you can change it in Settings.
+            </p>
+          </div>
         )}
 
         <button type="submit" disabled={loading} className="btn-primary w-full">
