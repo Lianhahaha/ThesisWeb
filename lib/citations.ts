@@ -200,6 +200,27 @@ function bibtexEscape(s: string): string {
   return s.replace(/[&%#_${}\\]/g, (c) => `\\${c}`);
 }
 
+/**
+ * A whole .bib file. Two papers by the same first author in the same year
+ * with the same first title word share a cite key ("smith2023the"), and
+ * BibTeX/biber silently drops the second; suffix repeats with b, c, ...
+ */
+export function toBibtexList(papers: Paper[]): string {
+  const seen = new Map<string, number>();
+  return papers
+    .map((p) => {
+      const entry = toBibtex(p);
+      const key = entry.slice(entry.indexOf("{") + 1, entry.indexOf(","));
+      const n = seen.get(key) ?? 0;
+      seen.set(key, n + 1);
+      if (n === 0) return entry;
+      // b, c, ... z, then numbers.
+      const suffix = n < 25 ? String.fromCharCode(97 + n) : String(n + 1);
+      return entry.replace(`{${key},`, `{${key}${suffix},`);
+    })
+    .join("\n\n");
+}
+
 /** Make a BibTeX entry. */
 export function toBibtex(p: Paper): string {
   // Cite keys must be plain ASCII with no punctuation: "O'Brien", "Müller" or a

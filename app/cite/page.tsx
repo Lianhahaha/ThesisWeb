@@ -9,7 +9,7 @@ import {
   formatCitation,
   citationToText,
   inTextCitation,
-  toBibtex,
+  toBibtexList,
   toRis,
   type CitationStyle,
 } from "@/lib/citations";
@@ -146,7 +146,7 @@ export default function CitePage() {
                   Copy all
                 </button>
                 <button
-                  onClick={() => download(papers.map(toBibtex).join("\n\n"), "references.bib", "text/plain")}
+                  onClick={() => download(toBibtexList(papers), "references.bib", "text/plain")}
                   className="btn-ghost btn-sm"
                 >
                   <Download className="h-3.5 w-3.5" aria-hidden /> .bib

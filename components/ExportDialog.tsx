@@ -7,7 +7,7 @@ import {
   formatCitation,
   citationToText,
   inTextCitation,
-  toBibtex,
+  toBibtexList,
   toRis,
   type CitationStyle,
 } from "@/lib/citations";
@@ -130,7 +130,7 @@ export function ExportDialog({ papers, onClose }: { papers: SavedPaper[]; onClos
           <div className="mt-2 flex flex-wrap gap-2">
             <button
               onClick={() =>
-                download(sorted.map(toBibtex).join("\n\n"), "references.bib", "text/plain")
+                download(toBibtexList(sorted), "references.bib", "text/plain")
               }
               className="btn-secondary btn-sm"
             >
