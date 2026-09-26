@@ -36,7 +36,11 @@ export default function LoginPage() {
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!email || !password) return;
-    if (mode === "signup" && !username) return;
+    // `required` accepts a name of only spaces, which would save as "".
+    if (mode === "signup" && !username.trim()) {
+      toast("Enter a display name.", "error");
+      return;
+    }
 
     setLoading(true);
     try {
@@ -113,6 +117,7 @@ export default function LoginPage() {
               required
               autoFocus
               autoComplete="nickname"
+              maxLength={60}
               className="input"
               placeholder="What we should call you"
               value={username}
