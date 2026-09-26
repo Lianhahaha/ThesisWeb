@@ -14,6 +14,7 @@ import {
   type CitationStyle,
 } from "@/lib/citations";
 import { mergeRecentPapers } from "@/lib/recent-papers";
+import { extractDoi } from "@/lib/text";
 import { getPreferences } from "@/lib/preferences";
 import type { Paper } from "@/lib/types";
 import type { CiteResult } from "@/app/api/cite/route";
@@ -72,7 +73,19 @@ export default function CitePage() {
     onError: (e: Error) => toast(e.message, "error"),
   });
 
-  const lines = text.split("\n").map((l) => l.trim()).filter(Boolean);
+  // The same DOI pasted twice (bare and as a doi.org link, say) used to give
+  // a duplicated reference and a React key collision; look each up once.
+  const seen = new Set<string>();
+  const lines = text
+    .split("\n")
+    .map((l) => l.trim())
+    .filter((l) => {
+      if (!l) return false;
+      const key = (extractDoi(l) ?? l).toLowerCase();
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
   const results = lookup.data ?? [];
   const papers = results.filter((r) => r.paper).map((r) => r.paper as Paper);
 
