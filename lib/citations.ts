@@ -70,10 +70,10 @@ function authorsApa(authors: string[]): string {
 }
 
 /**
- * "Smith, John, and Jane Doe." (MLA 9 / Chicago bibliography)
+ * "Smith, John, and Jane Doe." (MLA 9)
  *
- * Both styles invert the first author and spell out a second one; "et al."
- * starts only at three authors.
+ * Inverts the first author and spells out a second one; "et al." starts
+ * only at three authors.
  */
 function authorsMla(authors: string[]): string {
   if (!authors.length) return "";
@@ -81,6 +81,18 @@ function authorsMla(authors: string[]): string {
   if (authors.length === 1) return `${inv}.`;
   if (authors.length === 2) return `${inv}, and ${authors[1]}.`;
   return `${inv}, et al.`;
+}
+
+/**
+ * "Smith, John, Jane Doe, and Ann Roe." (Chicago 17 bibliography) — every
+ * author up to ten; beyond ten, the first seven then "et al."
+ */
+function authorsChicago(authors: string[]): string {
+  if (authors.length <= 2) return authorsMla(authors);
+  if (authors.length > 10) return `${[invertFirst(authors[0]), ...authors.slice(1, 7)].join(", ")}, et al.`;
+  const [first, ...others] = authors;
+  const last = others.pop();
+  return `${[invertFirst(first), ...others].join(", ")}, and ${last}.`;
 }
 
 function invertFirst(name: string): string {
@@ -157,7 +169,7 @@ export function formatCitation(p: Paper, style: CitationStyle, refNum?: number):
       return `[${n}] ${head}${rest.length ? ` ${rest.join(", ")}.` : ""}`;
     }
     case "chicago": {
-      const a = esc(authorsMla(p.authors));
+      const a = esc(authorsChicago(p.authors));
       return `${a} "${withMark(title, ".")}"${venueYear(venue, p)}`.trim();
     }
   }
