@@ -34,12 +34,14 @@ export async function GET(req: NextRequest) {
     );
   }
 
-  // Default recency: last 5 years.
+  // Default recency: last 5 years, counting this one (2022+ in 2026), the
+  // same as the search form's default. It used to be one year wider.
   const currentYear = new Date().getFullYear();
-  const parsedYear = fromYear ? Number(fromYear) : currentYear - 5;
+  const defaultYear = currentYear - 4;
+  const parsedYear = fromYear ? Number(fromYear) : defaultYear;
   const year = Number.isFinite(parsedYear) && parsedYear >= 0 && parsedYear <= currentYear + 1
     ? parsedYear
-    : currentYear - 5;
+    : defaultYear;
 
   try {
     const result = await metaSearch(query, {
