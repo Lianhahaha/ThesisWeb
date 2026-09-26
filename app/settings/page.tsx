@@ -9,6 +9,7 @@ import {
   reauthenticateWithCredential,
   EmailAuthProvider,
   verifyBeforeUpdateEmail,
+  sendEmailVerification,
   signOut,
 } from "firebase/auth";
 import { Eye, EyeOff, Download, Upload, X } from "lucide-react";
@@ -196,9 +197,14 @@ export default function SettingsPage() {
   const [pendingEmail, setPendingEmail] = useState("");
   const [reloading, setReloading] = useState(false);
 
+  // null until known, so the notice never flashes for verified accounts.
+  const [verified, setVerified] = useState<boolean | null>(null);
+  const [verifyBusy, setVerifyBusy] = useState(false);
+
   useEffect(() => {
     if (!user) return;
     setEmail(user.email || "");
+    setVerified(user.emailVerified);
     const cached = localStorage.getItem(`tw_username_${user.uid}`);
     // Older builds could cache the email as the name; don't show that.
     if (cached && cached !== user.email) setUsername(cached);
@@ -348,6 +354,34 @@ export default function SettingsPage() {
       toast(authMessage(err, "Refresh failed. Try again."), "error");
     } finally {
       setReloading(false);
+    }
+  }
+
+  async function resendVerification() {
+    if (!user) return;
+    setVerifyBusy(true);
+    try {
+      await sendEmailVerification(user);
+      toast(`Verification link sent to ${user.email}.`, "success");
+    } catch (err) {
+      toast(authMessage(err, "Could not send the verification email."), "error");
+    } finally {
+      setVerifyBusy(false);
+    }
+  }
+
+  async function checkVerified() {
+    if (!user) return;
+    setVerifyBusy(true);
+    try {
+      await user.reload();
+      const ok = !!auth.currentUser?.emailVerified;
+      setVerified(ok);
+      toast(ok ? "Email address confirmed" : "Not confirmed yet. Open the link in the email first.", ok ? "success" : "info");
+    } catch (err) {
+      toast(authMessage(err, "Could not check. Try again."), "error");
+    } finally {
+      setVerifyBusy(false);
     }
   }
 
@@ -517,6 +551,23 @@ export default function SettingsPage() {
           </form>
         )}
       </Section>
+
+      {user && verified === false && (
+        <div role="status" className="notice notice-info">
+          <p>
+            <strong>Confirm your email address.</strong> Password reset links go to{" "}
+            <strong className="break-all">{email}</strong>, so make sure it reaches you.
+          </p>
+          <div className="mt-3 flex flex-wrap gap-2">
+            <button onClick={resendVerification} disabled={verifyBusy} className="btn-secondary btn-sm">
+              Send the link again
+            </button>
+            <button onClick={checkVerified} disabled={verifyBusy} className="btn-ghost btn-sm">
+              I opened it
+            </button>
+          </div>
+        </div>
+      )}
 
       {user && (
         <>

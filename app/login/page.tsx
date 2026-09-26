@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from "firebase/auth";
+import { signInWithEmailAndPassword, createUserWithEmailAndPassword, sendEmailVerification } from "firebase/auth";
 import { doc, setDoc } from "firebase/firestore";
 import { Eye, EyeOff } from "lucide-react";
 import { auth, db } from "@/lib/firebase";
@@ -64,9 +64,12 @@ export default function LoginPage() {
         trackEvent("login", { method: "password" });
         router.push("/library");
       } else {
-        // Signing up signs the user in straight away; no email verification.
+        // Signing up signs the user in straight away. The verification email
+        // doesn't block anything; it catches a mistyped address while the
+        // user can still fix it, since password resets go to that address.
         const cred = await createUserWithEmailAndPassword(auth, email, password);
         const uid = cred.user.uid;
+        sendEmailVerification(cred.user).catch(() => {});
         const name = username.trim().slice(0, 60);
 
         // The account exists at this point. If a profile write fails (offline,
@@ -86,7 +89,7 @@ export default function LoginPage() {
         localStorage.setItem(`tw_username_${uid}`, name);
         // The header may have looked before the profile existed; tell it now.
         window.dispatchEvent(new CustomEvent("tw:usernameChanged", { detail: name }));
-        toast("Account created", "success");
+        toast(`Account created. We sent a link to ${email} to confirm the address.`, "success");
         trackEvent("sign_up", { method: "password" });
         router.push("/library");
       }
