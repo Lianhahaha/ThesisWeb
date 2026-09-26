@@ -105,7 +105,8 @@ type SourceSearch = (query: string, opts: SearchOpts) => Promise<Paper[]>;
 const ADAPTERS: { id: string; run: SourceSearch; boolean: boolean; deadlineMs?: number }[] = [
   { id: "openalex",        run: searchOpenAlex,        boolean: true },
   { id: "crossref",        run: searchCrossref,        boolean: true },
-  { id: "semanticscholar", run: searchSemanticScholar, boolean: true },
+  // Retries through 429s from its shared public pool, so it needs extra room.
+  { id: "semanticscholar", run: searchSemanticScholar, boolean: true, deadlineMs: 16000 },
   { id: "doaj",            run: searchDoaj,            boolean: true },
   { id: "europepmc",       run: searchEuropePMC,       boolean: true },
   { id: "pubmed",          run: searchPubMed,          boolean: true },

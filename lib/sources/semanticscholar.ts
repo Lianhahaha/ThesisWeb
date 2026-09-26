@@ -26,21 +26,36 @@ function s2Headers(): HeadersInit {
  * call reserves the next free slot 1.1 s after the previous one, so
  * concurrent searches queue instead of being rejected. The counter lives in
  * this server instance only, so under heavy parallel traffic (several
- * serverless instances) the retry below is still the safety net.
+ * serverless instances) the retries below are still the safety net.
  */
 const MIN_GAP_MS = 1100;
 let lastSlot = 0;
 
-/** GET, paced to the rate limit, with one retry on 429. */
+/**
+ * Without a key, requests share one public pool that answers most calls with
+ * 429 (roughly 7 in 8 at busy times), so a single retry almost never gets
+ * through. Retry 429 and 5xx a few times with backoff; the search deadline
+ * for this source leaves room for it.
+ */
+const MAX_ATTEMPTS = 4;
+
+/** GET, paced to the rate limit, retrying 429 and 5xx with backoff. */
 async function s2Fetch(url: string): Promise<Response> {
-  for (let attempt = 0; ; attempt++) {
+  for (let attempt = 1; ; attempt++) {
     const now = Date.now();
     const slot = Math.max(now, lastSlot + MIN_GAP_MS);
     lastSlot = slot; // reserve synchronously, before awaiting
     if (slot > now) await sleep(slot - now);
 
-    const res = await fetchWithTimeout(url, { headers: s2Headers() });
-    if (res.status !== 429 || attempt >= 1) return res;
+    const res = await fetchWithTimeout(url, { headers: s2Headers() }, 6000);
+    const retryable = res.status === 429 || res.status >= 500;
+    if (!retryable || attempt >= MAX_ATTEMPTS) return res;
+
+    // Honour Retry-After when present, otherwise back off 0.8 s, 1.6 s, 3.2 s
+    // plus jitter so parallel searches don't retry in lockstep.
+    const retryAfter = Number(res.headers.get("retry-after"));
+    const wait = retryAfter > 0 ? retryAfter * 1000 : 400 * 2 ** attempt + Math.random() * 300;
+    await sleep(Math.min(wait, 3500));
   }
 }
 
@@ -73,7 +88,9 @@ export async function searchSemanticScholar(
   if (fromYear) params.set("year", `${fromYear}-`);
 
   const res = await s2Fetch(`${BASE}?${params}`);
-  if (!res.ok) throw new Error(`Semantic Scholar ${res.status}`);
+  if (!res.ok) {
+    throw new Error(res.status === 429 ? "rate limited (429)" : `HTTP ${res.status}`);
+  }
   const data = await safeJson<{ data: S2Paper[]; total?: number }>(res);
   if (!data?.data) return [];
 
