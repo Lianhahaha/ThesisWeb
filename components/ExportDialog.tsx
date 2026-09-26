@@ -12,6 +12,7 @@ import {
   type CitationStyle,
 } from "@/lib/citations";
 import { getPreferences } from "@/lib/preferences";
+import { toast } from "@/components/Toaster";
 
 const STYLES: { id: CitationStyle; label: string }[] = [
   { id: "apa", label: "APA 7" },
@@ -68,9 +69,15 @@ export function ExportDialog({ papers, onClose }: { papers: SavedPaper[]; onClos
   }
 
   function copy(text: string, field: string) {
-    navigator.clipboard.writeText(text);
-    setCopied(field);
-    setTimeout(() => setCopied(null), 1500);
+    // Only say "Copied" once it really was: the clipboard can be blocked
+    // (insecure context, permissions, some in-app browsers).
+    navigator.clipboard
+      .writeText(text)
+      .then(() => {
+        setCopied(field);
+        setTimeout(() => setCopied(null), 1500);
+      })
+      .catch(() => toast("Could not copy. Select the text instead.", "error"));
   }
 
   return (
