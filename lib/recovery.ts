@@ -1,6 +1,6 @@
 "use client";
 
-import { doc, getDoc, setDoc } from "firebase/firestore";
+import { deleteDoc, doc, getDoc, setDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { hashMPIN } from "@/lib/utils";
 
@@ -29,6 +29,35 @@ export function emailKey(email: string): string {
 export async function writeEmailMap(uid: string, email: string): Promise<void> {
   const e = email.trim().toLowerCase();
   await setDoc(doc(db, "email_map", emailKey(e)), { uid, email: e });
+}
+
+/**
+ * Point email_map at the account's current address. Runs on every sign-in:
+ * the entry is missing when the write at sign-up failed, and goes stale when
+ * the email is changed (verifying the new address signs the user out before
+ * Settings can update it). Either way recovery said "No account found".
+ * The last synced address is remembered per browser, so this costs one write
+ * per address, and the old address's entry is removed when it changes.
+ */
+export async function syncEmailMap(uid: string, email: string): Promise<void> {
+  const e = email.trim().toLowerCase();
+  const storeKey = `tw_emailmap_${uid}`;
+  let last: string | null = null;
+  try {
+    last = localStorage.getItem(storeKey);
+  } catch {
+    // Storage blocked: just write every time.
+  }
+  if (last === e) return;
+  await writeEmailMap(uid, e);
+  if (last && emailKey(last) !== emailKey(e)) {
+    await deleteDoc(doc(db, "email_map", emailKey(last))).catch(() => {});
+  }
+  try {
+    localStorage.setItem(storeKey, e);
+  } catch {
+    // Ignore.
+  }
 }
 
 export async function setRecoveryPin(uid: string, pin: string): Promise<void> {
