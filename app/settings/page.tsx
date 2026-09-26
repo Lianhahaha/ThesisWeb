@@ -330,7 +330,7 @@ export default function SettingsPage() {
       const code = (err as { code?: string })?.code;
       // Verifying the new address revokes this session, so reload fails. That
       // means the change went through: the next sign-in updates the lookup.
-      if (code === "auth/user-token-expired" || code === "auth/user-not-found") {
+      if (code === "auth/user-token-expired") {
         setPendingEmail("");
         await signOut(auth).catch(() => {});
         toast("Email changed. Sign in again with your new address.", "success");
