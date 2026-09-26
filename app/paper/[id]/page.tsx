@@ -89,6 +89,11 @@ export default function PaperDetailPage({ params }: { params: Promise<{ id: stri
   const noRecent = recent === null;
   const dbMissing = saved === null;
 
+  // A copy found by "Find free PDF". Kept here so it shows whether or not
+  // the paper is saved (it used to be written only into a saved record).
+  const [foundUrl, setFoundUrl] = useState<string | null>(null);
+  useEffect(() => setFoundUrl(null), [decodedId]);
+
   const findPdf = useMutation({
     mutationFn: async (doi: string) => {
       const res = await fetch(`/api/pdf?doi=${encodeURIComponent(doi)}`);
@@ -98,7 +103,13 @@ export default function PaperDetailPage({ params }: { params: Promise<{ id: stri
     onSuccess: (data) => {
       if (data.found && data.url) {
         toast(`Found ${data.kind === "pdf" ? "a PDF" : "a landing page"}`, "success");
-        if (isSavedData) updatePaper(decodedId, { openAccessUrl: data.url, isOpenAccess: true });
+        setFoundUrl(data.url);
+        if (isSavedData) {
+          const changes = { openAccessUrl: data.url as string, isOpenAccess: true };
+          updatePaper(decodedId, changes)
+            .then(() => { if (user) setCloudSavedData((prev) => (prev ? { ...prev, ...changes } : prev)); })
+            .catch(() => {});
+        }
       } else {
         toast("No legal open-access copy found for this DOI.", "error");
       }
@@ -196,6 +207,7 @@ export default function PaperDetailPage({ params }: { params: Promise<{ id: stri
   }
 
   const p: Paper = isSavedData ?? paper;
+  const freeUrl = p.openAccessUrl || foundUrl;
 
   return (
     <article className="mx-auto max-w-3xl">
@@ -248,9 +260,9 @@ export default function PaperDetailPage({ params }: { params: Promise<{ id: stri
           {isSavedData ? "Saved to library" : "Save to library"}
         </button>
 
-        {p.openAccessUrl ? (
+        {freeUrl ? (
           <a
-            href={p.openAccessUrl}
+            href={freeUrl}
             target="_blank"
             rel="noopener noreferrer"
             className="btn-secondary"
@@ -281,7 +293,7 @@ export default function PaperDetailPage({ params }: { params: Promise<{ id: stri
         )}
       </div>
 
-      {!p.openAccessUrl && !p.doi && (
+      {!freeUrl && !p.doi && (
         <p className="field-hint">
           No DOI is listed, so a free copy cannot be looked up automatically.
         </p>
