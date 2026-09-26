@@ -22,11 +22,14 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirm, setConfirm] = useState("");
   const [username, setUsername] = useState("");
 
   useEffect(() => {
     if (initialized && user) router.replace("/library");
   }, [initialized, user, router]);
+
+  const mismatch = mode === "signup" && confirm.length > 0 && confirm !== password;
 
   if (!initialized) {
     return <p role="status" className="py-20 text-center text-muted">Loading…</p>;
@@ -39,6 +42,12 @@ export default function LoginPage() {
     // `required` accepts a name of only spaces, which would save as "".
     if (mode === "signup" && !username.trim()) {
       toast("Enter a display name.", "error");
+      return;
+    }
+    // A mistyped password at sign-up locks a new account out: there is no
+    // recovery PIN yet to reset it with.
+    if (mode === "signup" && password !== confirm) {
+      toast("The two passwords don't match.", "error");
       return;
     }
 
@@ -175,6 +184,26 @@ export default function LoginPage() {
             </p>
           )}
         </div>
+
+        {mode === "signup" && (
+          <div>
+            <label htmlFor="confirm-password" className="field-label">Confirm password</label>
+            <input
+              id="confirm-password"
+              type={showPassword ? "text" : "password"}
+              required
+              autoComplete="new-password"
+              className="input"
+              value={confirm}
+              onChange={(e) => setConfirm(e.target.value)}
+              aria-invalid={mismatch}
+              aria-describedby={mismatch ? "confirm-hint" : undefined}
+            />
+            {mismatch && (
+              <p id="confirm-hint" className="field-hint text-danger">Doesn&apos;t match the password above.</p>
+            )}
+          </div>
+        )}
 
         {mode === "signup" && (
           <p className="notice notice-info">
