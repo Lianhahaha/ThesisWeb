@@ -30,10 +30,18 @@ export function getDb(): ThesisDB {
   return _db;
 }
 
-/** Fired after any library change so counters (e.g. the header) can refresh. */
+/**
+ * Fired after any library change so counters (e.g. the header) can refresh.
+ * `removed` names a paper taken out of the library; `local` marks a change
+ * to this browser's copies only.
+ */
 export const LIBRARY_EVENT = "tw:library";
-function changed(): void {
-  if (typeof window !== "undefined") window.dispatchEvent(new Event(LIBRARY_EVENT));
+export interface LibraryChange {
+  removed?: string;
+  local?: boolean;
+}
+function changed(detail: LibraryChange = {}): void {
+  if (typeof window !== "undefined") window.dispatchEvent(new CustomEvent<LibraryChange>(LIBRARY_EVENT, { detail }));
 }
 
 /** Fired after updatePaper, with { id, changes }, so in-memory copies can patch themselves. */
@@ -153,7 +161,7 @@ export async function localPapers(): Promise<SavedPaper[]> {
 export async function removeLocalPapers(ids: string[]): Promise<void> {
   if (ids.length === 0) return;
   await getDb().papers.bulkDelete(ids);
-  changed();
+  changed({ local: true });
 }
 
 export async function unsavePaper(id: string): Promise<void> {
@@ -163,7 +171,7 @@ export async function unsavePaper(id: string): Promise<void> {
   } else {
     await getDb().papers.delete(id);
   }
-  changed();
+  changed({ removed: id });
 }
 
 export async function getPaper(id: string): Promise<SavedPaper | undefined> {

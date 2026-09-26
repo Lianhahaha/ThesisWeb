@@ -11,7 +11,9 @@ import {
   moveLocalPapersToAccount,
   allPapers as loadAllPapers,
   applyPaperUpdate,
+  LIBRARY_EVENT,
   PAPER_UPDATED_EVENT,
+  type LibraryChange,
   type PaperUpdate,
 } from "@/lib/db";
 import { PaperCard } from "@/components/PaperCard";
@@ -34,23 +36,39 @@ export default function LibraryPage() {
 
   // Firestore, for signed-in users.
   const [cloudPapers, setCloudPapers] = useState<SavedPaper[] | null>(null);
-  const [cloudLoading, setCloudLoading] = useState(false);
+  const [cloudError, setCloudError] = useState(false);
 
   const refreshCloud = useCallback(async () => {
     if (!user) return;
-    setCloudLoading(true);
+    setCloudError(false);
     try {
       setCloudPapers(await loadAllPapers());
     } catch {
+      setCloudError(true);
       toast("Could not load your library from the cloud.", "error");
-    } finally {
-      setCloudLoading(false);
     }
   }, [user]);
 
   useEffect(() => {
     setCloudPapers(null);
     if (user) refreshCloud();
+  }, [user, refreshCloud]);
+
+  // The Save button on each card can unsave or re-save a paper; keep the
+  // list in step instead of showing a removed paper until a reload.
+  useEffect(() => {
+    if (!user) return;
+    function onChange(e: Event) {
+      const detail = (e as CustomEvent<LibraryChange>).detail ?? {};
+      if (detail.local) return;
+      if (detail.removed) {
+        setCloudPapers((prev) => prev?.filter((p) => p.id !== detail.removed) ?? prev);
+      } else {
+        refreshCloud();
+      }
+    }
+    window.addEventListener(LIBRARY_EVENT, onChange);
+    return () => window.removeEventListener(LIBRARY_EVENT, onChange);
   }, [user, refreshCloud]);
 
   // Keep the cloud copy in step with edits (matrix cells, collections) without
@@ -68,8 +86,10 @@ export default function LibraryPage() {
     ? cloudPapers ?? undefined
     : (localPapers as SavedPaper[] | undefined);
 
+  // Signed in, the list is loading until the first read lands: the old check
+  // flashed "Your library is empty" on the render before the read started.
   const isLoading =
-    !initialized || (user ? cloudLoading && cloudPapers === null : localPapers === undefined);
+    !initialized || (user ? cloudPapers === null && !cloudError : localPapers === undefined);
 
   const [view, setView] = useState<View>("list");
   const [filter, setFilter] = useState("");
@@ -120,7 +140,6 @@ export default function LibraryPage() {
           : `Copied ${moved} papers to your account`,
         left > 0 ? "error" : "success"
       );
-      refreshCloud();
     } catch {
       toast("Could not copy the papers. Try again.", "error");
     } finally {
@@ -137,11 +156,22 @@ export default function LibraryPage() {
       return;
     }
     toast("Removed from library", "info");
-    if (user) setCloudPapers((prev) => prev?.filter((p) => p.id !== id) ?? prev);
   }
 
   if (isLoading) {
     return <p role="status" className="py-20 text-center text-muted">Loading your library…</p>;
+  }
+
+  if (user && cloudError && cloudPapers === null) {
+    return (
+      <div className="panel mx-auto max-w-xl py-14 text-center">
+        <h1 className="text-xl">Could not load your library</h1>
+        <p className="mx-auto mt-2 max-w-md text-sm text-muted">
+          Your saved papers are safe in your account. Check your connection and try again.
+        </p>
+        <button onClick={refreshCloud} className="btn-primary mt-6">Try again</button>
+      </div>
+    );
   }
 
   const total = papers?.length ?? 0;
