@@ -21,6 +21,27 @@ function decodeXml(s: string): string {
     .replace(/&amp;/g, "&"); // last, so "&amp;lt;" stays a literal "&lt;"
 }
 
+/**
+ * arXiv reads `all:dual axis tracker` as `all:dual` OR the bare words, so
+ * results matched any one word ("solar tracking" returned solar-wind
+ * papers). Require every word, and give the country clause
+ * (`AND ("Philippines" OR "Filipino")`) the field prefix arXiv needs.
+ */
+export function arxivQuery(query: string): string {
+  const clause = query.match(/\s+AND\s+\(([^)]+)\)\s*$/i);
+  const base = clause ? query.slice(0, clause.index) : query;
+  const words = base
+    .replace(/["():]/g, " ")
+    .split(/\s+/)
+    .filter((w) => w && !/^(AND|OR|NOT)$/i.test(w));
+  let q = words.map((w) => `all:${w}`).join(" AND ");
+  if (clause) {
+    const terms = [...clause[1].matchAll(/"([^"]+)"/g)].map((t) => `all:"${t[1]}"`);
+    if (terms.length) q += ` AND (${terms.join(" OR ")})`;
+  }
+  return q;
+}
+
 export async function searchArxiv(
   query: string,
   opts: { fromYear?: number; perSource?: number; openAccessOnly?: boolean } = {}
@@ -32,8 +53,7 @@ export async function searchArxiv(
   // but to avoid starving results, we fetch a bit more initially.
   const fetchCount = fromYear ? Math.min(perSource * 2, 50) : perSource;
   
-  // Format query: replace spaces with +
-  const formattedQuery = encodeURIComponent(`all:${query}`);
+  const formattedQuery = encodeURIComponent(arxivQuery(query));
   const url = `https://export.arxiv.org/api/query?search_query=${formattedQuery}&start=0&max_results=${fetchCount}&sortBy=relevance&sortOrder=descending`;
 
   const res = await fetchWithTimeout(url);
