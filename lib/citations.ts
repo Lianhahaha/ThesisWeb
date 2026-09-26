@@ -94,6 +94,14 @@ function authorsIeee(authors: string[]): string {
   return str;
 }
 
+/**
+ * Title followed by `mark`, unless the title already ends in its own
+ * punctuation: "Does homework work?" must not become "work?." or "work?,".
+ */
+function withMark(title: string, mark: string): string {
+  return /[.?!]$/.test(title) ? title : title + mark;
+}
+
 export function formatCitation(p: Paper, style: CitationStyle, refNum?: number): string {
   const title = esc(p.title || "Untitled");
   const venue = p.venue || "";
@@ -104,12 +112,12 @@ export function formatCitation(p: Paper, style: CitationStyle, refNum?: number):
       const a = esc(authorsApa(p.authors) || "Anonymous");
       const v = venue ? ` <i>${esc(venue)}</i>` : "";
       const doiPart = doi ? ` ${doi}` : "";
-      return `${a} (${yr(p)}). ${title}.${v}.${doiPart}`.replace(/\.\./g, ".").replace(/\s+\./g, ".").trim();
+      return `${a} (${yr(p)}). ${withMark(title, ".")}${v}.${doiPart}`.replace(/\.\./g, ".").replace(/\s+\./g, ".").trim();
     }
     case "mla": {
       const a = esc(authorsMla(p.authors));
       const v = venue ? ` <i>${esc(venue)},</i>` : "";
-      return `${a} "${title}." ${v} ${yr(p, "")}.`.replace(/\s+\./g, ".").replace(/\s+/g, " ").trim();
+      return `${a} "${withMark(title, ".")}" ${v} ${yr(p, "")}.`.replace(/\s+\./g, ".").replace(/\s+/g, " ").trim();
     }
     case "ieee": {
       const n = refNum ?? 1;
@@ -128,7 +136,7 @@ export function formatCitation(p: Paper, style: CitationStyle, refNum?: number):
     case "chicago": {
       const a = esc(authorsMla(p.authors));
       const v = venue ? ` <i>${esc(venue)},</i>` : "";
-      return `${a} "${title}."${v} ${yr(p, "")}.`.replace(/\s+\./g, ".").replace(/\s+/g, " ").trim();
+      return `${a} "${withMark(title, ".")}"${v} ${yr(p, "")}.`.replace(/\s+\./g, ".").replace(/\s+/g, " ").trim();
     }
   }
 }
