@@ -90,17 +90,22 @@ function invertFirst(name: string): string {
   return `${last}, ${parts.join(" ")}`;
 }
 
-/** "[1] J. Smith, …" (IEEE numeric) */
+/**
+ * IEEE authors: "J. Smith", "J. Smith and A. Doe", "J. Smith, A. Doe, and
+ * B. Roe"; more than six becomes the first author plus "et al."
+ */
 function authorsIeee(authors: string[]): string {
   if (!authors.length) return "";
-  const formatted = authors.slice(0, 6).map((a) => {
+  const fmt = (a: string) => {
     const parts = a.trim().split(/\s+/);
     const last = parts.pop();
     return `${initialsOf(parts)} ${last}`.trim();
-  });
-  let str = formatted.join(", ");
-  if (authors.length > 6) str += ", et al.";
-  return str;
+  };
+  if (authors.length > 6) return `${fmt(authors[0])} et al.`;
+  const f = authors.map(fmt);
+  if (f.length === 1) return f[0];
+  if (f.length === 2) return `${f[0]} and ${f[1]}`;
+  return `${f.slice(0, -1).join(", ")}, and ${f[f.length - 1]}`;
 }
 
 /**
@@ -141,14 +146,15 @@ export function formatCitation(p: Paper, style: CitationStyle, refNum?: number):
       const a = esc(authorsIeee(p.authors));
       // Join only the parts that exist — a missing author or year used to
       // leave stray commas ('[1] , "Title", .').
-      const parts = [
-        a,
-        `"${title}"`,
+      const rest = [
         venue ? `<i>${esc(venue)}</i>` : "",
         yr(p, ""),
         doi ? `doi: ${esc(p.doi || "")}` : "",
       ].filter(Boolean);
-      return `[${n}] ${parts.join(", ")}.`;
+      // IEEE puts the comma inside the quotes: "Title," Journal, 2023.
+      const t = `"${withMark(title, rest.length ? "," : ".")}"`;
+      const head = [a, t].filter(Boolean).join(", ");
+      return `[${n}] ${head}${rest.length ? ` ${rest.join(", ")}.` : ""}`;
     }
     case "chicago": {
       const a = esc(authorsMla(p.authors));
