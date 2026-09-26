@@ -187,6 +187,7 @@ export default function SettingsPage() {
 
   const [currentPass, setCurrentPass] = useState("");
   const [newPass, setNewPass] = useState("");
+  const [confirmPass, setConfirmPass] = useState("");
   const [savingPass, setSavingPass] = useState(false);
 
   const [newEmail, setNewEmail] = useState("");
@@ -261,12 +262,15 @@ export default function SettingsPage() {
     if (!user?.email) return;
     if (!currentPass) { toast("Enter your current password first.", "error"); return; }
     if (newPass.length < 6) { toast("The new password must be at least 6 characters.", "error"); return; }
+    if (newPass !== confirmPass) { toast("The two new passwords don't match.", "error"); return; }
+    if (newPass === currentPass) { toast("The new password is the same as the current one.", "error"); return; }
     setSavingPass(true);
     try {
       await reauthenticateWithCredential(user, EmailAuthProvider.credential(user.email, currentPass));
       await updatePassword(user, newPass);
       setCurrentPass("");
       setNewPass("");
+      setConfirmPass("");
       toast("Password updated", "success");
     } catch (err) {
       const code = (err as { code?: string })?.code;
@@ -569,6 +573,7 @@ export default function SettingsPage() {
             <form onSubmit={savePassword} className="space-y-4">
               <PasswordField id="cur-pass" label="Current password" value={currentPass} onChange={setCurrentPass} autoComplete="current-password" />
               <PasswordField id="new-pass" label="New password (at least 6 characters)" value={newPass} onChange={setNewPass} autoComplete="new-password" />
+              <PasswordField id="confirm-pass" label="Confirm new password" value={confirmPass} onChange={setConfirmPass} autoComplete="new-password" />
               <button type="submit" disabled={savingPass} className="btn-primary w-full sm:w-auto">
                 {savingPass ? "Updating…" : "Update password"}
               </button>
