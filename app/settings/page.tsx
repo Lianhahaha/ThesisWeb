@@ -284,6 +284,10 @@ export default function SettingsPage() {
   async function saveEmail(e: React.FormEvent) {
     e.preventDefault();
     if (!user?.email || !newEmail || !emailPass) return;
+    if (newEmail.trim().toLowerCase() === user.email.toLowerCase()) {
+      toast("That is already your email address.", "error");
+      return;
+    }
     setSavingEmail(true);
     try {
       await reauthenticateWithCredential(user, EmailAuthProvider.credential(user.email, emailPass));
