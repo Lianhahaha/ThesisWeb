@@ -1,4 +1,5 @@
 import { fetchWithTimeout, safeJson, paperId } from "@/lib/utils";
+import { extractDoi } from "@/lib/text";
 import type { Paper } from "@/lib/types";
 
 /**
@@ -34,8 +35,10 @@ export async function searchDoaj(
     if (fromYear && year && year < fromYear) continue;
 
     const title = bib.title || "Untitled";
-    const doiObj = bib.identifier?.find((id: any) => id.type === "doi");
-    const doi = doiObj ? doiObj.id : null;
+    const doiObj = bib.identifier?.find((id: any) => String(id.type).toLowerCase() === "doi");
+    // Some records hold the DOI as a https://doi.org/ link; keep the bare DOI
+    // so it dedupes against other sources and doesn't break DOI links.
+    const doi = extractDoi(doiObj?.id);
     const abstract = bib.abstract || null;
     const authors = (bib.author || []).map((a: any) => a.name).filter(Boolean).slice(0, 10);
     const venue = bib.journal?.title || null;
