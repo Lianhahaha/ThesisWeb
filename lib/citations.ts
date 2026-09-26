@@ -37,6 +37,17 @@ function yr(p: Paper, fallback = "n.d."): string {
   return p.year ? String(p.year) : fallback;
 }
 
+/**
+ * Initials for the given names: "John Paul" -> "J. P.", and a run of
+ * capitals as PubMed and Europe PMC give it ("FP") -> "F. P.".
+ */
+function initialsOf(given: string[]): string {
+  return given
+    .flatMap((g) => (/^[A-Z]{2,3}$/.test(g) ? g.split("") : [g]))
+    .map((g) => g[0]?.toUpperCase() + ".")
+    .join(" ");
+}
+
 /** "Smith, J., & Doe, A." (APA in-text authors) */
 function authorsApa(authors: string[]): string {
   if (!authors.length) return "";
@@ -44,8 +55,7 @@ function authorsApa(authors: string[]): string {
     const parts = a.trim().split(/\s+/);
     if (parts.length === 1) return { last: parts[0], initials: "" };
     const last = parts.pop()!;
-    const initials = parts.map((p) => p[0]?.toUpperCase() + ".").join(" ");
-    return { last, initials };
+    return { last, initials: initialsOf(parts) };
   });
   return parsed
     .map((a, i) => {
@@ -86,8 +96,7 @@ function authorsIeee(authors: string[]): string {
   const formatted = authors.slice(0, 6).map((a) => {
     const parts = a.trim().split(/\s+/);
     const last = parts.pop();
-    const initials = parts.map((p) => p[0]?.toUpperCase() + ".").join(" ");
-    return `${initials} ${last}`.trim();
+    return `${initialsOf(parts)} ${last}`.trim();
   });
   let str = formatted.join(", ");
   if (authors.length > 6) str += ", et al.";
