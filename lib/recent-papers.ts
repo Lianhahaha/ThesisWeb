@@ -15,7 +15,12 @@ import type { Paper } from "@/lib/types";
  */
 
 const KEY = "tw-recent-papers";
-const MAX = 60;
+/**
+ * Must cover a whole result set (up to ~19 sources x 15 papers, before
+ * dedupe): any result past the cap can be listed but not opened. A few
+ * hundred papers is well under 1 MB of sessionStorage.
+ */
+const MAX = 300;
 
 export function storeRecentPapers(papers: Paper[]): void {
   if (typeof window === "undefined" || papers.length === 0) return;
@@ -45,7 +50,7 @@ export function mergeRecentPapers(papers: Paper[]): void {
       map[p.id] = p;
     }
     const keys = Object.keys(map);
-    for (const k of keys.slice(0, Math.max(0, keys.length - MAX * 3))) delete map[k];
+    for (const k of keys.slice(0, Math.max(0, keys.length - MAX - 100))) delete map[k];
     sessionStorage.setItem(KEY, JSON.stringify(map));
   } catch {
     // Quota exceeded, disabled storage or corrupt JSON — non-fatal.
