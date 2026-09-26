@@ -10,6 +10,7 @@ import {
   EmailAuthProvider,
   verifyBeforeUpdateEmail,
   sendEmailVerification,
+  deleteUser,
   signOut,
 } from "firebase/auth";
 import { Eye, EyeOff, Download, Upload, X } from "lucide-react";
@@ -19,6 +20,7 @@ import { toast } from "@/components/Toaster";
 import { authMessage } from "@/lib/auth-errors";
 import { CountryCombobox } from "@/components/CountryCombobox";
 import { allPapers, localPapers, removeLocalPapers, savePapers } from "@/lib/db";
+import { fsDeleteAllPapers } from "@/lib/firestore-library";
 import { emailKey, hasRecoveryPin, migrateRecoveryPin, setRecoveryPin, writeEmailMap } from "@/lib/recovery";
 import { getPreferences, setPreferences, type Preferences } from "@/lib/preferences";
 import { clearSearchHistory } from "@/lib/search-history";
@@ -385,6 +387,48 @@ export default function SettingsPage() {
     }
   }
 
+  const [deletePass, setDeletePass] = useState("");
+  const [deleting, setDeleting] = useState(false);
+
+  async function deleteAccount(e: React.FormEvent) {
+    e.preventDefault();
+    if (!user?.email) return;
+    if (!deletePass) { toast("Enter your password to confirm.", "error"); return; }
+    if (!window.confirm("Delete your account and every paper, note and matrix saved in it? This cannot be undone.")) return;
+    setDeleting(true);
+    try {
+      // Re-authenticate first: deleteUser refuses an old session, and a wrong
+      // password should stop everything before any data is removed.
+      await reauthenticateWithCredential(user, EmailAuthProvider.credential(user.email, deletePass));
+      const uid = user.uid;
+      await fsDeleteAllPapers(uid);
+      await Promise.allSettled([
+        deleteDoc(doc(db, "users", uid, "profile", "main")),
+        deleteDoc(doc(db, "recovery", uid)),
+        deleteDoc(doc(db, "email_map", emailKey(user.email))),
+      ]);
+      await deleteUser(user);
+      try {
+        localStorage.removeItem(`tw_username_${uid}`);
+        localStorage.removeItem(`tw_emailmap_${uid}`);
+      } catch {
+        // Ignore.
+      }
+      toast("Your account has been deleted", "success");
+      router.push("/");
+    } catch (err) {
+      const code = (err as { code?: string })?.code;
+      toast(
+        code === "auth/invalid-credential" || code === "auth/wrong-password"
+          ? "Your password is wrong."
+          : authMessage(err, "Could not delete the account. Try again."),
+        "error"
+      );
+    } finally {
+      setDeleting(false);
+    }
+  }
+
   async function handleSignOut() {
     if (user) localStorage.removeItem(`tw_username_${user.uid}`);
     await signOut(auth);
@@ -720,6 +764,17 @@ export default function SettingsPage() {
           </Section>
           <Section title="Sign out" description="Your saved papers stay in your account.">
             <button onClick={handleSignOut} className="btn-danger w-full sm:w-auto">Sign out of Thesisweb</button>
+          </Section>
+          <Section
+            title="Delete account"
+            description="Removes your account, saved papers, notes, matrix and recovery PIN for good. Download a library backup first if you want to keep anything."
+          >
+            <form onSubmit={deleteAccount} className="space-y-4">
+              <PasswordField id="delete-pass" label="Password, to confirm it is you" value={deletePass} onChange={setDeletePass} autoComplete="current-password" />
+              <button type="submit" disabled={deleting} className="btn-danger w-full sm:w-auto">
+                {deleting ? "Deleting…" : "Delete my account"}
+              </button>
+            </form>
           </Section>
         </>
       ) : (

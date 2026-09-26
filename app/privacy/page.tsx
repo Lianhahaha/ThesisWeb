@@ -100,7 +100,8 @@ export default function PrivacyPage() {
         You can delete any saved paper from{" "}
         <Link href="/library" className="underline">Library</Link>, and export a full copy of your
         library from <Link href="/settings" className="underline">Settings</Link> first if you want
-        one. To have your whole account and everything in it deleted, email{" "}
+        one. To delete your whole account and everything in it, use <em>Delete account</em> in{" "}
+        <Link href="/settings" className="underline">Settings</Link>, or email{" "}
         <a href={`mailto:${CONTACT_EMAIL}`} className="underline">{CONTACT_EMAIL}</a> from the
         address on the account and it will be removed.
       </p>

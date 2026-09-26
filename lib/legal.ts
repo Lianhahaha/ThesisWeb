@@ -3,7 +3,7 @@
  * whenever either page changes what it says the app does.
  */
 
-export const LEGAL_UPDATED = "23 September 2026";
+export const LEGAL_UPDATED = "26 September 2026";
 
 /**
  * Where privacy and account-deletion requests go.
