@@ -59,9 +59,16 @@ export async function searchPubMed(
     if (!item || item.error) continue;
 
     const title = (item.title as string)?.replace(/\.$/, "") || "Untitled";
+    // esummary gives "Surname Initials" ("Polack FP"). Citations expect the
+    // given names first, as the other sources give them. Group authors
+    // (authtype "CollectiveName") are left as they are.
     const authors: string[] = ((item.authors as any[]) ?? [])
-      .map((a: any) => a.name as string)
-      .filter(Boolean)
+      .filter((a: any) => a?.name)
+      .map((a: any) =>
+        a.authtype === "CollectiveName"
+          ? (a.name as string)
+          : (a.name as string).replace(/^(.+?)\s+([A-Z]{1,3})$/, "$2 $1")
+      )
       .slice(0, 10);
     const year = item.pubdate ? parseInt((item.pubdate as string).slice(0, 4), 10) : null;
     const journal = item.fulljournalname || item.source || null;
