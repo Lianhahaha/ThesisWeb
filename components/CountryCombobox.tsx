@@ -76,6 +76,14 @@ export function CountryCombobox({
               ref={inputRef}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
+              onKeyDown={(e) => {
+                // The picker sits inside the search and settings forms, so
+                // Enter used to submit them with the old country. Pick the
+                // top match instead.
+                if (e.key !== "Enter") return;
+                e.preventDefault();
+                if (search.trim() && filtered.length > 0) select(filtered[0]);
+              }}
               placeholder="Type a country…"
               className="input"
             />
