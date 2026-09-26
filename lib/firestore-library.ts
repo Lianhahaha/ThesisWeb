@@ -94,8 +94,10 @@ export async function fsUpdatePaper(uid: string, id: string, changes: Partial<Sa
  * Save many papers; Firestore batches hold at most 500 writes. A batch is
  * atomic, so one record the rules reject would lose the other 399 — on failure,
  * retry the chunk one document at a time and skip only what genuinely fails.
+ * Returns the ids that were written, so callers never assume the rest were.
  */
-export async function fsSaveMany(uid: string, papers: SavedPaper[]): Promise<void> {
+export async function fsSaveMany(uid: string, papers: SavedPaper[]): Promise<string[]> {
+  const saved: string[] = [];
   for (let i = 0; i < papers.length; i += 400) {
     const chunk = papers.slice(i, i + 400);
     const batch = writeBatch(db);
@@ -105,12 +107,14 @@ export async function fsSaveMany(uid: string, papers: SavedPaper[]): Promise<voi
     }
     try {
       await batch.commit();
+      saved.push(...chunk.map((p) => p.id));
     } catch {
       for (const p of chunk) {
-        await fsSavePaper(uid, p).catch(() => {});
+        await fsSavePaper(uid, p).then(() => saved.push(p.id), () => {});
       }
     }
   }
+  return saved;
 }
 
 export async function fsAllPapers(uid: string): Promise<SavedPaper[]> {

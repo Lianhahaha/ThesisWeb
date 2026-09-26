@@ -19,7 +19,7 @@ import { useAuth } from "@/lib/auth-store";
 import { toast } from "@/components/Toaster";
 import { authMessage } from "@/lib/auth-errors";
 import { CountryCombobox } from "@/components/CountryCombobox";
-import { allPapers, localPapers, removeLocalPapers, savePapers } from "@/lib/db";
+import { allPapers, localPapers, moveLocalPapersToAccount, savePapers } from "@/lib/db";
 import { fsDeleteAllPapers } from "@/lib/firestore-library";
 import { emailKey, hasRecoveryPin, migrateRecoveryPin, setRecoveryPin, writeEmailMap } from "@/lib/recovery";
 import { getPreferences, setPreferences, type Preferences } from "@/lib/preferences";
@@ -462,8 +462,12 @@ export default function SettingsPage() {
       if (file.size > 20 * 1024 * 1024) throw new Error("That file is too large to be a library backup.");
       const papers = parseBackup(JSON.parse(await file.text()));
       if (papers.length === 0) throw new Error("No papers found in this file.");
-      await savePapers(papers);
-      toast(`Imported ${papers.length} papers into your library`, "success");
+      const saved = await savePapers(papers);
+      if (saved < papers.length) {
+        toast(`Imported ${saved} of ${papers.length} papers. The rest could not be saved.`, "error");
+      } else {
+        toast(`Imported ${saved} papers into your library`, "success");
+      }
     } catch (err) {
       toast(err instanceof SyntaxError ? "This file isn't valid JSON." : err instanceof Error ? err.message : "Import failed", "error");
     } finally {
@@ -475,11 +479,15 @@ export default function SettingsPage() {
   async function copyBrowserPapers() {
     setBusy(true);
     try {
-      const papers = await localPapers();
-      await savePapers(papers);
-      await removeLocalPapers(papers.map((p) => p.id));
-      setBrowserCount(0);
-      toast(`Copied ${papers.length} papers to your account`, "success");
+      const moved = await moveLocalPapersToAccount();
+      const left = browserCount - moved;
+      setBrowserCount(Math.max(0, left));
+      toast(
+        left > 0
+          ? `Copied ${moved} papers. ${left} could not be copied and are still in this browser.`
+          : `Copied ${moved} papers to your account`,
+        left > 0 ? "error" : "success"
+      );
     } catch {
       toast("Could not copy the papers. Try again.", "error");
     } finally {

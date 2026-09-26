@@ -8,8 +8,7 @@ import {
   getDb,
   unsavePaper,
   updatePaper,
-  savePapers,
-  removeLocalPapers,
+  moveLocalPapersToAccount,
   allPapers as loadAllPapers,
   applyPaperUpdate,
   PAPER_UPDATED_EVENT,
@@ -113,9 +112,14 @@ export default function LibraryPage() {
   async function copyBrowserPapers() {
     setCopying(true);
     try {
-      await savePapers(browserOnly);
-      await removeLocalPapers(browserOnly.map((p) => p.id));
-      toast(`Copied ${browserOnly.length} papers to your account`, "success");
+      const moved = await moveLocalPapersToAccount();
+      const left = browserOnly.length - moved;
+      toast(
+        left > 0
+          ? `Copied ${moved} papers. ${left} could not be copied and are still in this browser.`
+          : `Copied ${moved} papers to your account`,
+        left > 0 ? "error" : "success"
+      );
       refreshCloud();
     } catch {
       toast("Could not copy the papers. Try again.", "error");

@@ -106,16 +106,39 @@ export async function savePaper(p: SavedPaper): Promise<void> {
   changed();
 }
 
-/** Save many papers at once (backup import, moving browser papers to an account). */
-export async function savePapers(papers: SavedPaper[]): Promise<void> {
-  if (papers.length === 0) return;
+/**
+ * Save many papers at once (backup import). Returns how many were written:
+ * in an account, records the security rules reject are skipped.
+ */
+export async function savePapers(papers: SavedPaper[]): Promise<number> {
+  if (papers.length === 0) return 0;
   const uid = auth.currentUser?.uid;
+  let count = papers.length;
   if (uid) {
-    await fs.fsSaveMany(uid, papers);
+    count = (await fs.fsSaveMany(uid, papers)).length;
   } else {
     await getDb().papers.bulkPut(papers);
   }
   changed();
+  return count;
+}
+
+/**
+ * Move papers saved in this browser while signed out into the signed-in
+ * account. A paper already in the account keeps its notes, matrix and other
+ * edits, and a browser copy is deleted only once its upload succeeded.
+ * Returns how many papers moved.
+ */
+export async function moveLocalPapersToAccount(): Promise<number> {
+  const uid = auth.currentUser?.uid;
+  if (!uid) return 0;
+  const local = await localPapers();
+  if (local.length === 0) return 0;
+  const cloud = new Map((await fs.fsAllPapers(uid)).map((p) => [p.id, p]));
+  const saved = await fs.fsSaveMany(uid, local.map((p) => keepUserData(p, cloud.get(p.id))));
+  await removeLocalPapers(saved);
+  changed();
+  return saved.length;
 }
 
 /** Papers saved in this browser (IndexedDB), whatever the sign-in state. */
