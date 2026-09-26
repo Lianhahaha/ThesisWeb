@@ -173,9 +173,14 @@ export function inTextCitation(p: Paper, style: CitationStyle, refNum?: number):
   else if (p.authors.length === 1) authors = last!;
   else if (p.authors.length === 2) {
     const last2 = p.authors[1].trim().split(/\s+/).pop();
-    authors = `${last} & ${last2}`;
+    // "&" is APA's; MLA and Chicago spell out "and".
+    authors = `${last} ${style === "apa" ? "&" : "and"} ${last2}`;
   } else authors = `${last} et al.`;
-  return style === "apa" ? `(${authors}, ${yr(p, "n.d.")})` : `(${authors} ${yr(p, "")})`;
+  if (style === "apa") return `(${authors}, ${yr(p, "n.d.")})`;
+  // MLA in-text is author (and page) only; a missing year used to leave
+  // "(Smith et al. )".
+  if (style === "mla") return `(${authors})`;
+  return `(${authors} ${yr(p, "n.d.")})`;
 }
 
 /** Escape special BibTeX characters in field values. */
