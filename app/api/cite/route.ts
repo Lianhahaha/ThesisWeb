@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { rateLimit } from "@/lib/rate-limit";
-import { getCrossrefByDoi } from "@/lib/sources/crossref";
-import { getOpenAlexByDoi } from "@/lib/sources/openalex";
+import { getCrossrefByDoi } from "@/lib/sources/adapters/crossref";
+import { getOpenAlexByDoi } from "@/lib/sources/adapters/openalex";
 import { extractDoi } from "@/lib/text";
 import type { Paper } from "@/lib/types";
 

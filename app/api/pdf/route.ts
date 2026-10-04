@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { rateLimit } from "@/lib/rate-limit";
-import { findOaPdf } from "@/lib/sources/unpaywall";
+import { findOaPdf } from "@/lib/sources/adapters/unpaywall";
 
 export const dynamic = "force-dynamic";
 

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { rateLimit } from "@/lib/rate-limit";
-import { getRelatedPapers } from "@/lib/sources/openalex";
+import { getRelatedPapers } from "@/lib/sources/adapters/openalex";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 20;
