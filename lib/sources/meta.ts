@@ -146,6 +146,10 @@ const META = {
     label: "EconBiz", blurb: "Economics and business: articles, working papers and books from RePEc, EconStor and publishers (ZBW Germany)", color: "#d4a72c",
     region: "Global (ZBW, Germany)", fields: ["business", "social"], kind: "index", url: "https://www.econbiz.de",
   },
+  usgs: {
+    label: "USGS Publications", blurb: "U.S. Geological Survey reports and articles: earthquakes, volcanoes, water, minerals, ecosystems, climate", color: "#6e9a3c",
+    region: "United States", fields: ["sciences", "agriculture", "engineering"], kind: "reports", url: "https://pubs.usgs.gov",
+  },
 } satisfies Record<string, SourceMeta>;
 
 /** Every source id. lib/sources/registry.ts must have an adapter for each one. */
