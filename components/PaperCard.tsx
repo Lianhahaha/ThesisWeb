@@ -143,7 +143,7 @@ export function PaperCard({ paper, showScore, refNum }: Props) {
                 Free PDF
               </a>
             )}
-            {paper.doi && (
+            {paper.doi ? (
               <a
                 href={`https://doi.org/${paper.doi}`}
                 target="_blank"
@@ -153,7 +153,12 @@ export function PaperCard({ paper, showScore, refNum }: Props) {
                 <ExternalLink className="h-3.5 w-3.5" aria-hidden />
                 DOI
               </a>
-            )}
+            ) : paper.url && paper.url !== paper.openAccessUrl ? (
+              <a href={paper.url} target="_blank" rel="noopener noreferrer" className="btn-ghost btn-sm">
+                <ExternalLink className="h-3.5 w-3.5" aria-hidden />
+                Record
+              </a>
+            ) : null}
             <button
               onClick={() => {
                 const snippet = truncate(

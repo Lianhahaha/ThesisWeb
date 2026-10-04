@@ -85,6 +85,7 @@ export function vufindAdapter(cfg: VufindConfig): Adapter {
           .map((s) => (Array.isArray(s) ? s.join(" ") : typeof s === "string" ? s : ""))
           .filter(Boolean)
           .slice(0, 5),
+        url: r.id ? cfg.recordUrl(r.id) : link,
         sources: [cfg.id],
       });
     }

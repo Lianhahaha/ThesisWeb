@@ -16,6 +16,11 @@ export interface Paper {
   tldr?: string | null;
   /** Free full-text URL if known to be open access */
   openAccessUrl?: string | null;
+  /**
+   * The record's page at its source, for papers with no DOI (theses,
+   * reports, regional journals); the only way to reach some of them.
+   */
+  url?: string | null;
   isOpenAccess?: boolean;
   citedByCount?: number;
   keywords?: string[];

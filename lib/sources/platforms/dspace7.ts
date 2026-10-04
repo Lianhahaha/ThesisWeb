@@ -110,6 +110,7 @@ export function dspace7Adapter(cfg: Dspace7Config): Adapter {
         openAccessUrl: isOpen ? landing : null,
         isOpenAccess: isOpen,
         keywords: values(m, "dc.subject", "dcterms.subject").slice(0, 5),
+        url: landing,
         sources: [cfg.id],
       });
     }

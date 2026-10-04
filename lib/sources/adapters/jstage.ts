@@ -71,6 +71,7 @@ export async function searchJstage(
       abstract: null,
       openAccessUrl: null,
       isOpenAccess: false,
+      url: bilingual(entry, "article_link"),
       sources: ["jstage"],
     });
   }

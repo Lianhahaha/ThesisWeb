@@ -59,8 +59,9 @@ export async function searchUsgs(query: string, opts: AdapterOptions = {}): Prom
       venue: r.largerWorkTitle || r.seriesTitle?.text || r.publisher || "USGS",
       doi,
       abstract: r.docAbstract ? stripHtml(r.docAbstract) : null,
-      openAccessUrl: pdf ?? (r.indexId ? `${ORIGIN}/publication/${r.indexId}` : null),
+      openAccessUrl: pdf,
       isOpenAccess: !!pdf,
+      url: r.indexId ? `${ORIGIN}/publication/${r.indexId}` : null,
       sources: ["usgs"],
     });
   }

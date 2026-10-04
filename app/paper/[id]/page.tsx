@@ -314,6 +314,13 @@ export default function PaperDetailPage({ params }: { params: Promise<{ id: stri
           </button>
         ) : null}
 
+        {!p.doi && p.url && p.url !== freeUrl && (
+          <a href={p.url} target="_blank" rel="noopener noreferrer" className="btn-ghost">
+            <ExternalLink className="h-4 w-4" aria-hidden />
+            Record page
+          </a>
+        )}
+
         {p.doi && (
           <a
             href={`https://doi.org/${p.doi}`}

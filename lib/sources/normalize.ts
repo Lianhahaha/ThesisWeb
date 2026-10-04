@@ -69,6 +69,7 @@ export function normalizePaper(p: Paper, sourceId: string): Paper | null {
     abstract: str(p.abstract, 40000),
     tldr: str(p.tldr, 2000),
     openAccessUrl: safeUrl(p.openAccessUrl),
+    url: safeUrl(p.url),
     isOpenAccess: p.isOpenAccess === true,
     citedByCount:
       typeof p.citedByCount === "number" && Number.isFinite(p.citedByCount) && p.citedByCount >= 0

@@ -127,6 +127,11 @@ function parseBackup(raw: unknown): SavedPaper[] {
     // fields the app defines.
     const str = (v: unknown, max: number) =>
       typeof v === "string" && v ? v.slice(0, max) : undefined;
+    // Links end up in an <a href>; a crafted file must not smuggle in javascript: URLs.
+    const link = (v: unknown) => {
+      const s = str(v, 2000);
+      return s && /^https?:\/\//i.test(s) ? s : undefined;
+    };
     out.push({
       id: p.id.slice(0, 300),
       title: p.title.slice(0, 1000),
@@ -137,7 +142,8 @@ function parseBackup(raw: unknown): SavedPaper[] {
       doi: str(p.doi, 300),
       abstract: str(p.abstract, 40000),
       tldr: str(p.tldr, 2000),
-      openAccessUrl: str(p.openAccessUrl, 2000),
+      openAccessUrl: link(p.openAccessUrl),
+      url: link(p.url),
       isOpenAccess: p.isOpenAccess === true,
       citedByCount: typeof p.citedByCount === "number" ? p.citedByCount : undefined,
       keywords: Array.isArray(p.keywords) ? p.keywords.filter((k) => typeof k === "string").slice(0, 50) : undefined,

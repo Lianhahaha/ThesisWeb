@@ -63,6 +63,7 @@ export async function searchCinii(
       // CiNii does not say whether the full text is free.
       openAccessUrl: null,
       isOpenAccess: false,
+      url: it.link?.["@id"] ?? null,
       sources: ["cinii"],
     });
   }

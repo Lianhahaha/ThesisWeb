@@ -60,9 +60,10 @@ export async function searchNtrs(query: string, opts: AdapterOptions = {}): Prom
       venue: pub?.publicationName || "NASA Technical Reports Server",
       doi,
       abstract: r.abstract ? stripHtml(r.abstract) : null,
-      openAccessUrl: pdf ?? (r.id ? `${ORIGIN}/citations/${r.id}` : null),
+      openAccessUrl: pdf,
       isOpenAccess: !!pdf,
       keywords: (r.keywords ?? []).slice(0, 5),
+      url: r.id ? `${ORIGIN}/citations/${r.id}` : null,
       // NTRS labels journal reprints REPRINT and unreviewed manuscripts PREPRINT.
       preprint: r.stiType === "PREPRINT" ? true : r.stiType === "REPRINT" ? false : undefined,
       sources: ["ntrs"],

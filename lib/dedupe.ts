@@ -47,6 +47,7 @@ function mergeInto(dest: Paper, src: Paper): void {
   if (!dest.abstract && src.abstract) dest.abstract = src.abstract;
   if (!dest.tldr && src.tldr) dest.tldr = src.tldr;
   if (!dest.openAccessUrl && src.openAccessUrl) dest.openAccessUrl = src.openAccessUrl;
+  if (!dest.url && src.url) dest.url = src.url;
   if (src.isOpenAccess) dest.isOpenAccess = true;
   // A retraction reported by any source must survive the merge.
   if (src.retracted) dest.retracted = true;

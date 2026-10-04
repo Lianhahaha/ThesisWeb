@@ -74,6 +74,7 @@ export async function searchOsti(
       openAccessUrl: fulltext,
       isOpenAccess: !!fulltext,
       keywords,
+      url: r.links?.find((l) => l.rel === "citation")?.href ?? null,
       sources: ["osti"],
     });
   }
