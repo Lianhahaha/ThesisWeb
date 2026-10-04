@@ -162,6 +162,10 @@ const META = {
     label: "BDTD Brazil", blurb: "900k+ master's and doctoral theses from Brazilian universities, full text free (IBICT)", color: "#2ea043",
     region: "Brazil", fields: ["all"], kind: "theses", url: "https://bdtd.ibict.br",
   },
+  thesesfr: {
+    label: "theses.fr", blurb: "Every doctoral thesis defended in France since 1985, many in English (ABES)", color: "#3e63dd",
+    region: "France", fields: ["all"], kind: "theses", url: "https://theses.fr",
+  },
 } satisfies Record<string, SourceMeta>;
 
 /** Every source id. lib/sources/registry.ts must have an adapter for each one. */
