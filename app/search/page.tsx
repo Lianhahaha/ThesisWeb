@@ -29,6 +29,9 @@ export default function SearchPage() {
   const [selectedSources, setSelectedSources] = useState<Set<string>>(new Set());
   // Phones only: the database list is folded so results start near the top.
   const [sourcesOpen, setSourcesOpen] = useState(false);
+  // Databases with no results are folded away; with 30+ sources they would
+  // otherwise push the useful ones off screen.
+  const [showIdle, setShowIdle] = useState(false);
 
   // Suggestions come from the whole result set for the query that produced it —
   // the input may have been edited since.
@@ -39,6 +42,13 @@ export default function SearchPage() {
   );
 
   const sourceCounts = useMemo(() => countBySource(result?.papers ?? []), [result]);
+  // Databases with results first, most results on top; the rest after.
+  const [activeSources, idleSources] = useMemo(() => {
+    const names = Object.keys(result?.sources ?? {});
+    const active = names.filter((n) => (sourceCounts[n] ?? 0) > 0).sort((a, b) => sourceCounts[b] - sourceCounts[a]);
+    const idle = names.filter((n) => !(sourceCounts[n] > 0));
+    return [active, idle];
+  }, [result, sourceCounts]);
   const visible = useMemo(
     () => sortPapers(filterBySources(result?.papers ?? [], selectedSources), sortKey),
     [result, selectedSources, sortKey]
@@ -179,8 +189,8 @@ export default function SearchPage() {
               id="sources-list"
               className={`${sourcesOpen ? "grid" : "hidden"} mt-3 grid-cols-2 gap-1.5 sm:grid-cols-3 lg:grid lg:grid-cols-1`}
             >
-              {Object.entries(result.sources).map(([name, status]) => {
-                const failed = status === "error";
+              {[...activeSources, ...(showIdle ? idleSources : [])].map((name) => {
+                const failed = result.sources[name] === "error";
                 const n = sourceCounts[name] ?? 0;
                 const on = selectedSources.has(name);
                 const clickable = !failed && n > 0;
@@ -204,6 +214,21 @@ export default function SearchPage() {
                   </li>
                 );
               })}
+              {idleSources.length > 0 && (
+                <li className="col-span-full">
+                  <button
+                    type="button"
+                    onClick={() => setShowIdle((v) => !v)}
+                    aria-expanded={showIdle}
+                    className="list-row justify-center text-xs text-muted"
+                  >
+                    {showIdle
+                      ? "Hide databases with no results"
+                      : `${idleSources.length} more with no results`}
+                    <ChevronDown className={`h-3.5 w-3.5 ${showIdle ? "rotate-180" : ""}`} aria-hidden />
+                  </button>
+                </li>
+              )}
             </ul>
           </section>
 
