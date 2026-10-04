@@ -1,5 +1,6 @@
 import { fetchWithTimeout, safeJson, paperId } from "@/lib/utils";
 import type { Paper } from "@/lib/types";
+import type { AdapterOptions } from "@/lib/sources/types";
 import { CONTACT_EMAIL } from "@/lib/config";
 
 /**
@@ -16,7 +17,7 @@ const BASE   = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils";
 
 export async function searchPubMed(
   query: string,
-  opts: { fromYear?: number; perSource?: number; openAccessOnly?: boolean } = {}
+  opts: AdapterOptions = {}
 ): Promise<Paper[]> {
   const { fromYear, perSource = 15, openAccessOnly } = opts;
 

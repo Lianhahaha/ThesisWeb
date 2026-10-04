@@ -2,6 +2,7 @@ import { fetchWithTimeout, safeJson, paperId } from "@/lib/utils";
 import { USER_AGENT } from "@/lib/config";
 import { stripHtml } from "@/lib/text";
 import type { Paper } from "@/lib/types";
+import type { AdapterOptions } from "@/lib/sources/types";
 
 /**
  * HAL (Hyper Articles en Ligne) adapter.
@@ -43,7 +44,7 @@ interface HalDoc {
 
 export async function searchHal(
   query: string,
-  opts: { fromYear?: number; perSource?: number; openAccessOnly?: boolean } = {}
+  opts: AdapterOptions = {}
 ): Promise<Paper[]> {
   const { fromYear, perSource = 15, openAccessOnly } = opts;
 

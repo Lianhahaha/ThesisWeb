@@ -1,28 +1,9 @@
 import type { Paper, SearchResult } from "@/lib/types";
-import { searchOpenAlex } from "@/lib/sources/adapters/openalex";
-import { searchCrossref } from "@/lib/sources/adapters/crossref";
-import { searchSemanticScholar } from "@/lib/sources/adapters/semanticscholar";
-import { searchDoaj } from "@/lib/sources/adapters/doaj";
-import { searchEuropePMC } from "@/lib/sources/adapters/europepmc";
-import { searchPubMed } from "@/lib/sources/adapters/pubmed";
-import { searchArxiv } from "@/lib/sources/adapters/arxiv";
-import { searchEric } from "@/lib/sources/adapters/eric";
-import { searchZenodo } from "@/lib/sources/adapters/zenodo";
-import { searchHal } from "@/lib/sources/adapters/hal";
-import { searchOpenAire } from "@/lib/sources/adapters/openaire";
-import { searchInspire } from "@/lib/sources/adapters/inspire";
-import { searchPlos } from "@/lib/sources/adapters/plos";
-import { searchDataCite } from "@/lib/sources/adapters/datacite";
-import { searchFigshare } from "@/lib/sources/adapters/figshare";
-import { searchOsti } from "@/lib/sources/adapters/osti";
-import { searchCinii } from "@/lib/sources/adapters/cinii";
-import { searchJstage } from "@/lib/sources/adapters/jstage";
 import { dedupePapers, scoreRelevance } from "@/lib/dedupe";
+import { ADAPTERS } from "@/lib/sources/registry";
+import type { AdapterOptions } from "@/lib/sources/types";
 
-export interface SearchOpts {
-  fromYear?: number;
-  perSource?: number;
-  openAccessOnly?: boolean;
+export interface SearchOpts extends AdapterOptions {
   /** ISO 3166-1 country name or demonym to inject into the query. e.g. "Philippines" */
   country?: string;
 }
@@ -83,38 +64,6 @@ function buildCountryQuery(baseQuery: string, country: string): string {
   return `${baseQuery} AND (${clause})`;
 }
 
-type SourceSearch = (query: string, opts: SearchOpts) => Promise<Paper[]>;
-
-/**
- * Every search source. `boolean: true` means the API understands
- * `AND (a OR b)` clauses (used for country scoping); the others get the plain
- * query with the country name appended as an extra term instead.
- *
- * Keep ids in sync with lib/sources/meta.ts.
- */
-const ADAPTERS: { id: string; run: SourceSearch; boolean: boolean; deadlineMs?: number }[] = [
-  { id: "openalex",        run: searchOpenAlex,        boolean: true },
-  { id: "crossref",        run: searchCrossref,        boolean: true },
-  // Retries through 429s from its shared public pool, so it needs extra room.
-  { id: "semanticscholar", run: searchSemanticScholar, boolean: true, deadlineMs: 16000 },
-  { id: "doaj",            run: searchDoaj,            boolean: true },
-  { id: "europepmc",       run: searchEuropePMC,       boolean: true },
-  { id: "pubmed",          run: searchPubMed,          boolean: true },
-  { id: "arxiv",           run: searchArxiv,           boolean: true },
-  { id: "eric",             run: searchEric,             boolean: false },
-  { id: "zenodo",           run: searchZenodo,           boolean: false },
-  { id: "hal",              run: searchHal,              boolean: false },
-  { id: "openaire",         run: searchOpenAire,         boolean: false },
-  { id: "inspire",          run: searchInspire,          boolean: false },
-  { id: "plos",             run: searchPlos,             boolean: false },
-  { id: "datacite",         run: searchDataCite,         boolean: false },
-  // Search + per-item detail fetches, so it needs more room than the default.
-  { id: "osti",             run: searchOsti,             boolean: false },
-  { id: "cinii",            run: searchCinii,            boolean: false },
-  { id: "jstage",           run: searchJstage,           boolean: false },
-  { id: "figshare",         run: searchFigshare,         boolean: false, deadlineMs: 15000 },
-];
-
 /** Hard cap per source, so one slow or retrying API can't stall the whole search. */
 const DEFAULT_DEADLINE_MS = 12000;
 
@@ -141,7 +90,7 @@ export async function metaSearch(
   const plainQuery = opts.country ? `${query} ${opts.country}` : query;
 
   const entries = await Promise.all(
-    ADAPTERS.map(async ({ id, run, boolean, deadlineMs }) => {
+    Object.entries(ADAPTERS).map(async ([id, { run, boolean, deadlineMs }]) => {
       try {
         const papers = await withDeadline(run(boolean ? booleanQuery : plainQuery, opts), deadlineMs ?? DEFAULT_DEADLINE_MS);
         return [id, { ok: papers.length > 0 ? ("ok" as const) : ("empty" as const), papers, error: "" }] as const;

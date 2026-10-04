@@ -1,5 +1,6 @@
 import { fetchWithTimeout, paperId } from "@/lib/utils";
 import type { Paper } from "@/lib/types";
+import type { AdapterOptions } from "@/lib/sources/types";
 
 /**
  * arXiv adapter.
@@ -44,7 +45,7 @@ export function arxivQuery(query: string): string {
 
 export async function searchArxiv(
   query: string,
-  opts: { fromYear?: number; perSource?: number; openAccessOnly?: boolean } = {}
+  opts: AdapterOptions = {}
 ): Promise<Paper[]> {
   const { fromYear, perSource = 15 } = opts;
 

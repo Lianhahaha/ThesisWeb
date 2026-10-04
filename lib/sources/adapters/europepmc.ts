@@ -1,5 +1,6 @@
 import { fetchWithTimeout, safeJson, paperId, sleep } from "@/lib/utils";
 import type { Paper } from "@/lib/types";
+import type { AdapterOptions } from "@/lib/sources/types";
 
 /**
  * Europe PubMed Central (Europe PMC) adapter.
@@ -32,7 +33,7 @@ interface EPMCResult {
 
 export async function searchEuropePMC(
   query: string,
-  opts: { fromYear?: number; perSource?: number; openAccessOnly?: boolean } = {}
+  opts: AdapterOptions = {}
 ): Promise<Paper[]> {
   const { fromYear, perSource = 15, openAccessOnly } = opts;
 

@@ -1,6 +1,7 @@
 import { fetchWithTimeout, safeJson, paperId } from "@/lib/utils";
 import { extractDoi } from "@/lib/text";
 import type { Paper } from "@/lib/types";
+import type { AdapterOptions } from "@/lib/sources/types";
 
 /**
  * DOAJ (Directory of Open Access Journals) adapter.
@@ -12,7 +13,7 @@ const BASE = "https://doaj.org/api/search/articles";
 
 export async function searchDoaj(
   query: string,
-  opts: { fromYear?: number; perSource?: number } = {}
+  opts: AdapterOptions = {}
 ): Promise<Paper[]> {
   const { fromYear, perSource = 15 } = opts;
   // Unquoted: DOAJ ANDs the terms by default, and a quoted phrase would both

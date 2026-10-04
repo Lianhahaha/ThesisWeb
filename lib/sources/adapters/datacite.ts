@@ -2,6 +2,7 @@ import { fetchWithTimeout, safeJson, paperId } from "@/lib/utils";
 import { USER_AGENT } from "@/lib/config";
 import { flipName, stripHtml } from "@/lib/text";
 import type { Paper } from "@/lib/types";
+import type { AdapterOptions } from "@/lib/sources/types";
 
 /**
  * DataCite adapter — theses and dissertations.
@@ -49,7 +50,7 @@ function words(query: string): string[] {
 
 export async function searchDataCite(
   query: string,
-  opts: { fromYear?: number; perSource?: number; openAccessOnly?: boolean } = {}
+  opts: AdapterOptions = {}
 ): Promise<Paper[]> {
   const { fromYear, perSource = 15, openAccessOnly } = opts;
 

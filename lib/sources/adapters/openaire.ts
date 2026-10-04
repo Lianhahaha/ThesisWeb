@@ -2,6 +2,7 @@ import { fetchWithTimeout, safeJson, paperId } from "@/lib/utils";
 import { USER_AGENT } from "@/lib/config";
 import { extractDoi, flipName, stripHtml } from "@/lib/text";
 import type { Paper } from "@/lib/types";
+import type { AdapterOptions } from "@/lib/sources/types";
 
 /**
  * OpenAIRE adapter.
@@ -56,7 +57,7 @@ function pickTitle(titles: Node | Node[]): string {
 
 export async function searchOpenAire(
   query: string,
-  opts: { fromYear?: number; perSource?: number; openAccessOnly?: boolean } = {}
+  opts: AdapterOptions = {}
 ): Promise<Paper[]> {
   const { fromYear, perSource = 15, openAccessOnly } = opts;
 

@@ -2,6 +2,7 @@ import { fetchWithTimeout, safeJson, paperId } from "@/lib/utils";
 import { USER_AGENT } from "@/lib/config";
 import { extractDoi, stripHtml } from "@/lib/text";
 import type { Paper } from "@/lib/types";
+import type { AdapterOptions } from "@/lib/sources/types";
 
 /**
  * CiNii Research adapter (National Institute of Informatics, Japan).
@@ -30,7 +31,7 @@ const asArray = <T,>(v: T | T[] | undefined): T[] => (v === undefined ? [] : Arr
 
 export async function searchCinii(
   query: string,
-  opts: { fromYear?: number; perSource?: number; openAccessOnly?: boolean } = {}
+  opts: AdapterOptions = {}
 ): Promise<Paper[]> {
   const { fromYear, perSource = 15 } = opts;
 

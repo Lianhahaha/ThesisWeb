@@ -2,6 +2,7 @@ import { fetchWithTimeout, safeJson, paperId } from "@/lib/utils";
 import { USER_AGENT } from "@/lib/config";
 import { stripHtml } from "@/lib/text";
 import type { Paper } from "@/lib/types";
+import type { AdapterOptions } from "@/lib/sources/types";
 
 /**
  * Figshare adapter — university and publisher repository items.
@@ -45,7 +46,7 @@ interface FigshareDetail {
 
 export async function searchFigshare(
   query: string,
-  opts: { fromYear?: number; perSource?: number } = {}
+  opts: AdapterOptions = {}
 ): Promise<Paper[]> {
   const { fromYear, perSource = 15 } = opts;
 

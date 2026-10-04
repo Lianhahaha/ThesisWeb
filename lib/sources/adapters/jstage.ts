@@ -2,6 +2,7 @@ import { fetchWithTimeout, paperId } from "@/lib/utils";
 import { USER_AGENT } from "@/lib/config";
 import { decodeEntities, extractDoi } from "@/lib/text";
 import type { Paper } from "@/lib/types";
+import type { AdapterOptions } from "@/lib/sources/types";
 
 /**
  * J-STAGE adapter (Japan Science and Technology Agency).
@@ -39,7 +40,7 @@ function names(xml: string): string[] {
 
 export async function searchJstage(
   query: string,
-  opts: { fromYear?: number; perSource?: number; openAccessOnly?: boolean } = {}
+  opts: AdapterOptions = {}
 ): Promise<Paper[]> {
   const { fromYear, perSource = 15 } = opts;
 

@@ -15,7 +15,7 @@ export interface SourceMeta {
   needsKey?: boolean;
 }
 
-export const SOURCE_META: Record<string, SourceMeta> = {
+const META = {
   openalex:        { label: "OpenAlex",         blurb: "250M+ works across every field; primary discovery source", color: "#388bfd" },
   crossref:        { label: "Crossref",         blurb: "Publisher-deposited metadata and DOIs",                    color: "#3fb950" },
   semanticscholar: { label: "Semantic Scholar", blurb: "AI-written TLDRs and citation graph",                      color: "#bc8cff" },
@@ -34,7 +34,13 @@ export const SOURCE_META: Record<string, SourceMeta> = {
   cinii: { label: "CiNii Research", blurb: "Japanese and Asian research: articles, theses and books, many in English (NII Japan)", color: "#79c0ff" },
   jstage: { label: "J-STAGE", blurb: "3,000+ journals published in Japan: engineering, medicine, agriculture, education (JST)", color: "#ffa198" },
   figshare: { label: "Figshare", blurb: "University and publisher repository items: journal articles, theses and conference papers", color: "#556cd6" },
-};
+} satisfies Record<string, SourceMeta>;
+
+/** Every source id. lib/sources/registry.ts must have an adapter for each one. */
+export type SourceId = keyof typeof META;
+
+/** Metadata by id; indexable by any string, since ids arrive from the API. */
+export const SOURCE_META: Record<string, SourceMeta> = META;
 
 /** Number of sources that work out of the box, with no API key. */
 export const KEYLESS_SOURCE_COUNT = Object.values(SOURCE_META).filter((s) => !s.needsKey).length;

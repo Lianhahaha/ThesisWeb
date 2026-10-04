@@ -1,5 +1,6 @@
 import { fetchWithTimeout, safeJson, paperId } from "@/lib/utils";
 import type { Paper } from "@/lib/types";
+import type { AdapterOptions } from "@/lib/sources/types";
 import { CONTACT_EMAIL } from "@/lib/config";
 import { stripHtml } from "@/lib/text";
 
@@ -66,7 +67,7 @@ function yearFromItem(it: CrossrefItem): number | null {
 
 export async function searchCrossref(
   query: string,
-  opts: { fromYear?: number; perSource?: number; openAccessOnly?: boolean } = {}
+  opts: AdapterOptions = {}
 ): Promise<Paper[]> {
   const { fromYear, perSource = 15, openAccessOnly } = opts;
   const params = new URLSearchParams({
