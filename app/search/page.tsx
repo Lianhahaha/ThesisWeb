@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
+import Link from "next/link";
 import { useMutation } from "@tanstack/react-query";
 import { ChevronDown } from "lucide-react";
 import { PaperCard } from "@/components/PaperCard";
@@ -128,7 +129,10 @@ export default function SearchPage() {
             Find <em>sources</em>
           </h1>
           <p className="mt-2 text-muted">
-            {KEYLESS_SOURCE_COUNT} free databases, searched together and ranked by relevance.
+            <Link href="/databases" className="underline decoration-dotted underline-offset-2 hover:text-text">
+              {KEYLESS_SOURCE_COUNT} free databases
+            </Link>
+            , searched together and ranked by relevance.
           </p>
         </header>
 

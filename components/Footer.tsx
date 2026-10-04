@@ -6,6 +6,7 @@ export function Footer() {
       <div className="flex flex-col gap-2 border-t border-border pt-5 text-sm text-muted sm:flex-row sm:items-center sm:justify-between">
         <p>Thesisweb — free search across open academic databases.</p>
         <nav className="flex gap-4" aria-label="Legal">
+          <Link href="/databases" className="hover:text-text">Databases</Link>
           <Link href="/privacy" className="hover:text-text">Privacy</Link>
           <Link href="/terms" className="hover:text-text">Terms</Link>
         </nav>

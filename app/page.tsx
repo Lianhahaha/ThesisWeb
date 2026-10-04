@@ -87,6 +87,9 @@ export default function HomePage() {
             <li key={name} className="tag">{name}</li>
           ))}
         </ul>
+        <p className="mt-3 text-sm">
+          <Link href="/databases" className="text-accent underline">What each database covers</Link>
+        </p>
       </section>
 
       <section id="readme" className="mx-auto max-w-4xl py-8" aria-labelledby="readme-h">
