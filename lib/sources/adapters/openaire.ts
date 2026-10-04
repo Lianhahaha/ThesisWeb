@@ -1,119 +1,88 @@
 import { fetchWithTimeout, safeJson, paperId } from "@/lib/utils";
 import { USER_AGENT } from "@/lib/config";
-import { extractDoi, flipName, stripHtml } from "@/lib/text";
+import { extractDoi, stripHtml } from "@/lib/text";
 import type { Paper } from "@/lib/types";
 import type { AdapterOptions } from "@/lib/sources/types";
 
 /**
- * OpenAIRE adapter.
- * - The European open-science graph: 170M+ publications aggregated from
- *   institutional repositories, publishers and national infrastructures, with
- *   a strong bias toward openly accessible research and funder-linked output.
- * - Free, no API key for the public search API.
- * Docs: https://graph.openaire.eu/docs/apis/search-api/publications
+ * OpenAIRE adapter (Graph API v1).
+ * - The European open-science graph: publications aggregated from thousands
+ *   of repositories, publishers and funders, de-duplicated across copies.
+ * - Free, no API key. The older /search/publications API stopped answering
+ *   (40 s timeouts), so this uses the Graph API, which answers in ~2 s.
+ * Docs: https://graph.openaire.eu/docs/apis/graph-api/
  */
 
-const BASE = "https://api.openaire.eu/search/publications";
+const BASE = "https://api.openaire.eu/graph/v1/researchProducts";
 
-/**
- * OpenAIRE's JSON is XML-to-JSON: any field can be a value, an object with the
- * text under "$", or an array of either, depending on how many were present.
- */
-type Node = string | { $?: string; [k: string]: unknown } | null | undefined;
-
-const asArray = <T,>(x: T | T[] | null | undefined): T[] => (x == null ? [] : Array.isArray(x) ? x : [x]);
-const text = (n: Node): string => (typeof n === "string" ? n : n?.$ ?? "");
-
-/** A value tagged with a classification (pid type, subject type). */
-interface OaClassified {
-  "@classid"?: string;
-  $?: string;
+interface Pid {
+  scheme?: string;
+  value?: string;
 }
 
-interface OaInstance {
-  accessright?: { "@classid"?: string };
-  webresource?: { url?: Node } | { url?: Node }[];
+interface Product {
+  mainTitle?: string;
+  authors?: { fullName?: string; rank?: number }[] | null;
+  publicationDate?: string;
+  publisher?: string;
+  descriptions?: string[];
+  pids?: Pid[] | null;
+  bestAccessRight?: { label?: string } | null;
+  container?: { name?: string } | null;
+  subjects?: { subject?: { scheme?: string; value?: string } }[] | null;
+  instances?: { urls?: string[]; license?: string; refereed?: string }[] | null;
+  indicators?: { citationImpact?: { citationCount?: number } };
 }
 
-interface OaResult {
-  title?: Node | Node[];
-  creator?: Node | Node[];
-  dateofacceptance?: Node;
-  pid?: OaClassified | OaClassified[];
-  description?: Node | Node[];
-  subject?: OaClassified | OaClassified[];
-  journal?: Node;
-  publisher?: Node;
-  bestaccessright?: { "@classid"?: string };
-  children?: { instance?: OaInstance | OaInstance[] };
-}
-
-/** Prefer the "main title" entry; OpenAIRE lists alternative/sub titles too. */
-function pickTitle(titles: Node | Node[]): string {
-  const list = asArray(titles) as ({ "@classid"?: string; $?: string } | string)[];
-  const main = list.find((t) => typeof t !== "string" && t["@classid"] === "main title");
-  return stripHtml(text((main ?? list[0]) as Node));
-}
-
-export async function searchOpenAire(
-  query: string,
-  opts: AdapterOptions = {}
-): Promise<Paper[]> {
+export async function searchOpenAire(query: string, opts: AdapterOptions = {}): Promise<Paper[]> {
   const { fromYear, perSource = 15, openAccessOnly } = opts;
 
-  const params = new URLSearchParams({
-    keywords: query,
-    format: "json",
-    size: String(perSource),
-  });
-  if (fromYear && fromYear > 0) params.set("fromDateAccepted", `${fromYear}-01-01`);
-  if (openAccessOnly) params.set("OA", "true");
+  const params = new URLSearchParams({ search: query, type: "publication", pageSize: String(perSource) });
+  if (fromYear && fromYear > 0) params.set("fromPublicationDate", `${fromYear}-01-01`);
+  if (openAccessOnly) params.set("bestOpenAccessRightLabel", "OPEN");
 
-  const res = await fetchWithTimeout(`${BASE}?${params}`, { headers: { "User-Agent": USER_AGENT } }, 11000);
+  const res = await fetchWithTimeout(`${BASE}?${params}`, { headers: { "User-Agent": USER_AGENT } });
   if (!res.ok) throw new Error(`OpenAIRE ${res.status}`);
-  const data = await safeJson<{ response?: { results?: { result?: unknown } | null } }>(res);
-  const rows = asArray(data?.response?.results?.result as { metadata?: Record<string, { "oaf:result"?: OaResult }> }[]);
+  const data = await safeJson<{ results?: Product[] | null }>(res);
 
   const papers: Paper[] = [];
-  for (const row of rows) {
-    const r = row.metadata?.["oaf:entity"]?.["oaf:result"];
-    if (!r) continue;
+  for (const r of data?.results ?? []) {
+    if (!r.mainTitle) continue;
+    const title = stripHtml(r.mainTitle);
+    const doi = extractDoi(r.pids?.find((p) => p.scheme === "doi")?.value);
+    const year = r.publicationDate ? Number(r.publicationDate.slice(0, 4)) || null : null;
 
-    const title = pickTitle(r.title);
-    if (!title) continue;
-
-    const doi = asArray(r.pid).find((p) => p["@classid"] === "doi")?.$ ?? null;
-
-    const dateStr = text(r.dateofacceptance);
-    const year = dateStr ? Number(dateStr.slice(0, 4)) : null;
-
-    const isOA = r.bestaccessright?.["@classid"] === "OPEN";
-    // First open instance that has a URL; DOI landing page as a fallback.
-    const instances = asArray(r.children?.instance);
-    const openInstance = instances.find((i) => i.accessright?.["@classid"] === "OPEN");
-    const openUrl = openInstance ? text(asArray(openInstance.webresource)[0]?.url) : "";
-
-    const abstract = asArray<Node>(r.description).map(text).find(Boolean);
-    const keywords = asArray(r.subject)
-      .filter((s) => s["@classid"] === "keyword")
-      .map((s) => s.$ ?? "")
-      .filter(Boolean)
-      .slice(0, 5);
+    const isOA = r.bestAccessRight?.label === "OPEN";
+    // Prefer a copy outside doi.org (repository / PMC), else the DOI link.
+    const urls = (r.instances ?? []).flatMap((i) => i.urls ?? []);
+    const openUrl = isOA ? urls.find((u) => !/doi\.org/i.test(u)) ?? urls[0] ?? null : null;
+    const abstract = r.descriptions?.find(Boolean);
+    const refereed = (r.instances ?? []).some((i) => i.refereed === "peerReviewed");
 
     papers.push({
       id: paperId(doi, title),
       title,
-      // Repositories mix "Given Family" and "Family, Given"; normalize to the former.
-      authors: asArray<Node>(r.creator).map((c) => flipName(text(c))).filter(Boolean).slice(0, 10),
-      year: year && Number.isFinite(year) ? year : null,
-      publishedDate: dateStr || null,
-      venue: text(r.journal) ? stripHtml(text(r.journal)) : text(r.publisher) ? stripHtml(text(r.publisher)) : null,
-      doi: doi ?? extractDoi(openUrl),
+      authors: [...(r.authors ?? [])]
+        .sort((a, b) => (a.rank ?? 0) - (b.rank ?? 0))
+        .map((a) => a.fullName?.trim() ?? "")
+        .filter(Boolean)
+        .slice(0, 10),
+      year,
+      publishedDate: r.publicationDate ?? null,
+      venue: r.container?.name || r.publisher || null,
+      doi,
       // JATS abstracts start with an <jats:title>Abstract</jats:title> heading.
       abstract: abstract ? stripHtml(abstract).replace(/^abstract\s*[:.]?\s+/i, "") || null : null,
-      openAccessUrl: isOA ? openUrl || (doi ? `https://doi.org/${doi}` : null) : null,
+      openAccessUrl: openUrl,
       isOpenAccess: isOA,
-      keywords,
+      citedByCount: r.indicators?.citationImpact?.citationCount ?? undefined,
+      keywords: (r.subjects ?? [])
+        .filter((s) => s.subject?.scheme === "keyword")
+        .map((s) => s.subject?.value ?? "")
+        .filter(Boolean)
+        .slice(0, 5),
+      // A peer-reviewed copy anywhere means a reviewed version exists.
+      preprint: refereed ? false : undefined,
       sources: ["openaire"],
     });
   }
