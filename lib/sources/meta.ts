@@ -166,6 +166,10 @@ const META = {
     label: "theses.fr", blurb: "Every doctoral thesis defended in France since 1985, many in English (ABES)", color: "#3e63dd",
     region: "France", fields: ["all"], kind: "theses", url: "https://theses.fr",
   },
+  osf: {
+    label: "OSF Preprints", blurb: "Moderated preprint servers: PsyArXiv, SocArXiv, EdArXiv, AfricArXiv, INA-Rxiv (Indonesia) and more. Not peer-reviewed", color: "#36b37e",
+    region: "Global (COS)", fields: ["social", "education", "medicine", "sciences"], kind: "preprints", url: "https://osf.io/preprints",
+  },
 } satisfies Record<string, SourceMeta>;
 
 /** Every source id. lib/sources/registry.ts must have an adapter for each one. */

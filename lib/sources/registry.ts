@@ -29,6 +29,7 @@ import { searchGbif } from "@/lib/sources/adapters/gbif";
 import { searchLaReferencia } from "@/lib/sources/adapters/lareferencia";
 import { searchBdtd } from "@/lib/sources/adapters/bdtd";
 import { searchThesesFr } from "@/lib/sources/adapters/thesesfr";
+import { searchOsf } from "@/lib/sources/adapters/osf";
 
 /**
  * The adapter for every source in lib/sources/meta.ts. Typed as a Record over
@@ -71,4 +72,5 @@ export const ADAPTERS: Record<SourceId, AdapterEntry> = {
   lareferencia:    { run: searchLaReferencia, boolean: false },
   bdtd:            { run: searchBdtd, boolean: false },
   thesesfr:        { run: searchThesesFr, boolean: false },
+  osf:             { run: searchOsf, boolean: false },
 };
