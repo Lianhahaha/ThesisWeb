@@ -1,8 +1,36 @@
 /**
  * Display metadata for every search source. Pure data (no adapter imports), so
  * it is safe to use from client components. Add new sources here so the
- * search page, dashboard and docs pick them up automatically.
+ * search page, the Databases page and docs pick them up automatically; the
+ * registry (lib/sources/registry.ts) must then give each one an adapter.
  */
+
+/** Broad research areas, for grouping sources on the Databases page. */
+export const FIELDS = {
+  all: "Every field",
+  medicine: "Medicine & health",
+  engineering: "Engineering & technology",
+  sciences: "Natural sciences",
+  agriculture: "Agriculture, food & environment",
+  social: "Social sciences & development",
+  business: "Business & economics",
+  education: "Education",
+  humanities: "Humanities & arts",
+  computing: "Computing & maths",
+} as const;
+export type Field = keyof typeof FIELDS;
+
+/** What a source holds, which says a lot about how far to trust a record. */
+export const KINDS = {
+  index: "Research index",
+  journals: "Peer-reviewed journals",
+  repository: "Open repository",
+  preprints: "Preprints (not peer-reviewed)",
+  theses: "Theses & dissertations",
+  reports: "Reports & official publications",
+  books: "Books",
+} as const;
+export type Kind = keyof typeof KINDS;
 
 export interface SourceMeta {
   /** Human-readable name. */
@@ -11,29 +39,89 @@ export interface SourceMeta {
   blurb: string;
   /** Badge color (hex). */
   color: string;
+  /** Who runs it and where its records mostly come from, e.g. "Global", "Japan". */
+  region: string;
+  fields: Field[];
+  kind: Kind;
+  /** The database's own site, for students who want to search it directly. */
+  url: string;
   /** True if the adapter is skipped unless an API key is configured. */
   needsKey?: boolean;
 }
 
 const META = {
-  openalex:        { label: "OpenAlex",         blurb: "250M+ works across every field; primary discovery source", color: "#388bfd" },
-  crossref:        { label: "Crossref",         blurb: "Publisher-deposited metadata and DOIs",                    color: "#3fb950" },
-  semanticscholar: { label: "Semantic Scholar", blurb: "AI-written TLDRs and citation graph",                      color: "#bc8cff" },
-  doaj:            { label: "DOAJ",             blurb: "Fully open-access journals worldwide",                     color: "#d29922" },
-  europepmc:       { label: "Europe PMC",       blurb: "Life sciences, biomedical and preprints",                  color: "#64c4c4" },
-  pubmed:          { label: "PubMed",           blurb: "Biomedical and health literature",                         color: "#f8814a" },
-  arxiv:           { label: "arXiv",            blurb: "Preprints in physics, maths, CS, economics and more",      color: "#e06060" },
-  eric: { label: "ERIC", blurb: "Education research: articles, theses and reports (U.S. Dept. of Education)", color: "#e3b341" },
-  zenodo: { label: "Zenodo", blurb: "Open articles, theses, reports and preprints from every field (CERN)", color: "#58a6ff" },
-  hal: { label: "HAL", blurb: "French national open archive: articles, theses and reports (multilingual)", color: "#f778ba" },
-  openaire: { label: "OpenAIRE", blurb: "European open-science graph: repositories, publishers and funder-linked research", color: "#ff7b72" },
-  inspire: { label: "INSPIRE-HEP", blurb: "High-energy physics, astrophysics and cosmology (CERN, Fermilab, DESY)", color: "#a5d6ff" },
-  plos: { label: "PLOS", blurb: "PLOS ONE, Climate, Medicine, Biology and more — all open access", color: "#ff9bce" },
-  datacite: { label: "DataCite Theses", blurb: "Theses and dissertations from university repositories worldwide", color: "#7ee787" },
-  osti: { label: "OSTI.GOV", blurb: "U.S. Dept. of Energy research: energy, engineering, physics and environment reports and articles", color: "#f0b72f" },
-  cinii: { label: "CiNii Research", blurb: "Japanese and Asian research: articles, theses and books, many in English (NII Japan)", color: "#79c0ff" },
-  jstage: { label: "J-STAGE", blurb: "3,000+ journals published in Japan: engineering, medicine, agriculture, education (JST)", color: "#ffa198" },
-  figshare: { label: "Figshare", blurb: "University and publisher repository items: journal articles, theses and conference papers", color: "#556cd6" },
+  openalex: {
+    label: "OpenAlex", blurb: "250M+ works across every field; primary discovery source", color: "#388bfd",
+    region: "Global", fields: ["all"], kind: "index", url: "https://openalex.org",
+  },
+  crossref: {
+    label: "Crossref", blurb: "Publisher-deposited metadata and DOIs", color: "#3fb950",
+    region: "Global", fields: ["all"], kind: "index", url: "https://search.crossref.org",
+  },
+  semanticscholar: {
+    label: "Semantic Scholar", blurb: "AI-written TLDRs and citation graph", color: "#bc8cff",
+    region: "Global", fields: ["all"], kind: "index", url: "https://www.semanticscholar.org",
+  },
+  doaj: {
+    label: "DOAJ", blurb: "Fully open-access journals worldwide", color: "#d29922",
+    region: "Global", fields: ["all"], kind: "journals", url: "https://doaj.org",
+  },
+  europepmc: {
+    label: "Europe PMC", blurb: "Life sciences, biomedical and preprints", color: "#64c4c4",
+    region: "Europe", fields: ["medicine", "sciences"], kind: "index", url: "https://europepmc.org",
+  },
+  pubmed: {
+    label: "PubMed", blurb: "Biomedical and health literature", color: "#f8814a",
+    region: "United States", fields: ["medicine"], kind: "index", url: "https://pubmed.ncbi.nlm.nih.gov",
+  },
+  arxiv: {
+    label: "arXiv", blurb: "Preprints in physics, maths, CS, economics and more", color: "#e06060",
+    region: "Global", fields: ["sciences", "computing", "engineering"], kind: "preprints", url: "https://arxiv.org",
+  },
+  eric: {
+    label: "ERIC", blurb: "Education research: articles, theses and reports (U.S. Dept. of Education)", color: "#e3b341",
+    region: "United States", fields: ["education"], kind: "index", url: "https://eric.ed.gov",
+  },
+  zenodo: {
+    label: "Zenodo", blurb: "Open articles, theses, reports and preprints from every field (CERN)", color: "#58a6ff",
+    region: "Global", fields: ["all"], kind: "repository", url: "https://zenodo.org",
+  },
+  hal: {
+    label: "HAL", blurb: "French national open archive: articles, theses and reports (multilingual)", color: "#f778ba",
+    region: "France", fields: ["all"], kind: "repository", url: "https://hal.science",
+  },
+  openaire: {
+    label: "OpenAIRE", blurb: "European open-science graph: repositories, publishers and funder-linked research", color: "#ff7b72",
+    region: "Europe", fields: ["all"], kind: "index", url: "https://explore.openaire.eu",
+  },
+  inspire: {
+    label: "INSPIRE-HEP", blurb: "High-energy physics, astrophysics and cosmology (CERN, Fermilab, DESY)", color: "#a5d6ff",
+    region: "Global", fields: ["sciences"], kind: "index", url: "https://inspirehep.net",
+  },
+  plos: {
+    label: "PLOS", blurb: "PLOS ONE, Climate, Medicine, Biology and more — all open access", color: "#ff9bce",
+    region: "Global", fields: ["medicine", "sciences"], kind: "journals", url: "https://plos.org",
+  },
+  datacite: {
+    label: "DataCite Theses", blurb: "Theses and dissertations from university repositories worldwide", color: "#7ee787",
+    region: "Global", fields: ["all"], kind: "theses", url: "https://commons.datacite.org",
+  },
+  osti: {
+    label: "OSTI.GOV", blurb: "U.S. Dept. of Energy research: energy, engineering, physics and environment reports and articles", color: "#f0b72f",
+    region: "United States", fields: ["engineering", "sciences"], kind: "reports", url: "https://www.osti.gov",
+  },
+  cinii: {
+    label: "CiNii Research", blurb: "Japanese and Asian research: articles, theses and books, many in English (NII Japan)", color: "#79c0ff",
+    region: "Japan", fields: ["all"], kind: "index", url: "https://cir.nii.ac.jp",
+  },
+  jstage: {
+    label: "J-STAGE", blurb: "3,000+ journals published in Japan: engineering, medicine, agriculture, education (JST)", color: "#ffa198",
+    region: "Japan", fields: ["all"], kind: "journals", url: "https://www.jstage.jst.go.jp",
+  },
+  figshare: {
+    label: "Figshare", blurb: "University and publisher repository items: journal articles, theses and conference papers", color: "#556cd6",
+    region: "Global", fields: ["all"], kind: "repository", url: "https://figshare.com",
+  },
 } satisfies Record<string, SourceMeta>;
 
 /** Every source id. lib/sources/registry.ts must have an adapter for each one. */
