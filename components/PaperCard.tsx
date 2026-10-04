@@ -59,6 +59,15 @@ export function PaperCard({ paper, showScore, refNum }: Props) {
                 Retracted
               </span>
             )}
+            {paper.concern && !paper.retracted && (
+              <span
+                className="chip"
+                style={{ color: "rgb(var(--danger))", borderColor: "rgb(var(--danger) / 0.5)", fontWeight: 600 }}
+                title="The publisher has raised concerns about this work. Read the notice before relying on it."
+              >
+                Expression of concern
+              </span>
+            )}
             {paper.preprint && (
               <span
                 className="chip"

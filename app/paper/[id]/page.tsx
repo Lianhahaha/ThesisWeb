@@ -7,6 +7,8 @@ import { useLiveQuery } from "dexie-react-hooks";
 import { ArrowLeft, Check, ExternalLink, FileText } from "lucide-react";
 import { getDb, savePaper, unsavePaper, updatePaper, getPaper } from "@/lib/db";
 import { getRecentPaper, mergeRecentPapers } from "@/lib/recent-papers";
+import { fetchIntegrity } from "@/lib/integrity-client";
+import type { IntegrityStatus } from "@/lib/retractions";
 import { formatCitation, citationToText, inTextCitation, toBibtex, type CitationStyle } from "@/lib/citations";
 import { toast } from "@/components/Toaster";
 import type { Paper, SavedPaper } from "@/lib/types";
@@ -88,6 +90,20 @@ export default function PaperDetailPage({ params }: { params: Promise<{ id: stri
   const dbLoading = saved === undefined;
   const noRecent = recent === null;
   const dbMissing = saved === null;
+
+  // Retraction / concern notice from Crossref, for papers opened from the
+  // library or a related list that never went through the search check.
+  const [integrity, setIntegrity] = useState<IntegrityStatus | null>(null);
+  const doiForCheck = (saved && typeof saved === "object" ? saved.doi : null) ?? recent?.doi ?? null;
+  useEffect(() => {
+    setIntegrity(null);
+    if (!doiForCheck) return;
+    let live = true;
+    fetchIntegrity([doiForCheck]).then((s) => {
+      if (live) setIntegrity(s[doiForCheck.toLowerCase()] ?? null);
+    });
+    return () => { live = false; };
+  }, [doiForCheck]);
 
   // A copy found by "Find free PDF". Kept here so it shows whether or not
   // the paper is saved (it used to be written only into a saved record).
@@ -206,7 +222,9 @@ export default function PaperDetailPage({ params }: { params: Promise<{ id: stri
     }
   }
 
-  const p: Paper = isSavedData ?? paper;
+  const base: Paper = isSavedData ?? paper;
+  const p: Paper =
+    integrity === "retracted" ? { ...base, retracted: true } : integrity === "concern" ? { ...base, concern: true } : base;
   const freeUrl = p.openAccessUrl || foundUrl;
 
   return (
@@ -221,6 +239,14 @@ export default function PaperDetailPage({ params }: { params: Promise<{ id: stri
           <strong>This paper has been retracted.</strong>{" "}
           Its findings are no longer considered
           reliable. Do not cite it as supporting evidence.
+        </p>
+      )}
+
+      {p.concern && !p.retracted && (
+        <p role="alert" className="notice notice-danger mb-5">
+          <strong>Expression of concern.</strong>{" "}
+          The publisher has raised doubts about this paper&apos;s data or conduct. Read the notice on
+          the publisher&apos;s page before relying on it.
         </p>
       )}
 

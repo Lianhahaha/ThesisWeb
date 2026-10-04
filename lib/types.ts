@@ -23,8 +23,10 @@ export interface Paper {
   sources: string[];
   /** Pre-computed relevance score for sorting (0-100) */
   relevance?: number;
-  /** True if the work has been retracted (OpenAlex `is_retracted`). */
+  /** True if the work has been retracted (OpenAlex, or Crossref / Retraction Watch). */
   retracted?: boolean;
+  /** True if the publisher issued an expression of concern about the work. */
+  concern?: boolean;
   /**
    * Peer-review status as far as the sources know: true = preprint (not
    * peer-reviewed), false = published in a journal, undefined = unknown.

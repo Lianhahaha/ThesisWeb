@@ -7,6 +7,7 @@ import { PaperCard } from "@/components/PaperCard";
 import { SearchPanel, DEFAULT_FROM_YEAR } from "@/components/SearchPanel";
 import { toast } from "@/components/Toaster";
 import { storeRecentPapers } from "@/lib/recent-papers";
+import { applyIntegrity, fetchIntegrity } from "@/lib/integrity-client";
 import type { SearchResult } from "@/lib/types";
 import { KEYLESS_SOURCE_COUNT, sourceLabel, SOURCE_META } from "@/lib/sources/meta";
 import { suggestTerms } from "@/lib/related-terms";
@@ -72,6 +73,14 @@ export default function SearchPage() {
       addSearchHistory(input.query);
       setSearched(input);
       storeRecentPapers(data.papers);
+      // Retraction check is slow (several seconds), so it lands after the
+      // results are on screen and patches the badges in.
+      fetchIntegrity(data.papers.map((p) => p.doi ?? "")).then((status) => {
+        if (Object.keys(status).length === 0) return;
+        const papers = applyIntegrity(data.papers, status);
+        storeRecentPapers(papers);
+        setResult((prev) => (prev === data ? { ...data, papers } : prev));
+      });
       const ok = Object.values(data.sources).filter((s) => s === "ok").length;
       if (ok === 0) toast("No database returned results. Try different words.", "error");
       else toast(`${data.papers.length} papers in ${(data.tookMs / 1000).toFixed(1)}s`, "success");

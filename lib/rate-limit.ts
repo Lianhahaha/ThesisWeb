@@ -23,6 +23,8 @@ export const LIMITS = {
   related: { limit: 20, windowMs: 60_000 },
   pdf: { limit: 30, windowMs: 60_000 },
   summarize: { limit: 30, windowMs: 60_000 },
+  // One per search, plus one per opened paper.
+  retractions: { limit: 40, windowMs: 60_000 },
 } satisfies Record<string, Rule>;
 
 /** All visitors combined, per instance, for the fan-out route. */
