@@ -57,7 +57,6 @@ npm run build && npm run lint && npx tsc --noEmit
 | `NEXT_PUBLIC_FIREBASE_*` (7) | Yes | Firebase config for accounts/library |
 | `CONTACT_EMAIL`, `UNPAYWALL_EMAIL` | Recommended | Polite-pool access; PDF lookup |
 | `SEMANTIC_SCHOLAR_API_KEY`, `OPENALEX_API_KEY` | Recommended | Higher rate limits on the two biggest sources |
-| `CORE_API_KEY`, `BASE_API_KEY` | Optional | Enable those two sources |
 
 **Firebase setup:**
 1. Auth → Sign-in method → enable **Email/Password**.

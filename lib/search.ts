@@ -6,9 +6,6 @@ import { searchDoaj } from "@/lib/sources/doaj";
 import { searchEuropePMC } from "@/lib/sources/europepmc";
 import { searchPubMed } from "@/lib/sources/pubmed";
 import { searchArxiv } from "@/lib/sources/arxiv";
-import { searchCore } from "@/lib/sources/core";
-import { searchBase } from "@/lib/sources/base";
-import { searchGoogleScholar } from "@/lib/sources/googlescholar";
 import { searchEric } from "@/lib/sources/eric";
 import { searchZenodo } from "@/lib/sources/zenodo";
 import { searchHal } from "@/lib/sources/hal";
@@ -16,7 +13,6 @@ import { searchOpenAire } from "@/lib/sources/openaire";
 import { searchInspire } from "@/lib/sources/inspire";
 import { searchPlos } from "@/lib/sources/plos";
 import { searchDataCite } from "@/lib/sources/datacite";
-import { searchOapen } from "@/lib/sources/oapen";
 import { searchFigshare } from "@/lib/sources/figshare";
 import { dedupePapers, scoreRelevance } from "@/lib/dedupe";
 
@@ -84,15 +80,6 @@ function buildCountryQuery(baseQuery: string, country: string): string {
   return `${baseQuery} AND (${clause})`;
 }
 
-/**
- * Extract just the base query without country clause, for adapters that
- * don't support boolean AND/OR (e.g. CORE). Returns the original query
- * unchanged if no country clause is present.
- */
-export function stripCountryClause(query: string): string {
-  return query.replace(/\s+AND\s+\([^)]+\)/i, "").trim();
-}
-
 type SourceSearch = (query: string, opts: SearchOpts) => Promise<Paper[]>;
 
 /**
@@ -111,10 +98,6 @@ const ADAPTERS: { id: string; run: SourceSearch; boolean: boolean; deadlineMs?: 
   { id: "europepmc",       run: searchEuropePMC,       boolean: true },
   { id: "pubmed",          run: searchPubMed,          boolean: true },
   { id: "arxiv",           run: searchArxiv,           boolean: true },
-  { id: "core",            run: searchCore,            boolean: true },
-  { id: "base",            run: searchBase,            boolean: true },
-  // Scraped and frequently blocked, so it only gets a short window.
-  { id: "google_scholar",  run: searchGoogleScholar,   boolean: true, deadlineMs: 6000 },
   { id: "eric",             run: searchEric,             boolean: false },
   { id: "zenodo",           run: searchZenodo,           boolean: false },
   { id: "hal",              run: searchHal,              boolean: false },
@@ -122,7 +105,6 @@ const ADAPTERS: { id: string; run: SourceSearch; boolean: boolean; deadlineMs?: 
   { id: "inspire",          run: searchInspire,          boolean: false },
   { id: "plos",             run: searchPlos,             boolean: false },
   { id: "datacite",         run: searchDataCite,         boolean: false },
-  { id: "oapen",            run: searchOapen,            boolean: false },
   // Search + per-item detail fetches, so it needs more room than the default.
   { id: "figshare",         run: searchFigshare,         boolean: false, deadlineMs: 15000 },
 ];
