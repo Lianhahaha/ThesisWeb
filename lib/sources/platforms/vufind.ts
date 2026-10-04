@@ -29,7 +29,8 @@ interface VufindRecord {
   urls?: { url?: string }[];
   summary?: string[];
   formats?: string[];
-  subjects?: string[][];
+  /** Lists of heading parts on some portals, plain strings on others. */
+  subjects?: (string | string[])[];
   dois?: string[];
 }
 
@@ -80,7 +81,10 @@ export function vufindAdapter(cfg: VufindConfig): Adapter {
         // These portals index open repositories; the link is the repository copy.
         openAccessUrl: link,
         isOpenAccess: !!link,
-        keywords: (r.subjects ?? []).map((s) => s.join(" ")).filter(Boolean).slice(0, 5),
+        keywords: (r.subjects ?? [])
+          .map((s) => (Array.isArray(s) ? s.join(" ") : typeof s === "string" ? s : ""))
+          .filter(Boolean)
+          .slice(0, 5),
         sources: [cfg.id],
       });
     }
