@@ -150,6 +150,10 @@ const META = {
     label: "USGS Publications", blurb: "U.S. Geological Survey reports and articles: earthquakes, volcanoes, water, minerals, ecosystems, climate", color: "#6e9a3c",
     region: "United States", fields: ["sciences", "agriculture", "engineering"], kind: "reports", url: "https://pubs.usgs.gov",
   },
+  gbif: {
+    label: "GBIF Literature", blurb: "Biodiversity research: species, ecosystems, conservation, fisheries and agriculture (Global Biodiversity Information Facility)", color: "#4c9f38",
+    region: "Global (GBIF)", fields: ["sciences", "agriculture"], kind: "index", url: "https://www.gbif.org/resource/search?contentType=literature",
+  },
 } satisfies Record<string, SourceMeta>;
 
 /** Every source id. lib/sources/registry.ts must have an adapter for each one. */
