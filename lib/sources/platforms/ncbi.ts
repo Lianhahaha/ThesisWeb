@@ -16,15 +16,27 @@ const KEY = process.env.NCBI_API_KEY?.trim() || "";
 const GAP_MS = KEY ? 110 : 350;
 let lastSlot = 0;
 
-async function eutils(path: string, params: Record<string, string>): Promise<Response> {
-  const now = Date.now();
-  const slot = Math.max(now, lastSlot + GAP_MS);
-  lastSlot = slot; // reserve synchronously, before awaiting
-  if (slot > now) await sleep(slot - now);
+/**
+ * Hosting platforms share outgoing addresses between many apps, and NCBI
+ * counts per address, so a 429 can arrive even with our own pacing. Retry
+ * it a couple of times with a growing wait.
+ */
+const MAX_ATTEMPTS = 3;
 
+async function eutils(path: string, params: Record<string, string>): Promise<Response> {
   const q = new URLSearchParams({ ...params, retmode: "json", tool: "ThesisWeb", email: CONTACT_EMAIL });
   if (KEY) q.set("api_key", KEY);
-  return fetchWithTimeout(`${BASE}/${path}?${q}`);
+
+  for (let attempt = 1; ; attempt++) {
+    const now = Date.now();
+    const slot = Math.max(now, lastSlot + GAP_MS);
+    lastSlot = slot; // reserve synchronously, before awaiting
+    if (slot > now) await sleep(slot - now);
+
+    const res = await fetchWithTimeout(`${BASE}/${path}?${q}`);
+    if (res.status !== 429 || attempt >= MAX_ATTEMPTS) return res;
+    await sleep(700 * attempt + Math.random() * 300);
+  }
 }
 
 /** Ids of the best matches in `db`, most relevant first. */
