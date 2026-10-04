@@ -32,6 +32,7 @@ export const SOURCE_META: Record<string, SourceMeta> = {
   datacite: { label: "DataCite Theses", blurb: "Theses and dissertations from university repositories worldwide", color: "#7ee787" },
   osti: { label: "OSTI.GOV", blurb: "U.S. Dept. of Energy research: energy, engineering, physics and environment reports and articles", color: "#f0b72f" },
   cinii: { label: "CiNii Research", blurb: "Japanese and Asian research: articles, theses and books, many in English (NII Japan)", color: "#79c0ff" },
+  jstage: { label: "J-STAGE", blurb: "3,000+ journals published in Japan: engineering, medicine, agriculture, education (JST)", color: "#ffa198" },
   figshare: { label: "Figshare", blurb: "University and publisher repository items: journal articles, theses and conference papers", color: "#556cd6" },
 };
 
