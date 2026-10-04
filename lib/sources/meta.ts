@@ -158,6 +158,10 @@ const META = {
     label: "LA Referencia", blurb: "Open repositories of Latin America: articles, theses and reports, mostly Spanish and Portuguese", color: "#ec6547",
     region: "Latin America", fields: ["all"], kind: "repository", url: "https://www.lareferencia.info",
   },
+  bdtd: {
+    label: "BDTD Brazil", blurb: "900k+ master's and doctoral theses from Brazilian universities, full text free (IBICT)", color: "#2ea043",
+    region: "Brazil", fields: ["all"], kind: "theses", url: "https://bdtd.ibict.br",
+  },
 } satisfies Record<string, SourceMeta>;
 
 /** Every source id. lib/sources/registry.ts must have an adapter for each one. */

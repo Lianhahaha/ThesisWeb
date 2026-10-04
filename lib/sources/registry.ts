@@ -27,6 +27,7 @@ import { searchEconBiz } from "@/lib/sources/adapters/econbiz";
 import { searchUsgs } from "@/lib/sources/adapters/usgs";
 import { searchGbif } from "@/lib/sources/adapters/gbif";
 import { searchLaReferencia } from "@/lib/sources/adapters/lareferencia";
+import { searchBdtd } from "@/lib/sources/adapters/bdtd";
 
 /**
  * The adapter for every source in lib/sources/meta.ts. Typed as a Record over
@@ -67,4 +68,5 @@ export const ADAPTERS: Record<SourceId, AdapterEntry> = {
   usgs:            { run: searchUsgs, boolean: false },
   gbif:            { run: searchGbif, boolean: false },
   lareferencia:    { run: searchLaReferencia, boolean: false },
+  bdtd:            { run: searchBdtd, boolean: false },
 };
