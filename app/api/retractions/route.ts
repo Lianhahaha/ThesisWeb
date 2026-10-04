@@ -6,7 +6,7 @@ export const dynamic = "force-dynamic";
 export const maxDuration = 30;
 
 /** Most DOIs one request may ask about: a full result set, with room to spare. */
-const MAX_DOIS = 300;
+const MAX_DOIS = 500;
 
 /**
  * POST /api/retractions  { dois: string[] }

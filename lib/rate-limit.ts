@@ -17,7 +17,7 @@ interface Rule {
 }
 
 export const LIMITS = {
-  // A search fans out to ~18 external APIs, so it gets the tightest budget.
+  // A search fans out to ~30 external APIs, so it gets the tightest budget.
   search: { limit: 12, windowMs: 60_000 },
   cite: { limit: 10, windowMs: 60_000 },
   related: { limit: 20, windowMs: 60_000 },

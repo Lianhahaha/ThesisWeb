@@ -16,11 +16,11 @@ import type { Paper } from "@/lib/types";
 
 const KEY = "tw-recent-papers";
 /**
- * Must cover a whole result set (up to ~18 sources x 15 papers, before
+ * Must cover a whole result set (up to ~31 sources x 15 papers, before
  * dedupe): any result past the cap can be listed but not opened. A few
  * hundred papers is well under 1 MB of sessionStorage.
  */
-const MAX = 300;
+const MAX = 500;
 
 export function storeRecentPapers(papers: Paper[]): void {
   if (typeof window === "undefined" || papers.length === 0) return;

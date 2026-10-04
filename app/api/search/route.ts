@@ -21,7 +21,7 @@ export async function GET(req: NextRequest) {
   if (limited) return limited;
 
   const { searchParams } = new URL(req.url);
-  // Caps keep a single request from fanning huge strings out to ~18 APIs.
+  // Caps keep a single request from fanning huge strings out to ~30 APIs.
   const query = (searchParams.get("q") || "").trim().slice(0, 300);
   const fromYear = searchParams.get("fromYear");
   const openAccessOnly = searchParams.get("openAccessOnly") === "1";
