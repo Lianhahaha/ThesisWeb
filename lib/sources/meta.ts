@@ -138,6 +138,10 @@ const META = {
     label: "PubMed Central", blurb: "10M+ full-text medical and life-science articles from the U.S. National Library of Medicine, all free", color: "#f2a65a",
     region: "United States", fields: ["medicine", "sciences"], kind: "journals", url: "https://pmc.ncbi.nlm.nih.gov",
   },
+  ntrs: {
+    label: "NASA NTRS", blurb: "NASA technical reports, conference papers and journal reprints: aerospace, Earth science, materials, engineering", color: "#0b3d91",
+    region: "United States", fields: ["engineering", "sciences"], kind: "reports", url: "https://ntrs.nasa.gov",
+  },
 } satisfies Record<string, SourceMeta>;
 
 /** Every source id. lib/sources/registry.ts must have an adapter for each one. */
