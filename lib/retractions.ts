@@ -18,9 +18,9 @@ const RETRACTED = new Set(["retraction", "withdrawal", "removal"]);
 const CONCERN = new Set(["expression_of_concern", "expression-of-concern"]);
 
 /** DOIs per Crossref request; the filter goes in the URL, so keep it short. */
-const CHUNK = 40;
+const CHUNK = 50;
 /** Chunks in flight at once; Crossref's polite pool allows a few. */
-const PARALLEL = 3;
+const PARALLEL = 4;
 
 /** Results by lower-cased DOI, kept for a day; notices are rare and slow to change. */
 const TTL_MS = 24 * 60 * 60 * 1000;
