@@ -1,6 +1,7 @@
 import type { Paper, SearchResult } from "@/lib/types";
 import { dedupePapers, scoreRelevance } from "@/lib/dedupe";
 import { ADAPTERS } from "@/lib/sources/registry";
+import { normalizePaper } from "@/lib/sources/normalize";
 import type { AdapterOptions } from "@/lib/sources/types";
 
 export interface SearchOpts extends AdapterOptions {
@@ -92,7 +93,9 @@ export async function metaSearch(
   const entries = await Promise.all(
     Object.entries(ADAPTERS).map(async ([id, { run, boolean, deadlineMs }]) => {
       try {
-        const papers = await withDeadline(run(boolean ? booleanQuery : plainQuery, opts), deadlineMs ?? DEFAULT_DEADLINE_MS);
+        const raw = await withDeadline(run(boolean ? booleanQuery : plainQuery, opts), deadlineMs ?? DEFAULT_DEADLINE_MS);
+        if (!Array.isArray(raw)) throw new Error("adapter returned no list");
+        const papers = raw.map((p) => normalizePaper(p, id)).filter((p): p is Paper => p !== null);
         return [id, { ok: papers.length > 0 ? ("ok" as const) : ("empty" as const), papers, error: "" }] as const;
       } catch (e) {
         const error = (e instanceof Error ? e.message : String(e)).slice(0, 120);
