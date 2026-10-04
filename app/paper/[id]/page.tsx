@@ -339,7 +339,11 @@ export default function PaperDetailPage({ params }: { params: Promise<{ id: stri
 
           {p.tldr && (
             <p className="notice notice-info mt-3">
-              <strong>TL;DR:</strong> {p.tldr}
+              <strong>AI summary:</strong> {p.tldr}
+              <span className="mt-1 block text-xs text-subtle">
+                Written by Semantic Scholar&apos;s AI, not the authors. It can miss or misstate
+                details; quote the abstract or the paper itself, never this summary.
+              </span>
             </p>
           )}
 

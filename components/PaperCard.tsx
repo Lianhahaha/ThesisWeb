@@ -102,7 +102,14 @@ export function PaperCard({ paper, showScore, refNum }: Props) {
 
           {summary && (
             <p className={`mt-3 text-sm text-muted ${!expanded && long ? "line-clamp-2" : ""}`}>
-              {paper.tldr && <span className="font-semibold text-text">TL;DR: </span>}
+              {paper.tldr && (
+                <span
+                  className="font-semibold text-text"
+                  title="Written by Semantic Scholar's AI, not the authors. Read the abstract before citing."
+                >
+                  AI summary:{" "}
+                </span>
+              )}
               {summary}
             </p>
           )}
