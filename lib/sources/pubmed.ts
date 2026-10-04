@@ -100,6 +100,7 @@ export async function searchPubMed(
       isOpenAccess: isOA,
       citedByCount: 0,
       keywords: [],
+      preprint: false,
       sources: ["pubmed"],
     });
   }

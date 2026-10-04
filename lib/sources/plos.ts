@@ -80,6 +80,7 @@ export async function searchPlos(
       // All PLOS content is open access; the DOI resolves to the article page.
       openAccessUrl: `https://doi.org/${doi}`,
       isOpenAccess: true,
+      preprint: false,
       sources: ["plos"],
     });
   }

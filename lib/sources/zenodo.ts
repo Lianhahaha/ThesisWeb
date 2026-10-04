@@ -78,6 +78,7 @@ export async function searchZenodo(
       openAccessUrl: isOpen ? pdf ?? h.links?.self_html ?? null : null,
       isOpenAccess: isOpen,
       keywords: (m.keywords ?? []).slice(0, 5),
+      preprint: m.resource_type?.subtype === "preprint" ? true : undefined,
       sources: ["zenodo"],
     });
   }

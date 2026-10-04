@@ -50,6 +50,10 @@ function mergeInto(dest: Paper, src: Paper): void {
   if (src.isOpenAccess) dest.isOpenAccess = true;
   // A retraction reported by any source must survive the merge.
   if (src.retracted) dest.retracted = true;
+  // Any source that knows of a journal version wins over a preprint copy (the
+  // arXiv record of a since-published paper); unknown never clears a flag.
+  if (dest.preprint === false || src.preprint === false) dest.preprint = false;
+  else if (src.preprint) dest.preprint = true;
   if ((src.citedByCount ?? 0) > (dest.citedByCount ?? 0)) dest.citedByCount = src.citedByCount;
   if (!dest.venue && src.venue) dest.venue = src.venue;
   if (!dest.doi && src.doi) {

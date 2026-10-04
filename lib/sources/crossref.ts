@@ -16,6 +16,9 @@ const BASE = "https://api.crossref.org/works";
 
 interface CrossrefItem {
   DOI?: string;
+  /** "journal-article", "posted-content" (preprints), "book-chapter", ... */
+  type?: string;
+  subtype?: string;
   title?: string[];
   author?: { given?: string; family?: string }[];
   "container-title"?: string[];
@@ -107,6 +110,7 @@ function itemToPaper(it: CrossrefItem): Paper {
     citedByCount: it["is-referenced-by-count"] ?? 0,
     isOpenAccess: open,
     openAccessUrl: open && doi ? `https://doi.org/${doi}` : null,
+    preprint: it.type === "posted-content" ? true : it.type === "journal-article" ? false : undefined,
     sources: ["crossref"],
   };
 }

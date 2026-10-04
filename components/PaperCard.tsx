@@ -59,6 +59,15 @@ export function PaperCard({ paper, showScore, refNum }: Props) {
                 Retracted
               </span>
             )}
+            {paper.preprint && (
+              <span
+                className="chip"
+                style={{ borderStyle: "dashed", borderColor: "rgb(var(--border2))", fontWeight: 600 }}
+                title="A preprint has not been peer-reviewed yet. Check for a published version before citing it."
+              >
+                Preprint · not peer-reviewed
+              </span>
+            )}
             {paper.isOpenAccess && (
               <span
                 className="chip"

@@ -19,6 +19,8 @@ const BASE = "https://api.openalex.org/works";
 
 interface OpenAlexWork {
   id: string;
+  /** "article", "preprint", "book-chapter", "dissertation", ... */
+  type?: string;
   doi?: string | null;
   title?: string;
   display_name?: string;
@@ -28,7 +30,7 @@ interface OpenAlexWork {
   cited_by_count?: number;
   authorships?: { author: { display_name: string } }[];
   primary_location?: {
-    source?: { display_name?: string } | null;
+    source?: { display_name?: string; type?: string } | null;
     is_oa?: boolean;
     pdf_url?: string | null;
     landing_page_url?: string | null;
@@ -96,6 +98,12 @@ export function workToPaper(w: OpenAlexWork): Paper {
       .slice(0, 5)
       .map((k) => ("keyword" in k ? k.keyword : k.display_name)),
     retracted: w.is_retracted === true,
+    preprint:
+      w.type === "preprint"
+        ? true
+        : w.type === "article" && w.primary_location?.source?.type === "journal"
+        ? false
+        : undefined,
     sources: ["openalex"],
   };
 }

@@ -33,6 +33,7 @@ interface FigshareSummary {
 }
 
 interface FigshareDetail {
+  defined_type_name?: string;
   title?: string;
   doi?: string;
   description?: string;
@@ -97,6 +98,7 @@ export async function searchFigshare(
       openAccessUrl: d.url_public_html ?? (doi ? `https://doi.org/${doi}` : null),
       isOpenAccess: true,
       keywords: (d.tags ?? []).slice(0, 5),
+      preprint: d.defined_type_name === "preprint" ? true : undefined,
       sources: ["figshare"],
     });
   }

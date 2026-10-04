@@ -224,6 +224,14 @@ export default function PaperDetailPage({ params }: { params: Promise<{ id: stri
         </p>
       )}
 
+      {p.preprint && !p.retracted && (
+        <p role="note" className="notice notice-info mb-5">
+          <strong>Preprint: not peer-reviewed.</strong>{" "}
+          Other researchers have not checked this work yet. Look for a published journal version
+          before citing it, and say it is a preprint if you do.
+        </p>
+      )}
+
       <h1 className="display text-2xl leading-tight sm:text-3xl">{p.title}</h1>
 
       <p className="mt-3 text-muted">

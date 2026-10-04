@@ -25,6 +25,11 @@ export interface Paper {
   relevance?: number;
   /** True if the work has been retracted (OpenAlex `is_retracted`). */
   retracted?: boolean;
+  /**
+   * Peer-review status as far as the sources know: true = preprint (not
+   * peer-reviewed), false = published in a journal, undefined = unknown.
+   */
+  preprint?: boolean;
 }
 
 /** A user's saved copy of a paper, with their annotations. */

@@ -118,6 +118,7 @@ export async function searchArxiv(
       isOpenAccess: true, // arXiv is always open access
       citedByCount: 0, // arXiv API doesn't provide citation counts directly
       keywords: [],
+      preprint: true,
       sources: ["arxiv"],
     });
     

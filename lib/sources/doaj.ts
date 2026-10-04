@@ -59,6 +59,7 @@ export async function searchDoaj(
       isOpenAccess: true, // DOAJ is fully open access
       citedByCount: 0, // DOAJ does not provide citation counts
       keywords,
+      preprint: false,
       sources: ["doaj"],
     });
   }

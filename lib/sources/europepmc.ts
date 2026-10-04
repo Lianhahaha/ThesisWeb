@@ -14,6 +14,8 @@ const BASE = "https://www.ebi.ac.uk/europepmc/webservices/rest/search";
 
 interface EPMCResult {
   id?: string;
+  /** "MED" (PubMed), "PMC", "PPR" (preprints), "AGR", ... */
+  source?: string;
   pmid?: string;
   pmcid?: string;
   doi?: string;
@@ -105,6 +107,7 @@ export async function searchEuropePMC(
       isOpenAccess: isOA,
       citedByCount: r.citedByCount ?? 0,
       keywords,
+      preprint: r.source === "PPR" ? true : r.source === "MED" ? false : undefined,
       sources: ["europepmc"],
     };
   });
