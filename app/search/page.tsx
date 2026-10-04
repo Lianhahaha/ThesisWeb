@@ -283,6 +283,14 @@ export default function SearchPage() {
               )}
             </div>
 
+            {result.papers.length > 0 && (
+              <p className="mt-3 text-xs text-subtle">
+                Every result comes straight from a public academic database; nothing is generated.
+                Still check the journal, read the paper, and watch for the <em>Preprint</em>,{" "}
+                <em>Retracted</em> and <em>Expression of concern</em> badges before you cite.
+              </p>
+            )}
+
             {visible.length > 0 ? (
               <ol className="card mt-4 divide-y divide-border">
                 {visible.map((p, i) => (
