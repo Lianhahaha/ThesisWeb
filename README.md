@@ -33,9 +33,9 @@ Free; entries marked **key** are skipped until that API key is set.
 | arXiv, INSPIRE-HEP | Physics, CS, maths preprints |
 | ERIC | Education and teaching |
 | Zenodo, Figshare, OpenAIRE, HAL | Repository copies, small-journal papers |
-| DataCite Theses, OAPEN Books | Theses, academic books |
-| CORE **(key)**, BASE **(key)** | Repository aggregators |
-| Google Scholar | Extra coverage (unofficial, often blocked) |
+| DataCite Theses | Theses and dissertations |
+| OSTI.GOV | Energy, engineering and environment reports |
+| CiNii Research, J-STAGE | Japanese and Asian journals, many in English |
 
 **Ranking:** duplicates (same DOI, or title+year) are merged; each paper is scored on word overlap with your query (title, abstract, phrase order, recency, citations — see [`lib/dedupe.ts`](lib/dedupe.ts)). It measures word match, not quality — read the abstract.
 
