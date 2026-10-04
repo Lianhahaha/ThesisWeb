@@ -22,6 +22,8 @@ import { ExportDialog } from "@/components/ExportDialog";
 import { toast } from "@/components/Toaster";
 import type { SavedPaper } from "@/lib/types";
 import { useAuth } from "@/lib/auth-store";
+import { applyIntegrity, fetchIntegrity } from "@/lib/integrity-client";
+import type { IntegrityStatus } from "@/lib/retractions";
 
 type View = "list" | "matrix";
 
@@ -82,9 +84,31 @@ export default function LibraryPage() {
     return () => window.removeEventListener(PAPER_UPDATED_EVENT, onUpdate);
   }, []);
 
-  const papers: SavedPaper[] | undefined = user
+  const storedPapers: SavedPaper[] | undefined = user
     ? cloudPapers ?? undefined
     : (localPapers as SavedPaper[] | undefined);
+
+  // A paper can be retracted after it was saved. Re-check the library's DOIs
+  // (once per distinct set) and show the warnings; nothing is written back.
+  const [integrity, setIntegrity] = useState<Record<string, IntegrityStatus>>({});
+  const doiKey = useMemo(
+    () => Array.from(new Set((storedPapers ?? []).map((p) => p.doi?.toLowerCase()).filter(Boolean))).sort().join("\n"),
+    [storedPapers]
+  );
+  useEffect(() => {
+    if (!doiKey) return;
+    let live = true;
+    fetchIntegrity(doiKey.split("\n")).then((s) => {
+      if (live) setIntegrity(s);
+    });
+    return () => {
+      live = false;
+    };
+  }, [doiKey]);
+  const papers = useMemo(
+    () => (storedPapers ? applyIntegrity(storedPapers, integrity) : undefined),
+    [storedPapers, integrity]
+  );
 
   // Signed in, the list is loading until the first read lands: the old check
   // flashed "Your library is empty" on the render before the read started.
