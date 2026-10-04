@@ -16,7 +16,7 @@ import type { Paper } from "@/lib/types";
 
 const KEY = "tw-recent-papers";
 /**
- * Must cover a whole result set (up to ~19 sources x 15 papers, before
+ * Must cover a whole result set (up to ~18 sources x 15 papers, before
  * dedupe): any result past the cap can be listed but not opened. A few
  * hundred papers is well under 1 MB of sessionStorage.
  */
