@@ -2,7 +2,7 @@
 
 A free web app that helps thesis students find related literature (RRL), keep it organised, and cite it correctly.
 
-- **Search** — one topic, 18 free academic databases at once, merged, de-duplicated and ranked.
+- **Search** — one topic, 30 free academic databases at once, merged, de-duplicated and ranked, with preprint, retraction and expression-of-concern warnings.
 - **Library** — save papers, group them by chapter, take notes, fill a synthesis matrix.
 - **Cite** — paste DOIs and get references in APA, MLA, IEEE or Chicago, or export your whole library.
 
@@ -17,25 +17,32 @@ No account needed to search. Only links to legal open-access full text. Light an
 3. **Read.** Open a title for its abstract, a free-PDF link, a ready citation, related papers (cited-by / references / similar) and a notes box. **Abstract ≠ RRL** — it's the authors' own summary; use it to judge fit, then read the paper and write your RRL in your own words. Copying abstracts is plagiarism.
 4. **Save & organise.** Press **Save** on any result. In **Library**, group papers into collections and fill the **synthesis matrix** (Method, Findings, Limitations, Relevance) — this becomes your written RRL. Signed out, the library lives in that browser only; sign in to sync it, or copy it into your account later.
 5. **Cite.** Export your library as APA/MLA/IEEE/Chicago, BibTeX or RIS — or paste DOIs into **Cite** to generate references without saving anything first.
-6. **Account (optional).** Sign up with a name, email and password — you're signed in immediately, no email verification. Under your name (or the gear icon signed out): **Preferences** (defaults for year/country/OA/citation style/theme, no account needed), display name, recovery PIN, password, email, and a JSON library backup/import.
+6. **Account (optional).** Sign up with a name, email, password and recovery PIN — you're signed in immediately; a verification link confirms the email. Under your name (or the gear icon signed out): **Preferences** (defaults for year/country/OA/citation style/theme, no account needed), display name, recovery PIN, password, email, and a JSON library backup/import.
 
 ---
 
 ## Databases searched
 
-Free; entries marked **key** are skipped until that API key is set.
+All free, no key needed. The in-app [Databases page](app/databases/page.tsx) (`/databases`) lists each one with its region, fields and record type.
 
 | Database | Best for |
 |---|---|
-| OpenAlex, Crossref, Semantic Scholar | Broad first pass, citation data, TL;DRs |
-| DOAJ, PLOS | Guaranteed free full text |
-| Europe PMC, PubMed | Health, nursing, biomedical |
-| arXiv, INSPIRE-HEP | Physics, CS, maths preprints |
+| OpenAlex, Crossref, Semantic Scholar, OpenAIRE | Broad first pass across every field, citation data, AI summaries |
+| DOAJ, PLOS, J-STAGE | Peer-reviewed open-access journals |
+| PubMed, PubMed Central, Europe PMC | Medicine, nursing, health, life sciences |
 | ERIC | Education and teaching |
-| Zenodo, Figshare, OpenAIRE, HAL | Repository copies, small-journal papers |
-| DataCite Theses | Theses and dissertations |
-| OSTI.GOV | Energy, engineering and environment reports |
-| CiNii Research, J-STAGE | Japanese and Asian journals, many in English |
+| EconBiz, World Bank OKR | Economics, business, development, poverty |
+| CGSpace (CGIAR, incl. IRRI), GBIF Literature | Agriculture, fisheries, food, biodiversity |
+| OSTI.GOV, NASA NTRS, USGS | Engineering, energy, aerospace, earth science reports |
+| arXiv, INSPIRE-HEP | Physics, maths, computing (arXiv = preprints) |
+| OSF Preprints | Psychology, education, social sciences (preprints) |
+| IDRC Digital Library | Development research in Asia, Africa, Latin America |
+| CiNii Research | Japanese and Asian research |
+| LA Referencia | Latin American repositories (Spanish, Portuguese) |
+| Zenodo, Figshare, HAL | Repository copies, reports, small-journal papers |
+| DataCite Theses, theses.fr, BDTD (Brazil) | Theses and dissertations |
+
+**Trust signals:** results come straight from these databases; nothing is generated. Preprints carry a *Preprint · not peer-reviewed* badge. After results load, every DOI is checked against Crossref (which includes Retraction Watch) for retractions and expressions of concern. Semantic Scholar's one-line summaries are labelled *AI summary*.
 
 **Ranking:** duplicates (same DOI, or title+year) are merged; each paper is scored on word overlap with your query (title, abstract, phrase order, recency, citations — see [`lib/dedupe.ts`](lib/dedupe.ts)). It measures word match, not quality — read the abstract.
 
@@ -48,6 +55,8 @@ npm install
 cp .env.example .env.local   # fill in values, see below
 npm run dev                  # http://localhost:3000
 npm run build && npm run lint && npx tsc --noEmit
+npm test                     # unit tests, no network
+npm run test:live            # calls every real database once
 ```
 
 **Environment variables** (`.env.local`, git-ignored):
@@ -57,6 +66,7 @@ npm run build && npm run lint && npx tsc --noEmit
 | `NEXT_PUBLIC_FIREBASE_*` (7) | Yes | Firebase config for accounts/library |
 | `CONTACT_EMAIL`, `UNPAYWALL_EMAIL` | Recommended | Polite-pool access; PDF lookup |
 | `SEMANTIC_SCHOLAR_API_KEY`, `OPENALEX_API_KEY` | Recommended | Higher rate limits on the two biggest sources |
+| `NCBI_API_KEY` | Optional | 10 instead of 3 requests/s to PubMed and PubMed Central |
 
 **Firebase setup:**
 1. Auth → Sign-in method → enable **Email/Password**.
@@ -76,13 +86,27 @@ app/        page.tsx (home), search/, library/, paper/[id]/, cite/,
             login/ forgot-password/ settings/, api/*
 components/ SearchPanel, PaperCard, SaveButton, ExportDialog,
             SynthesisMatrix, RelatedPapers, Header, Toaster
-lib/        search.ts (fan-out), dedupe.ts (rank), citations.ts,
-            db.ts + firestore-library.ts (storage), recovery.ts,
-            preferences.ts, rate-limit.ts, theme.ts, sources/*
+lib/        search.ts (fan-out), dedupe.ts (merge + rank), citations.ts,
+            retractions.ts (Crossref check), db.ts + firestore-library.ts
+            (storage), recovery.ts, preferences.ts, rate-limit.ts, theme.ts
+lib/sources/
+  meta.ts       display data for every source (client-safe): label, region,
+                fields, record type, homepage
+  registry.ts   source id -> adapter; typed so meta and registry can't drift
+  types.ts      Adapter / AdapterOptions contract
+  normalize.ts  validates every record from every adapter
+  adapters/     one file per database
+  platforms/    shared clients: dspace7 (World Bank, CGSpace, IDRC),
+                vufind (LA Referencia, BDTD), ncbi (PubMed, PMC)
+tests/unit/     vitest, no network      tests/live/  real databases
 firestore.rules
 ```
 
-**Adding a database:** create `lib/sources/<name>.ts` exporting `search<Name>(query, opts)`, register it in `SOURCE_META` ([`lib/sources/meta.ts`](lib/sources/meta.ts)) and `ADAPTERS` ([`lib/search.ts`](lib/search.ts)), then test against a real query.
+**Adding a database:**
+1. Write `lib/sources/adapters/<id>.ts` exporting an `Adapter` (see [`lib/sources/types.ts`](lib/sources/types.ts)). If the site runs DSpace 7 or VuFind, it is a few lines on top of [`lib/sources/platforms/`](lib/sources/platforms/). Throw on HTTP errors, return `[]` for no matches, set `sources: ["<id>"]`, and set `preprint` / `url` when the API says.
+2. Add its entry to [`lib/sources/meta.ts`](lib/sources/meta.ts) (label, blurb, color, region, fields, kind, url) and to `ADAPTERS` in [`lib/sources/registry.ts`](lib/sources/registry.ts). The type checker and `npm test` fail if either is missing.
+3. Run `LIVE_ONLY=<id> LIVE_QUERY="your topic" npm run test:live`.
+4. Only add databases that are free, keyless or free-key, run by a trustworthy organisation, and answer within ~10 s.
 
 **Design:** Next.js App Router, React 19, TypeScript, Tailwind. Light/dark via `data-theme`, no flash (pre-paint script in [`lib/theme.ts`](lib/theme.ts)), no animations. Server-side proxy keeps API keys off the client. Each database has its own timeout so one slow source never blocks the rest.
 

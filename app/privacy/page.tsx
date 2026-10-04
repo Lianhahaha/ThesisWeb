@@ -73,8 +73,11 @@ export default function PrivacyPage() {
       <h2 className="mt-8 text-xl">What your searches are sent to</h2>
       <p className="mt-2">
         A search sends your topic words to the free academic databases the app queries — among them
-        OpenAlex, Crossref, Semantic Scholar, PubMed, Europe PMC, DOAJ, arXiv, ERIC, Zenodo,
-        HAL, OpenAIRE, INSPIRE-HEP, PLOS, DataCite, OSTI.GOV, CiNii Research, J-STAGE and Figshare. Those requests are
+        OpenAlex, Crossref, Semantic Scholar, PubMed, PubMed Central, Europe PMC, DOAJ, arXiv, ERIC,
+        Zenodo, HAL, OpenAIRE, INSPIRE-HEP, PLOS, DataCite, OSTI.GOV, NASA NTRS, USGS, CiNii
+        Research, J-STAGE, Figshare, World Bank, CGSpace, IDRC, EconBiz, GBIF, LA Referencia, BDTD,
+        theses.fr and OSF (the full list is on the <Link href="/databases" className="underline">Databases</Link> page),
+        plus Crossref again to check DOIs for retractions. Those requests are
         made by the Thesisweb server, so the databases do not receive your IP address. Each
         database has its own privacy policy, and this app has no control over it.
       </p>
