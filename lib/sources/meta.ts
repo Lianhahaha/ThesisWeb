@@ -30,6 +30,7 @@ export const SOURCE_META: Record<string, SourceMeta> = {
   inspire: { label: "INSPIRE-HEP", blurb: "High-energy physics, astrophysics and cosmology (CERN, Fermilab, DESY)", color: "#a5d6ff" },
   plos: { label: "PLOS", blurb: "PLOS ONE, Climate, Medicine, Biology and more — all open access", color: "#ff9bce" },
   datacite: { label: "DataCite Theses", blurb: "Theses and dissertations from university repositories worldwide", color: "#7ee787" },
+  osti: { label: "OSTI.GOV", blurb: "U.S. Dept. of Energy research: energy, engineering, physics and environment reports and articles", color: "#f0b72f" },
   figshare: { label: "Figshare", blurb: "University and publisher repository items: journal articles, theses and conference papers", color: "#556cd6" },
 };
 
