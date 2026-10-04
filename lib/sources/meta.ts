@@ -130,6 +130,10 @@ const META = {
     label: "CGSpace (CGIAR)", blurb: "Agricultural research from CGIAR centres incl. IRRI (Los Baños): crops, fisheries, livestock, nutrition, climate", color: "#56d364",
     region: "Global (CGIAR)", fields: ["agriculture", "sciences"], kind: "repository", url: "https://cgspace.cgiar.org",
   },
+  idrc: {
+    label: "IDRC Digital Library", blurb: "Development research funded by IDRC across Asia, Africa and Latin America, free to read", color: "#e8912d",
+    region: "Global South (IDRC, Canada)", fields: ["social", "medicine", "agriculture", "education"], kind: "reports", url: "https://idl-bnc-idrc.dspacedirect.org",
+  },
 } satisfies Record<string, SourceMeta>;
 
 /** Every source id. lib/sources/registry.ts must have an adapter for each one. */
