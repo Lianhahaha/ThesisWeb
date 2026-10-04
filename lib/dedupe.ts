@@ -39,7 +39,29 @@ export function dedupePapers(papers: Paper[]): Paper[] {
     out.push(p);
   }
 
-  return out;
+  return uniqueIds(out);
+}
+
+/**
+ * Two records that survive the merge can still share an id: the id of a
+ * DOI-less paper hashes only its title, so the same title from different
+ * years (a report and its revised edition) collides. Shared ids break React
+ * lists and make saving one paper mark both as saved, so later duplicates
+ * get the year (then a counter) appended.
+ */
+function uniqueIds(papers: Paper[]): Paper[] {
+  const seen = new Set<string>();
+  for (const p of papers) {
+    if (!seen.has(p.id)) {
+      seen.add(p.id);
+      continue;
+    }
+    let id = `${p.id}-${p.year ?? "nd"}`;
+    for (let n = 2; seen.has(id); n++) id = `${p.id}-${p.year ?? "nd"}-${n}`;
+    p.id = id;
+    seen.add(id);
+  }
+  return papers;
 }
 
 function mergeInto(dest: Paper, src: Paper): void {

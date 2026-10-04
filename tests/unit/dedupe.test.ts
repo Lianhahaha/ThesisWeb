@@ -31,4 +31,13 @@ describe("dedupePapers", () => {
   it("does not clear a preprint flag with an unknown status", () => {
     expect(dedupePapers([p({ preprint: true }), p({})])[0].preprint).toBe(true);
   });
+
+  it("never returns two papers with the same id", () => {
+    const out = dedupePapers([
+      p({ id: "tit:x", title: "Same", year: 2025 }),
+      p({ id: "tit:x", title: "Same", year: 2026 }),
+      p({ id: "tit:x", title: "Same", year: 2026, doi: null, abstract: "different record, same key" }),
+    ]);
+    expect(new Set(out.map((x) => x.id)).size).toBe(out.length);
+  });
 });
