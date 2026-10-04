@@ -134,6 +134,10 @@ const META = {
     label: "IDRC Digital Library", blurb: "Development research funded by IDRC across Asia, Africa and Latin America, free to read", color: "#e8912d",
     region: "Global South (IDRC, Canada)", fields: ["social", "medicine", "agriculture", "education"], kind: "reports", url: "https://idl-bnc-idrc.dspacedirect.org",
   },
+  pmc: {
+    label: "PubMed Central", blurb: "10M+ full-text medical and life-science articles from the U.S. National Library of Medicine, all free", color: "#f2a65a",
+    region: "United States", fields: ["medicine", "sciences"], kind: "journals", url: "https://pmc.ncbi.nlm.nih.gov",
+  },
 } satisfies Record<string, SourceMeta>;
 
 /** Every source id. lib/sources/registry.ts must have an adapter for each one. */

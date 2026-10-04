@@ -21,6 +21,7 @@ import { searchFigshare } from "@/lib/sources/adapters/figshare";
 import { searchWorldBank } from "@/lib/sources/adapters/worldbank";
 import { searchCgspace } from "@/lib/sources/adapters/cgspace";
 import { searchIdrc } from "@/lib/sources/adapters/idrc";
+import { searchPmc } from "@/lib/sources/adapters/pmc";
 
 /**
  * The adapter for every source in lib/sources/meta.ts. Typed as a Record over
@@ -55,4 +56,5 @@ export const ADAPTERS: Record<SourceId, AdapterEntry> = {
   worldbank:       { run: searchWorldBank, boolean: false, deadlineMs: 14000 },
   cgspace:         { run: searchCgspace, boolean: false },
   idrc:            { run: searchIdrc, boolean: false },
+  pmc:             { run: searchPmc, boolean: false },
 };
