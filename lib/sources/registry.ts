@@ -18,6 +18,7 @@ import { searchOsti } from "@/lib/sources/adapters/osti";
 import { searchCinii } from "@/lib/sources/adapters/cinii";
 import { searchJstage } from "@/lib/sources/adapters/jstage";
 import { searchFigshare } from "@/lib/sources/adapters/figshare";
+import { searchWorldBank } from "@/lib/sources/adapters/worldbank";
 
 /**
  * The adapter for every source in lib/sources/meta.ts. Typed as a Record over
@@ -48,4 +49,6 @@ export const ADAPTERS: Record<SourceId, AdapterEntry> = {
   jstage:          { run: searchJstage, boolean: false },
   // Search + per-item detail fetches, so it needs more room than the default.
   figshare:        { run: searchFigshare, boolean: false, deadlineMs: 15000 },
+  // Slow server (5-12 s), so it gets extra room.
+  worldbank:       { run: searchWorldBank, boolean: false, deadlineMs: 14000 },
 };

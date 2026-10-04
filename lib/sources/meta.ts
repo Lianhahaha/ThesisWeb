@@ -122,6 +122,10 @@ const META = {
     label: "Figshare", blurb: "University and publisher repository items: journal articles, theses and conference papers", color: "#556cd6",
     region: "Global", fields: ["all"], kind: "repository", url: "https://figshare.com",
   },
+  worldbank: {
+    label: "World Bank OKR", blurb: "World Bank research, working papers and country studies on development, poverty, health and education, all free", color: "#2f81f7",
+    region: "Global (World Bank)", fields: ["social", "business", "education", "agriculture"], kind: "reports", url: "https://openknowledge.worldbank.org",
+  },
 } satisfies Record<string, SourceMeta>;
 
 /** Every source id. lib/sources/registry.ts must have an adapter for each one. */
