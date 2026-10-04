@@ -154,6 +154,10 @@ const META = {
     label: "GBIF Literature", blurb: "Biodiversity research: species, ecosystems, conservation, fisheries and agriculture (Global Biodiversity Information Facility)", color: "#4c9f38",
     region: "Global (GBIF)", fields: ["sciences", "agriculture"], kind: "index", url: "https://www.gbif.org/resource/search?contentType=literature",
   },
+  lareferencia: {
+    label: "LA Referencia", blurb: "Open repositories of Latin America: articles, theses and reports, mostly Spanish and Portuguese", color: "#ec6547",
+    region: "Latin America", fields: ["all"], kind: "repository", url: "https://www.lareferencia.info",
+  },
 } satisfies Record<string, SourceMeta>;
 
 /** Every source id. lib/sources/registry.ts must have an adapter for each one. */
