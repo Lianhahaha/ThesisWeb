@@ -142,6 +142,10 @@ const META = {
     label: "NASA NTRS", blurb: "NASA technical reports, conference papers and journal reprints: aerospace, Earth science, materials, engineering", color: "#0b3d91",
     region: "United States", fields: ["engineering", "sciences"], kind: "reports", url: "https://ntrs.nasa.gov",
   },
+  econbiz: {
+    label: "EconBiz", blurb: "Economics and business: articles, working papers and books from RePEc, EconStor and publishers (ZBW Germany)", color: "#d4a72c",
+    region: "Global (ZBW, Germany)", fields: ["business", "social"], kind: "index", url: "https://www.econbiz.de",
+  },
 } satisfies Record<string, SourceMeta>;
 
 /** Every source id. lib/sources/registry.ts must have an adapter for each one. */

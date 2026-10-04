@@ -23,6 +23,7 @@ import { searchCgspace } from "@/lib/sources/adapters/cgspace";
 import { searchIdrc } from "@/lib/sources/adapters/idrc";
 import { searchPmc } from "@/lib/sources/adapters/pmc";
 import { searchNtrs } from "@/lib/sources/adapters/ntrs";
+import { searchEconBiz } from "@/lib/sources/adapters/econbiz";
 
 /**
  * The adapter for every source in lib/sources/meta.ts. Typed as a Record over
@@ -59,4 +60,5 @@ export const ADAPTERS: Record<SourceId, AdapterEntry> = {
   idrc:            { run: searchIdrc, boolean: false },
   pmc:             { run: searchPmc, boolean: false },
   ntrs:            { run: searchNtrs, boolean: false },
+  econbiz:         { run: searchEconBiz, boolean: false },
 };
