@@ -57,7 +57,8 @@ export async function searchArxiv(
   const formattedQuery = encodeURIComponent(arxivQuery(query));
   const url = `https://export.arxiv.org/api/query?search_query=${formattedQuery}&start=0&max_results=${fetchCount}&sortBy=relevance&sortOrder=descending`;
 
-  const res = await fetchWithTimeout(url);
+  // arXiv's API often takes 5-10 s; the default 8 s cut it off mid-answer.
+  const res = await fetchWithTimeout(url, {}, 11000);
   if (!res.ok) throw new Error(`arXiv search failed: ${res.status}`);
   
   const text = await res.text();
