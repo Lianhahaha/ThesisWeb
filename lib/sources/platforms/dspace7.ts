@@ -117,7 +117,7 @@ export function dspace7Adapter(cfg: Dspace7Config): Adapter {
         year,
         publishedDate: date,
         venue:
-          first(m, "dc.relation.ispartof", "dcterms.isPartOf", "cg.journal", "dc.source") ??
+          first(m, "dc.relation.ispartof", "dcterms.isPartOf", "cg.journal", "dc.citation.journaltitle", "dc.source") ??
           first(m, "dc.publisher", "dcterms.publisher") ??
           cfg.publisher,
         doi,

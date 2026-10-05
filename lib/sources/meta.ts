@@ -206,6 +206,10 @@ const META = {
     label: "UP Open University", blurb: "UPOU theses, capstone projects and research: online and distance education, development communication, health informatics, environment", color: "#7b1113",
     region: "Philippines", fields: ["education", "social", "medicine", "agriculture"], kind: "repository", url: "https://repository.upou.edu.ph",
   },
+  upv: {
+    label: "UP Visayas", blurb: "UP Visayas theses and research: fisheries, ocean sciences, aquaculture, food science, management, social sciences", color: "#014421",
+    region: "Philippines", fields: ["agriculture", "sciences", "social", "business"], kind: "repository", url: "https://repository.upv.edu.ph",
+  },
 } satisfies Record<string, SourceMeta>;
 
 /** Every source id. lib/sources/registry.ts must have an adapter for each one. */
