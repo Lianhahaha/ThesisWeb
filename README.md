@@ -2,7 +2,7 @@
 
 A free web app that helps thesis students find related literature (RRL), keep it organised, and cite it correctly.
 
-- **Search** — one topic, 35 free academic databases at once, merged, de-duplicated and ranked, with preprint, retraction and expression-of-concern warnings.
+- **Search** — one topic, 36 free academic databases at once, merged, de-duplicated and ranked, with preprint, retraction and expression-of-concern warnings.
 - **Library** — save papers, group them by chapter, take notes, fill a synthesis matrix.
 - **Cite** — paste DOIs and get references in APA, MLA, IEEE or Chicago, or export your whole library.
 
@@ -27,7 +27,7 @@ All free, no key needed. The in-app [Databases page](app/databases/page.tsx) (`/
 
 | Database | Best for |
 |---|---|
-| OpenAlex, Crossref, Semantic Scholar, OpenAIRE | Broad first pass across every field, citation data, AI summaries |
+| OpenAlex, Crossref, Semantic Scholar, OpenAIRE, CORE | Broad first pass across every field, citation data, AI summaries (CORE = free copies from 10k+ repositories) |
 | SEAFDEC/AQD | Philippine research: aquaculture and fisheries |
 | SSOAR | Social sciences, politics, psychology, communication (free full text) |
 | DOAJ, PLOS, J-STAGE | Peer-reviewed open-access journals |
@@ -71,6 +71,7 @@ npm run test:live            # calls every real database once
 | `CONTACT_EMAIL`, `UNPAYWALL_EMAIL` | Recommended | Polite-pool access; PDF lookup |
 | `SEMANTIC_SCHOLAR_API_KEY`, `OPENALEX_API_KEY` | Recommended | Higher rate limits on the two biggest sources |
 | `NCBI_API_KEY` | Optional | 10 instead of 3 requests/s to PubMed and PubMed Central |
+| `CORE_API_KEY` | Optional | Higher CORE rate limit (works without, but may fail when busy) |
 
 **Firebase setup:**
 1. Auth → Sign-in method → enable **Email/Password**.
