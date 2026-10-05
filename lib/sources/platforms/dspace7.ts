@@ -116,10 +116,11 @@ export function dspace7Adapter(cfg: Dspace7Config): Adapter {
         authors: values(m, "dc.contributor.author", "dc.creator", "dc.contributor.postgraduate").map(flipName).slice(0, 10),
         year,
         publishedDate: date,
-        venue:
+        venue: stripHtml(
           first(m, "dc.relation.ispartof", "dcterms.isPartOf", "cg.journal", "dc.citation.journaltitle", "dc.source") ??
-          first(m, "dc.publisher", "dcterms.publisher") ??
-          cfg.publisher,
+            first(m, "dc.publisher", "dcterms.publisher") ??
+            cfg.publisher
+        ),
         doi,
         abstract: (() => {
           const a = first(m, "dc.description.abstract", "dcterms.abstract");
