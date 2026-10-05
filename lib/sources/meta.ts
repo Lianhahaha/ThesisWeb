@@ -194,6 +194,10 @@ const META = {
     label: "CORE", blurb: "300M+ open-access papers harvested from 10,000+ university repositories and journals worldwide, incl. Philippine ones (Open University & Jisc, UK)", color: "#b75400",
     region: "Global (UK)", fields: ["all"], kind: "index", url: "https://core.ac.uk",
   },
+  ntu: {
+    label: "DR-NTU (Singapore)", blurb: "Nanyang Technological University theses, student projects and papers: engineering, computing, business, education (NIE)", color: "#c8102e",
+    region: "Singapore", fields: ["engineering", "computing", "business", "education"], kind: "repository", url: "https://dr.ntu.edu.sg",
+  },
 } satisfies Record<string, SourceMeta>;
 
 /** Every source id. lib/sources/registry.ts must have an adapter for each one. */

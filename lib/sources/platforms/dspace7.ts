@@ -101,7 +101,7 @@ export function dspace7Adapter(cfg: Dspace7Config): Adapter {
 
       const doi = first(m, "dc.identifier.doi", "cg.identifier.doi", "okr.identifier.doi");
       const landing = first(m, "dc.identifier.uri") ?? (it.handle ? `https://hdl.handle.net/${it.handle}` : null);
-      const access = first(m, "dcterms.accessRights", "dc.rights.accessRights")?.toLowerCase() ?? "";
+      const access = first(m, "dcterms.accessRights", "dc.rights.accessRights", "datacite.rights")?.toLowerCase() ?? "";
       const isOpen = cfg.allOpen || access.includes("open");
       if (openAccessOnly && !isOpen) continue;
 

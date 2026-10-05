@@ -2,7 +2,7 @@
 
 A free web app that helps thesis students find related literature (RRL), keep it organised, and cite it correctly.
 
-- **Search** — one topic, 36 free academic databases at once, merged, de-duplicated and ranked, with preprint, retraction and expression-of-concern warnings.
+- **Search** — one topic, 37 free academic databases at once, merged, de-duplicated and ranked, with preprint, retraction and expression-of-concern warnings.
 - **Library** — save papers, group them by chapter, take notes, fill a synthesis matrix.
 - **Cite** — paste DOIs and get references in APA, MLA, IEEE or Chicago, or export your whole library.
 
@@ -41,6 +41,7 @@ All free, no key needed. The in-app [Databases page](app/databases/page.tsx) (`/
 | OSF Preprints | Psychology, education, social sciences (preprints) |
 | IDRC Digital Library | Development research in Asia, Africa, Latin America |
 | CiNii Research | Japanese and Asian research |
+| DR-NTU (Singapore) | Southeast Asian theses and papers: engineering, computing, business, education |
 | LA Referencia | Latin American repositories (Spanish, Portuguese) |
 | Zenodo, Figshare, HAL | Repository copies, reports, small-journal papers |
 | DataCite Theses, theses.fr, BDTD (Brazil) | Theses and dissertations |
@@ -101,7 +102,7 @@ lib/sources/
   types.ts      Adapter / AdapterOptions contract
   normalize.ts  validates every record from every adapter
   adapters/     one file per database
-  platforms/    shared clients: dspace7 (World Bank, CGSpace, IDRC, WHO),
+  platforms/    shared clients: dspace7 (World Bank, CGSpace, IDRC, WHO, DR-NTU),
                 dspace6 (OpenSearch feed: SEAFDEC/AQD, SSOAR),
                 vufind (LA Referencia, BDTD), ncbi (PubMed, PMC)
 tests/unit/     vitest, no network      tests/live/  real databases
