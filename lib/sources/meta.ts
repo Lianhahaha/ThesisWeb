@@ -222,6 +222,10 @@ const META = {
     label: "HERDIN", blurb: "Philippine national health research registry: journal articles, theses and reports on health research done in the Philippines (DOST-PCHRD)", color: "#00843d",
     region: "Philippines", fields: ["medicine", "social"], kind: "index", url: "https://www.herdin.ph",
   },
+  serpp: {
+    label: "SERP-P (PIDS)", blurb: "Socioeconomic Research Portal for the Philippines: discussion papers, policy notes and studies from PIDS, BSP, NEDA and universities, free to download", color: "#9b2335",
+    region: "Philippines", fields: ["social", "business", "education", "agriculture", "medicine"], kind: "reports", url: "https://serp-p.pids.gov.ph",
+  },
 } satisfies Record<string, SourceMeta>;
 
 /** Every source id. lib/sources/registry.ts must have an adapter for each one. */

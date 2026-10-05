@@ -2,7 +2,7 @@
 
 A free web app that helps thesis students find related literature (RRL), keep it organised, and cite it correctly.
 
-- **Search** — one topic, 43 free academic databases at once, merged, de-duplicated and ranked, with preprint, retraction and expression-of-concern warnings.
+- **Search** — one topic, 44 free academic databases at once, merged, de-duplicated and ranked, with preprint, retraction and expression-of-concern warnings.
 - **Library** — save papers, group them by chapter, take notes, fill a synthesis matrix.
 - **Cite** — paste DOIs and get references in APA, MLA, IEEE or Chicago, or export your whole library.
 
@@ -39,6 +39,7 @@ All free, no key needed. The in-app [Databases page](app/databases/page.tsx) (`/
 | WHO IRIS | WHO guidelines, health reports, Western Pacific (Manila) publications |
 | ERIC | Education and teaching |
 | EconBiz, World Bank OKR, NBER | Economics, business, development, poverty (NBER = working papers) |
+| SERP-P (PIDS) | Philippine socioeconomic research: PIDS, BSP, NEDA and university studies |
 | CGSpace (CGIAR, incl. IRRI), GBIF Literature | Agriculture, fisheries, food, biodiversity |
 | OSTI.GOV, NASA NTRS, USGS | Engineering, energy, aerospace, earth science reports |
 | arXiv, INSPIRE-HEP | Physics, maths, computing (arXiv = preprints) |

@@ -43,6 +43,7 @@ import { searchUpv } from "@/lib/sources/adapters/upv";
 import { searchWvsu } from "@/lib/sources/adapters/wvsu";
 import { searchThaijo } from "@/lib/sources/adapters/thaijo";
 import { searchHerdin } from "@/lib/sources/adapters/herdin";
+import { searchSerpp } from "@/lib/sources/adapters/serpp";
 
 /**
  * The adapter for every source in lib/sources/meta.ts. Typed as a Record over
@@ -100,4 +101,5 @@ export const ADAPTERS: Record<SourceId, AdapterEntry> = {
   wvsu:            { run: searchWvsu, boolean: false, country: "Philippines" },
   thaijo:          { run: searchThaijo, boolean: false },
   herdin:          { run: searchHerdin, boolean: false, country: "Philippines" },
+  serpp:           { run: searchSerpp, boolean: false, country: "Philippines" },
 };
