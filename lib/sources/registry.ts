@@ -34,6 +34,7 @@ import { searchSeafdec } from "@/lib/sources/adapters/seafdec";
 import { searchSsoar } from "@/lib/sources/adapters/ssoar";
 import { searchWho } from "@/lib/sources/adapters/who";
 import { searchNber } from "@/lib/sources/adapters/nber";
+import { searchOpenLibrary } from "@/lib/sources/adapters/openlibrary";
 
 /**
  * The adapter for every source in lib/sources/meta.ts. Typed as a Record over
@@ -82,4 +83,5 @@ export const ADAPTERS: Record<SourceId, AdapterEntry> = {
   // Slow server (8-13 s), so it gets extra room.
   who:             { run: searchWho, boolean: false, deadlineMs: 16000 },
   nber:            { run: searchNber, boolean: false },
+  openlibrary:     { run: searchOpenLibrary, boolean: false },
 };

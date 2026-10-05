@@ -186,6 +186,10 @@ const META = {
     label: "NBER", blurb: "Economics working papers on labour, health, education, development and finance (U.S. National Bureau of Economic Research). Not yet peer-reviewed", color: "#8c1d40",
     region: "United States", fields: ["business", "social"], kind: "preprints", url: "https://www.nber.org/papers",
   },
+  openlibrary: {
+    label: "Open Library", blurb: "30M+ books from library catalogues, for the textbooks and monographs an RRL cites; public-domain scans free to read (Internet Archive)", color: "#e1a95f",
+    region: "Global (Internet Archive)", fields: ["all"], kind: "books", url: "https://openlibrary.org",
+  },
 } satisfies Record<string, SourceMeta>;
 
 /** Every source id. lib/sources/registry.ts must have an adapter for each one. */
