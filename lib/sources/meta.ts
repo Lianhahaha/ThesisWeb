@@ -210,6 +210,10 @@ const META = {
     label: "UP Visayas", blurb: "UP Visayas theses and research: fisheries, ocean sciences, aquaculture, food science, management, social sciences", color: "#014421",
     region: "Philippines", fields: ["agriculture", "sciences", "social", "business"], kind: "repository", url: "https://repository.upv.edu.ph",
   },
+  wvsu: {
+    label: "WVSU Repository", blurb: "West Visayas State University theses and dissertations: education, nursing, management, public administration", color: "#0a3d91",
+    region: "Philippines", fields: ["education", "medicine", "business", "social"], kind: "theses", url: "https://repository.wvsu.edu.ph",
+  },
 } satisfies Record<string, SourceMeta>;
 
 /** Every source id. lib/sources/registry.ts must have an adapter for each one. */
