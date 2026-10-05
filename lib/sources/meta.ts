@@ -218,6 +218,10 @@ const META = {
     label: "ThaiJO (Thailand)", blurb: "1,000+ peer-reviewed Thai journals with English titles and abstracts: health, nursing, education, social sciences, agriculture (TCI)", color: "#241e4e",
     region: "Thailand", fields: ["medicine", "education", "social", "agriculture", "engineering"], kind: "journals", url: "https://www.tci-thaijo.org",
   },
+  herdin: {
+    label: "HERDIN", blurb: "Philippine national health research registry: journal articles, theses and reports on health research done in the Philippines (DOST-PCHRD)", color: "#00843d",
+    region: "Philippines", fields: ["medicine", "social"], kind: "index", url: "https://www.herdin.ph",
+  },
 } satisfies Record<string, SourceMeta>;
 
 /** Every source id. lib/sources/registry.ts must have an adapter for each one. */
