@@ -182,6 +182,10 @@ const META = {
     label: "WHO IRIS", blurb: "World Health Organization guidelines, reports and articles, incl. the Western Pacific office in Manila, all free", color: "#0093d5",
     region: "Global (WHO)", fields: ["medicine", "social"], kind: "reports", url: "https://iris.who.int",
   },
+  nber: {
+    label: "NBER", blurb: "Economics working papers on labour, health, education, development and finance (U.S. National Bureau of Economic Research). Not yet peer-reviewed", color: "#8c1d40",
+    region: "United States", fields: ["business", "social"], kind: "preprints", url: "https://www.nber.org/papers",
+  },
 } satisfies Record<string, SourceMeta>;
 
 /** Every source id. lib/sources/registry.ts must have an adapter for each one. */
