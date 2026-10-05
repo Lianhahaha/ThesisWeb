@@ -198,6 +198,10 @@ const META = {
     label: "DR-NTU (Singapore)", blurb: "Nanyang Technological University theses, student projects and papers: engineering, computing, business, education (NIE)", color: "#c8102e",
     region: "Singapore", fields: ["engineering", "computing", "business", "education"], kind: "repository", url: "https://dr.ntu.edu.sg",
   },
+  upspace: {
+    label: "UPSpace (South Africa)", blurb: "University of Pretoria theses, articles and reports: education, health, veterinary science, engineering, economics", color: "#005baa",
+    region: "South Africa", fields: ["education", "medicine", "engineering", "business", "agriculture"], kind: "repository", url: "https://repository.up.ac.za",
+  },
 } satisfies Record<string, SourceMeta>;
 
 /** Every source id. lib/sources/registry.ts must have an adapter for each one. */

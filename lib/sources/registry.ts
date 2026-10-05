@@ -37,6 +37,7 @@ import { searchNber } from "@/lib/sources/adapters/nber";
 import { searchOpenLibrary } from "@/lib/sources/adapters/openlibrary";
 import { searchCore } from "@/lib/sources/adapters/core";
 import { searchNtu } from "@/lib/sources/adapters/ntu";
+import { searchUpspace } from "@/lib/sources/adapters/upspace";
 
 /**
  * The adapter for every source in lib/sources/meta.ts. Typed as a Record over
@@ -88,4 +89,5 @@ export const ADAPTERS: Record<SourceId, AdapterEntry> = {
   openlibrary:     { run: searchOpenLibrary, boolean: false },
   core:            { run: searchCore, boolean: true },
   ntu:             { run: searchNtu, boolean: false },
+  upspace:         { run: searchUpspace, boolean: false },
 };

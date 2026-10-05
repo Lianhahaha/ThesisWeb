@@ -1,6 +1,6 @@
 import { fetchWithTimeout, safeJson, paperId } from "@/lib/utils";
 import { USER_AGENT } from "@/lib/config";
-import { flipName, stripHtml } from "@/lib/text";
+import { extractDoi, flipName, stripHtml } from "@/lib/text";
 import type { Paper } from "@/lib/types";
 import type { Adapter, AdapterOptions } from "@/lib/sources/types";
 
@@ -99,16 +99,21 @@ export function dspace7Adapter(cfg: Dspace7Config): Adapter {
       const year = date ? Number(date.slice(0, 4)) || null : null;
       if (fromYear && year && year < fromYear) continue;
 
-      const doi = first(m, "dc.identifier.doi", "cg.identifier.doi", "okr.identifier.doi");
-      const landing = first(m, "dc.identifier.uri") ?? (it.handle ? `https://hdl.handle.net/${it.handle}` : null);
-      const access = first(m, "dcterms.accessRights", "dc.rights.accessRights", "datacite.rights")?.toLowerCase() ?? "";
-      const isOpen = cfg.allOpen || access.includes("open");
+      // Some records hold a doi.org link or a placeholder ("DOI") instead of a bare DOI.
+      const doi = extractDoi(first(m, "dc.identifier.doi", "cg.identifier.doi", "okr.identifier.doi"));
+      const landing =
+        first(m, "dc.identifier.uri")?.replace(/^http:\/\/hdl\.handle\.net/, "https://hdl.handle.net") ??
+        (it.handle ? `https://hdl.handle.net/${it.handle}` : null);
+      const access =
+        first(m, "dcterms.accessRights", "dc.rights.accessRights", "datacite.rights", "dc.description.availability")?.toLowerCase() ?? "";
+      const isOpen = cfg.allOpen || access.includes("open") || access === "unrestricted";
       if (openAccessOnly && !isOpen) continue;
 
       papers.push({
         id: paperId(doi, title),
         title: stripHtml(title),
-        authors: values(m, "dc.contributor.author", "dc.creator").map(flipName).slice(0, 10),
+        // Some repositories file a thesis's author as the "postgraduate".
+        authors: values(m, "dc.contributor.author", "dc.creator", "dc.contributor.postgraduate").map(flipName).slice(0, 10),
         year,
         publishedDate: date,
         venue:
