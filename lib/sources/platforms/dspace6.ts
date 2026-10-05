@@ -20,6 +20,11 @@ export interface Dspace6Config {
   base: string;
   /** Venue shown on every record; the feed names no journal or publisher. */
   publisher: string;
+  /**
+   * True if everything in the repository is free to read. Otherwise the
+   * feed can't tell, and the record page says whether the files are open.
+   */
+  allOpen?: boolean;
   /** Fetch timeout; some of these servers are slow. */
   timeoutMs?: number;
 }
@@ -73,7 +78,8 @@ export function dspace6Adapter(cfg: Dspace6Config): Adapter {
       const date = tag(entry, "published") ?? tag(entry, "dc:date");
       const year = date ? Number(date.slice(0, 4)) || null : null;
       if (fromYear && year && year < fromYear) continue;
-      const link = entry.match(/<link href="([^"]+)"/)?.[1] ?? tag(entry, "id");
+      const href = entry.match(/<link href="([^"]+)"/)?.[1] ?? tag(entry, "id");
+      const link = href ? href.replace(/^http:\/\/hdl\.handle\.net/, "https://hdl.handle.net") : null;
 
       papers.push({
         id: paperId(null, title),
@@ -84,11 +90,10 @@ export function dspace6Adapter(cfg: Dspace6Config): Adapter {
         venue: cfg.publisher,
         doi: null,
         abstract: dspace6Abstract(tag(entry, "summary"), title, authors),
-        // The feed doesn't say whether the files are open; the record page does.
-        openAccessUrl: null,
-        isOpenAccess: false,
+        openAccessUrl: cfg.allOpen ? link : null,
+        isOpenAccess: !!cfg.allOpen,
         keywords: [],
-        url: link ? link.replace(/^http:\/\/hdl\.handle\.net/, "https://hdl.handle.net") : null,
+        url: link,
         sources: [cfg.id],
       });
     }
