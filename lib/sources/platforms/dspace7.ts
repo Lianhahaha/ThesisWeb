@@ -27,6 +27,16 @@ export interface Dspace7Config {
   allOpen: boolean;
   /** Fetch timeout; some of these servers are slow. */
   timeoutMs?: number;
+  /**
+   * Extra discovery filters sent with every search, as [facet, value] pairs,
+   * e.g. ["itemtype", "Speeches,notequals"] to leave out a record type.
+   */
+  filters?: [string, string][];
+  /**
+   * ISO 639-1 code. Records tagged with another language are dropped, for
+   * repositories that hold each document once per language.
+   */
+  language?: string;
 }
 
 type Metadata = Record<string, { value?: string }[] | undefined>;
@@ -64,6 +74,7 @@ export function dspace7Adapter(cfg: Dspace7Config): Adapter {
     if (fromYear && fromYear > 0) {
       params.set("f.dateIssued", `[${fromYear} TO ${new Date().getFullYear() + 1}],equals`);
     }
+    for (const [facet, value] of cfg.filters ?? []) params.append(`f.${facet}`, value);
 
     const res = await fetchWithTimeout(
       `${cfg.api}/discover/search/objects?${params}`,
@@ -79,6 +90,8 @@ export function dspace7Adapter(cfg: Dspace7Config): Adapter {
       const it = o._embedded?.indexableObject;
       if (!it || it.withdrawn) continue;
       const m = it.metadata ?? {};
+      const lang = first(m, "dc.language.iso");
+      if (cfg.language && lang && lang !== cfg.language) continue;
 
       const title = first(m, "dc.title") ?? it.name;
       if (!title) continue;

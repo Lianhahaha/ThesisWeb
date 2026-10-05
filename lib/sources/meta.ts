@@ -178,6 +178,10 @@ const META = {
     label: "SSOAR", blurb: "Social science articles, working papers and reports, all free full text (GESIS, Germany)", color: "#c2185b",
     region: "Germany (GESIS)", fields: ["social", "education"], kind: "repository", url: "https://www.ssoar.info",
   },
+  who: {
+    label: "WHO IRIS", blurb: "World Health Organization guidelines, reports and articles, incl. the Western Pacific office in Manila, all free", color: "#0093d5",
+    region: "Global (WHO)", fields: ["medicine", "social"], kind: "reports", url: "https://iris.who.int",
+  },
 } satisfies Record<string, SourceMeta>;
 
 /** Every source id. lib/sources/registry.ts must have an adapter for each one. */

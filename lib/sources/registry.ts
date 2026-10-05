@@ -32,6 +32,7 @@ import { searchThesesFr } from "@/lib/sources/adapters/thesesfr";
 import { searchOsf } from "@/lib/sources/adapters/osf";
 import { searchSeafdec } from "@/lib/sources/adapters/seafdec";
 import { searchSsoar } from "@/lib/sources/adapters/ssoar";
+import { searchWho } from "@/lib/sources/adapters/who";
 
 /**
  * The adapter for every source in lib/sources/meta.ts. Typed as a Record over
@@ -77,4 +78,6 @@ export const ADAPTERS: Record<SourceId, AdapterEntry> = {
   osf:             { run: searchOsf, boolean: false },
   seafdec:         { run: searchSeafdec, boolean: false, country: "Philippines" },
   ssoar:           { run: searchSsoar, boolean: false },
+  // Slow server (8-13 s), so it gets extra room.
+  who:             { run: searchWho, boolean: false, deadlineMs: 16000 },
 };
