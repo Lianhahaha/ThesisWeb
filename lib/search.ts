@@ -91,9 +91,10 @@ export async function metaSearch(
   const plainQuery = opts.country ? `${query} ${opts.country}` : query;
 
   const entries = await Promise.all(
-    Object.entries(ADAPTERS).map(async ([id, { run, boolean, deadlineMs }]) => {
+    Object.entries(ADAPTERS).map(async ([id, { run, boolean, deadlineMs, country }]) => {
       try {
-        const raw = await withDeadline(run(boolean ? booleanQuery : plainQuery, opts), deadlineMs ?? DEFAULT_DEADLINE_MS);
+        const q = country && country === opts.country ? query : boolean ? booleanQuery : plainQuery;
+        const raw = await withDeadline(run(q, opts), deadlineMs ?? DEFAULT_DEADLINE_MS);
         if (!Array.isArray(raw)) throw new Error("adapter returned no list");
         const papers = raw.map((p) => normalizePaper(p, id)).filter((p): p is Paper => p !== null);
         return [id, { ok: papers.length > 0 ? ("ok" as const) : ("empty" as const), papers, error: "" }] as const;

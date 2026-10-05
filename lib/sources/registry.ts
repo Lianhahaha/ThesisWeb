@@ -30,6 +30,7 @@ import { searchLaReferencia } from "@/lib/sources/adapters/lareferencia";
 import { searchBdtd } from "@/lib/sources/adapters/bdtd";
 import { searchThesesFr } from "@/lib/sources/adapters/thesesfr";
 import { searchOsf } from "@/lib/sources/adapters/osf";
+import { searchSeafdec } from "@/lib/sources/adapters/seafdec";
 
 /**
  * The adapter for every source in lib/sources/meta.ts. Typed as a Record over
@@ -73,4 +74,5 @@ export const ADAPTERS: Record<SourceId, AdapterEntry> = {
   bdtd:            { run: searchBdtd, boolean: false },
   thesesfr:        { run: searchThesesFr, boolean: false },
   osf:             { run: searchOsf, boolean: false },
+  seafdec:         { run: searchSeafdec, boolean: false, country: "Philippines" },
 };

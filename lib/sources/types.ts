@@ -27,4 +27,10 @@ export interface AdapterEntry {
   boolean: boolean;
   /** Per-source time limit; defaults to DEFAULT_DEADLINE_MS in lib/search.ts. */
   deadlineMs?: number;
+  /**
+   * Set for a national source whose records all come from one country. A
+   * country focus on that country then sends the plain query, since adding
+   * the country's name would only hide records that don't repeat it.
+   */
+  country?: string;
 }

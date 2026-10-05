@@ -170,6 +170,10 @@ const META = {
     label: "OSF Preprints", blurb: "Moderated preprint servers: PsyArXiv, SocArXiv, EdArXiv, AfricArXiv, INA-Rxiv (Indonesia) and more. Not peer-reviewed", color: "#36b37e",
     region: "Global (COS)", fields: ["social", "education", "medicine", "sciences"], kind: "preprints", url: "https://osf.io/preprints",
   },
+  seafdec: {
+    label: "SEAFDEC/AQD", blurb: "Aquaculture and fisheries research from SEAFDEC's Aquaculture Department in Iloilo: articles, manuals, theses and conference papers", color: "#1f9ece",
+    region: "Philippines", fields: ["agriculture", "sciences"], kind: "repository", url: "https://repository.seafdec.org.ph",
+  },
 } satisfies Record<string, SourceMeta>;
 
 /** Every source id. lib/sources/registry.ts must have an adapter for each one. */
