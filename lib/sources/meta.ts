@@ -214,6 +214,10 @@ const META = {
     label: "WVSU Repository", blurb: "West Visayas State University theses and dissertations: education, nursing, management, public administration", color: "#0a3d91",
     region: "Philippines", fields: ["education", "medicine", "business", "social"], kind: "theses", url: "https://repository.wvsu.edu.ph",
   },
+  thaijo: {
+    label: "ThaiJO (Thailand)", blurb: "1,000+ peer-reviewed Thai journals with English titles and abstracts: health, nursing, education, social sciences, agriculture (TCI)", color: "#241e4e",
+    region: "Thailand", fields: ["medicine", "education", "social", "agriculture", "engineering"], kind: "journals", url: "https://www.tci-thaijo.org",
+  },
 } satisfies Record<string, SourceMeta>;
 
 /** Every source id. lib/sources/registry.ts must have an adapter for each one. */
