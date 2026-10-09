@@ -19,7 +19,7 @@ interface Props {
  * signed in.
  */
 export function SaveButton({ paper, className }: Props) {
-  const { user } = useAuth();
+  const { user, initialized } = useAuth();
 
   const localSaved = useLiveQuery(async () => {
     if (typeof window === "undefined") return false;
@@ -36,8 +36,9 @@ export function SaveButton({ paper, className }: Props) {
   }, [user, paper.id]);
 
   const saved = user ? cloudSaved ?? false : localSaved ?? false;
-  // Until the lookup answers, "Save" could be wrong; wait for it.
-  const unknown = user ? cloudSaved === null : localSaved === undefined;
+  // Until sign-in state and the lookup are known, "Save" could be wrong, and a
+  // click before sign-in loads would save to this browser instead of the account.
+  const unknown = !initialized || (user ? cloudSaved === null : localSaved === undefined);
 
   async function toggle() {
     if (busy) return; // ignore double-clicks while a write is in flight

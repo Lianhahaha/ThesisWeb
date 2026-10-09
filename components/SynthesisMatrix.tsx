@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import type { SavedPaper } from "@/lib/types";
+import { useState, useEffect, useRef } from "react";
+import { MATRIX_CELL_MAX, type MatrixKey, type SavedPaper } from "@/lib/types";
 import { updatePaper } from "@/lib/db";
 import { toast } from "@/components/Toaster";
 
@@ -14,9 +14,7 @@ import { toast } from "@/components/Toaster";
  * at 390px is unusable.
  */
 
-type Field = "method" | "findings" | "limitations" | "relevanceToTopic";
-
-const FIELDS: { key: Field; label: string; placeholder: string }[] = [
+const FIELDS: { key: MatrixKey; label: string; placeholder: string }[] = [
   { key: "method", label: "Method", placeholder: "Quantitative, survey of 200 students…" },
   { key: "findings", label: "Findings", placeholder: "X significantly predicts Y…" },
   { key: "limitations", label: "Limitations", placeholder: "Small sample, single school…" },
@@ -110,14 +108,18 @@ function Cell({
   /** The phone and desktop layouts both render; keeps element ids unique. */
   idPrefix: string;
   paper: SavedPaper;
-  field: { key: Field; label: string; placeholder: string };
+  field: { key: MatrixKey; label: string; placeholder: string };
 }) {
   const [value, setValue] = useState(paper.matrix?.[field.key] || "");
   const [dirty, setDirty] = useState(false);
+  // What the box holds now, read after a save finishes (set on every keystroke).
+  const latest = useRef(value);
 
   // Re-sync when the row's stored value changes and the user isn't mid-edit.
   useEffect(() => {
-    if (!dirty) setValue(paper.matrix?.[field.key] || "");
+    if (dirty) return;
+    latest.current = paper.matrix?.[field.key] || "";
+    setValue(latest.current);
   }, [paper.matrix, field.key, dirty]);
 
   async function commit() {
@@ -126,8 +128,10 @@ function Cell({
       // Update only this cell ("matrix.method"). Writing the whole matrix from
       // this row's copy could overwrite a neighbouring cell saved moments ago.
       // Dexie and Firestore both accept dotted paths.
-      await updatePaper(paper.id, { [`matrix.${field.key}`]: value } as Partial<SavedPaper>);
-      setDirty(false);
+      const sent = value;
+      await updatePaper(paper.id, { [`matrix.${field.key}`]: sent } as Partial<SavedPaper>);
+      // Typing that went on during the save stays, to be saved on the next blur.
+      if (latest.current === sent) setDirty(false);
     } catch {
       // Keep it dirty so the next blur retries.
       toast(`Could not save “${field.label}”. Check your connection and click out of the box again.`, "error");
@@ -138,10 +142,11 @@ function Cell({
     <textarea
       id={`${idPrefix}-${paper.id}-${field.key}`}
       value={value}
-      onChange={(e) => { setValue(e.target.value); setDirty(true); }}
+      onChange={(e) => { latest.current = e.target.value; setValue(e.target.value); setDirty(true); }}
       onBlur={commit}
       placeholder={field.placeholder}
       rows={3}
+      maxLength={MATRIX_CELL_MAX}
       className="input resize-y text-sm"
     />
   );

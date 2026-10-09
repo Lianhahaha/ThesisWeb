@@ -27,7 +27,7 @@ const STYLES: { id: CitationStyle; label: string }[] = [
 export default function PaperDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const decodedId = decodeURIComponent(id);
-  const { user } = useAuth();
+  const { user, initialized } = useAuth();
 
   // IndexedDB, for signed-out users. undefined = still loading, null = not
   // saved: Dexie answers a missing record with undefined, which would read as
@@ -87,7 +87,8 @@ export default function PaperDetailPage({ params }: { params: Promise<{ id: stri
     setNotes(isSavedData?.notes ?? "");
   }, [decodedId, isSavedData?.notes]);
 
-  const dbLoading = saved === undefined;
+  // Before sign-in state is known, the browser copy says nothing about the account.
+  const dbLoading = !initialized || saved === undefined;
   const noRecent = recent === null;
   const dbMissing = saved === null;
 

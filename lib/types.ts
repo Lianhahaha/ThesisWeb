@@ -48,13 +48,14 @@ export interface SavedPaper extends Paper {
   notes?: string;
   readingStatus: "to-read" | "reading" | "done";
   /** Entries for the synthesis matrix */
-  matrix?: {
-    method?: string;
-    findings?: string;
-    limitations?: string;
-    relevanceToTopic?: string;
-  };
+  matrix?: Partial<Record<MatrixKey, string>>;
 }
+
+/** The synthesis matrix columns, in display order. */
+export const MATRIX_KEYS = ["method", "findings", "limitations", "relevanceToTopic"] as const;
+export type MatrixKey = (typeof MATRIX_KEYS)[number];
+/** Longest text kept in one matrix cell; a Firestore document is capped at 1 MiB. */
+export const MATRIX_CELL_MAX = 5000;
 
 export interface SearchResult {
   papers: Paper[];

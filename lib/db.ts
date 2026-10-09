@@ -2,6 +2,7 @@
 
 import Dexie, { type Table } from "dexie";
 import type { SavedPaper } from "@/lib/types";
+import { mergeSavedPaper } from "@/lib/library/merge";
 import { auth } from "@/lib/firebase";
 import * as fs from "@/lib/firestore-library";
 
@@ -79,53 +80,40 @@ export async function countPapers(): Promise<number> {
 
 // --- CRUD wrappers (routing to correct backend) ---
 
-/**
- * Keep what the user added to a paper that is already saved. Save buttons
- * build a fresh record, and they can show "Save" for a saved paper while its
- * state is still loading or the lookup failed; writing that record as-is
- * wiped the notes, matrix, collection, tags and reading status.
- */
-function keepUserData(p: SavedPaper, existing: SavedPaper | undefined): SavedPaper {
-  if (!existing) return p;
-  return {
-    ...existing,
-    ...p,
-    notes: p.notes ?? existing.notes,
-    matrix: p.matrix ?? existing.matrix,
-    collection: p.collection ?? existing.collection,
-    tags: p.tags?.length ? p.tags : existing.tags ?? [],
-    readingStatus: existing.readingStatus ?? p.readingStatus,
-    savedAt: existing.savedAt ?? p.savedAt,
-  };
-}
-
 export async function savePaper(p: SavedPaper): Promise<void> {
   const uid = auth.currentUser?.uid;
   if (uid) {
     // If this read fails (offline), the save fails too rather than risk
     // overwriting a saved paper blind.
-    await fs.fsSavePaper(uid, keepUserData(p, await fs.fsGetPaper(uid, p.id)));
+    await fs.fsSavePaper(uid, mergeSavedPaper(await fs.fsGetPaper(uid, p.id), p));
   } else {
     const local = getDb();
     await local.transaction("rw", local.papers, async () => {
-      await local.papers.put(keepUserData(p, await local.papers.get(p.id)));
+      await local.papers.put(mergeSavedPaper(await local.papers.get(p.id), p));
     });
   }
   changed();
 }
 
 /**
- * Save many papers at once (backup import). Returns how many were written:
- * in an account, records the security rules reject are skipped.
+ * Save many papers at once (backup import). A paper already in the library is
+ * merged with the imported copy rather than replaced, so restoring an older
+ * backup can't wipe notes or matrix cells added since. Returns how many were
+ * written: in an account, records the security rules reject are skipped.
  */
 export async function savePapers(papers: SavedPaper[]): Promise<number> {
   if (papers.length === 0) return 0;
   const uid = auth.currentUser?.uid;
   let count = papers.length;
   if (uid) {
-    count = (await fs.fsSaveMany(uid, papers)).length;
+    const existing = new Map((await fs.fsAllPapers(uid)).map((p) => [p.id, p]));
+    count = (await fs.fsSaveMany(uid, papers.map((p) => mergeSavedPaper(existing.get(p.id), p)))).length;
   } else {
-    await getDb().papers.bulkPut(papers);
+    const local = getDb();
+    await local.transaction("rw", local.papers, async () => {
+      const existing = await local.papers.bulkGet(papers.map((p) => p.id));
+      await local.papers.bulkPut(papers.map((p, i) => mergeSavedPaper(existing[i], p)));
+    });
   }
   changed();
   return count;
@@ -143,7 +131,7 @@ export async function moveLocalPapersToAccount(): Promise<number> {
   const local = await localPapers();
   if (local.length === 0) return 0;
   const cloud = new Map((await fs.fsAllPapers(uid)).map((p) => [p.id, p]));
-  const saved = await fs.fsSaveMany(uid, local.map((p) => keepUserData(p, cloud.get(p.id))));
+  const saved = await fs.fsSaveMany(uid, local.map((p) => mergeSavedPaper(cloud.get(p.id), p)));
   await removeLocalPapers(saved);
   changed();
   return saved.length;
