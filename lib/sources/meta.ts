@@ -230,6 +230,10 @@ const META = {
     label: "UP Diliman", blurb: "Digital Archives @ UP Diliman: 6,000+ theses and dissertations from every UP Diliman college, most with full abstracts", color: "#8a1538",
     region: "Philippines", fields: ["all"], kind: "theses", url: "https://digitalarchives.upd.edu.ph",
   },
+  aiias: {
+    label: "AIIAS Repository", blurb: "Adventist International Institute of Advanced Studies (Cavite) graduate theses and dissertations: education, business, public health, nursing, theology", color: "#1f4e79",
+    region: "Philippines", fields: ["education", "business", "medicine", "humanities"], kind: "theses", url: "https://dspace.aiias.edu",
+  },
   krishikosh: {
     label: "Krishikosh (India)", blurb: "150k+ agricultural theses from India's agricultural universities: agronomy, horticulture, fisheries, veterinary, food technology (ICAR)", color: "#3b7d23",
     region: "India", fields: ["agriculture", "sciences"], kind: "theses", url: "https://krishikosh.egranth.ac.in",

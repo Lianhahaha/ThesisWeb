@@ -46,6 +46,7 @@ import { searchHerdin } from "@/lib/sources/adapters/herdin";
 import { searchSerpp } from "@/lib/sources/adapters/serpp";
 import { searchKrishikosh } from "@/lib/sources/adapters/krishikosh";
 import { searchUpd } from "@/lib/sources/adapters/upd";
+import { searchAiias } from "@/lib/sources/adapters/aiias";
 
 /**
  * The adapter for every source in lib/sources/meta.ts. Typed as a Record over
@@ -106,4 +107,5 @@ export const ADAPTERS: Record<SourceId, AdapterEntry> = {
   serpp:           { run: searchSerpp, boolean: false, country: "Philippines" },
   krishikosh:      { run: searchKrishikosh, boolean: false },
   upd:             { run: searchUpd, boolean: false, country: "Philippines" },
+  aiias:           { run: searchAiias, boolean: false, country: "Philippines" },
 };

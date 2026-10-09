@@ -2,7 +2,7 @@
 
 A free web app that helps thesis students find related literature (RRL), keep it organised, and cite it correctly.
 
-- **Search** — one topic, 46 free academic databases at once, merged, de-duplicated and ranked, with preprint, retraction and expression-of-concern warnings.
+- **Search** — one topic, 47 free academic databases at once, merged, de-duplicated and ranked, with preprint, retraction and expression-of-concern warnings.
 - **Library** — save papers, group them by chapter, take notes, fill a synthesis matrix.
 - **Cite** — paste DOIs and get references in APA, MLA, IEEE or Chicago, or export your whole library.
 
@@ -33,6 +33,7 @@ All free, no key needed. The in-app [Databases page](app/databases/page.tsx) (`/
 | UP Visayas | Philippine theses and research: fisheries, ocean sciences, food science, social sciences |
 | WVSU Repository | Philippine theses: education, nursing, management, public administration |
 | UP Diliman | Philippine theses and dissertations from every UP Diliman college, with abstracts |
+| AIIAS Repository | Philippine graduate theses: education, business, public health, nursing, theology |
 | SSOAR | Social sciences, politics, psychology, communication (free full text) |
 | DOAJ, PLOS, J-STAGE, ThaiJO | Peer-reviewed open-access journals (ThaiJO = Thai journals, English abstracts) |
 | PubMed, PubMed Central, Europe PMC | Medicine, nursing, health, life sciences |
@@ -109,7 +110,7 @@ lib/sources/
   types.ts      Adapter / AdapterOptions contract
   normalize.ts  validates every record from every adapter
   adapters/     one file per database
-  platforms/    shared clients: dspace7 (World Bank, CGSpace, IDRC, WHO, DR-NTU, UPSpace, UPOU, UPV, Krishikosh),
+  platforms/    shared clients: dspace7 (World Bank, CGSpace, IDRC, WHO, DR-NTU, UPSpace, UPOU, UPV, Krishikosh, AIIAS),
                 dspace6 (OpenSearch feed: SEAFDEC/AQD, SSOAR, WVSU),
                 vufind (LA Referencia, BDTD), ncbi (PubMed, PMC)
 tests/unit/     vitest, no network      tests/live/  real databases
