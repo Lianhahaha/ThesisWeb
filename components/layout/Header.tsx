@@ -5,13 +5,13 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Search, Library, Quote, Home, LogOut, Settings } from "lucide-react";
 import { useLiveQuery } from "dexie-react-hooks";
-import { getDb, LIBRARY_EVENT } from "@/lib/db";
-import { useAuth } from "@/lib/auth-store";
+import { getDb, LIBRARY_EVENT } from "@/lib/library/store";
+import { useAuth } from "@/lib/auth/store";
 import { cacheUsername, clearCachedUsername, getCachedUsername, USERNAME_EVENT } from "@/lib/auth/username-cache";
 import { auth, db } from "@/lib/firebase";
 import { signOut } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
-import { ThemeToggle } from "@/components/ThemeToggle";
+import { ThemeToggle } from "@/components/layout/ThemeToggle";
 
 const NAV = [
   { href: "/", label: "Home", icon: Home },
@@ -33,7 +33,7 @@ function useSavedCount() {
   useEffect(() => {
     if (!user) { setCloud(null); return; }
     const load = () =>
-      import("@/lib/db")
+      import("@/lib/library/store")
         .then(({ countPapers }) => countPapers())
         .then(setCloud)
         .catch(() => setCloud(0));

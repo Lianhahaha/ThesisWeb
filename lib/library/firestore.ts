@@ -12,8 +12,8 @@ import {
   writeBatch,
   getCountFromServer,
 } from "firebase/firestore";
-import { db } from "./firebase";
-import type { SavedPaper } from "./types";
+import { db } from "@/lib/firebase";
+import type { SavedPaper } from "@/lib/types";
 
 /**
  * Firestore document IDs cannot contain "/" (treated as path separator).

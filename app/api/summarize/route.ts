@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { rateLimit } from "@/lib/rate-limit";
-import { summarize } from "@/lib/summarize";
+import { rateLimit } from "@/lib/server/rate-limit";
+import { summarize } from "@/lib/server/summarize";
 
 export const dynamic = "force-dynamic";
 

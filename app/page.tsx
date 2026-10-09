@@ -7,7 +7,7 @@ import { ChevronRight } from "lucide-react";
 import { SearchPanel, DEFAULT_FROM_YEAR } from "@/components/SearchPanel";
 import { DatabasesDialog } from "@/components/DatabasesDialog";
 import { SOURCE_COUNT } from "@/lib/sources/meta";
-import { buildSearchParams, type SearchInput } from "@/lib/search-params";
+import { buildSearchParams, type SearchInput } from "@/lib/search/params";
 import { fromYearFor, getPreferences } from "@/lib/preferences";
 
 const STEPS: { title: string; body: React.ReactNode }[] = [

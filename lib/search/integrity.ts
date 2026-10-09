@@ -1,7 +1,7 @@
 "use client";
 
 import type { Paper } from "@/lib/types";
-import type { IntegrityStatus } from "@/lib/retractions";
+import type { IntegrityStatus } from "@/lib/types";
 
 /**
  * Ask the server which of these papers have been retracted or carry an

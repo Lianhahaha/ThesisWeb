@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { dedupePapers } from "@/lib/dedupe";
+import { dedupePapers } from "@/lib/server/dedupe";
 import type { Paper } from "@/lib/types";
 
 const p = (over: Partial<Paper>): Paper => ({

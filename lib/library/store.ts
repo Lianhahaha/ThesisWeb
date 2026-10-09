@@ -4,7 +4,7 @@ import Dexie, { type Table } from "dexie";
 import type { SavedPaper } from "@/lib/types";
 import { mergeSavedPaper } from "@/lib/library/merge";
 import { auth } from "@/lib/firebase";
-import * as fs from "@/lib/firestore-library";
+import * as fs from "@/lib/library/firestore";
 
 /**
  * Hybrid local + cloud persistence.

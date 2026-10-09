@@ -39,6 +39,9 @@ export interface Paper {
   preprint?: boolean;
 }
 
+/** A publisher notice on a paper, from the retraction check (lib/server/retractions.ts). */
+export type IntegrityStatus = "retracted" | "concern";
+
 /** A user's saved copy of a paper, with their annotations. */
 export interface SavedPaper extends Paper {
   savedAt: number;

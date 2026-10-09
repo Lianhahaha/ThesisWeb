@@ -1,7 +1,7 @@
 import { fetchWithTimeout, safeJson, paperId, upstreamError } from "@/lib/utils";
 import type { Paper } from "@/lib/types";
 import type { AdapterOptions } from "@/lib/sources/types";
-import { CONTACT_EMAIL } from "@/lib/config";
+import { CONTACT_EMAIL } from "@/lib/server/config";
 import { doiUrlPath } from "@/lib/text";
 
 /**

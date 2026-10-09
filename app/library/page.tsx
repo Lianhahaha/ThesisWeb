@@ -15,15 +15,15 @@ import {
   PAPER_UPDATED_EVENT,
   type LibraryChange,
   type PaperUpdate,
-} from "@/lib/db";
+} from "@/lib/library/store";
 import { PaperCard } from "@/components/PaperCard";
 import { SynthesisMatrix } from "@/components/SynthesisMatrix";
 import { ExportDialog } from "@/components/ExportDialog";
 import { toast } from "@/components/Toaster";
 import type { SavedPaper } from "@/lib/types";
-import { useAuth } from "@/lib/auth-store";
-import { applyIntegrity, fetchIntegrity } from "@/lib/integrity-client";
-import type { IntegrityStatus } from "@/lib/retractions";
+import { useAuth } from "@/lib/auth/store";
+import { applyIntegrity, fetchIntegrity } from "@/lib/search/integrity";
+import type { IntegrityStatus } from "@/lib/types";
 
 type View = "list" | "matrix";
 

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { rateLimit } from "@/lib/rate-limit";
-import { metaSearch } from "@/lib/search";
-import { defaultFromYear, MIN_QUERY_LENGTH, parseSearchParams, PER_SOURCE } from "@/lib/search-params";
+import { rateLimit } from "@/lib/server/rate-limit";
+import { metaSearch } from "@/lib/server/search";
+import { defaultFromYear, MIN_QUERY_LENGTH, parseSearchParams, PER_SOURCE } from "@/lib/search/params";
 
 export const dynamic = "force-dynamic";
 // Search fans out to every database in lib/sources/registry.ts; give the
@@ -11,7 +11,7 @@ export const maxDuration = 30;
 
 /**
  * GET /api/search?q=...&from=...&oa=1&country=...
- * The same query string as the search page's URL (lib/search-params.ts), so
+ * The same query string as the search page's URL (lib/search/params.ts), so
  * both sides validate it the same way. Runs the meta-search on the server to
  * avoid CORS, keep API keys and adapters out of the client bundle, and apply
  * one rate limit.

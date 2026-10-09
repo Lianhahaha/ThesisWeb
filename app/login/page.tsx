@@ -7,12 +7,12 @@ import { signInWithEmailAndPassword, createUserWithEmailAndPassword, sendEmailVe
 import { doc, setDoc } from "firebase/firestore";
 import { Eye, EyeOff } from "lucide-react";
 import { auth, db } from "@/lib/firebase";
-import { useAuth } from "@/lib/auth-store";
+import { useAuth } from "@/lib/auth/store";
 import { cacheUsername } from "@/lib/auth/username-cache";
 import { toast } from "@/components/Toaster";
-import { setRecoveryPin, writeEmailMap } from "@/lib/recovery";
+import { setRecoveryPin, writeEmailMap } from "@/lib/auth/recovery";
 import { trackEvent } from "@/lib/analytics-events";
-import { authMessage } from "@/lib/auth-errors";
+import { authMessage } from "@/lib/auth/errors";
 
 export default function LoginPage() {
   const router = useRouter();

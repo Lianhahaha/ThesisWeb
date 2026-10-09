@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { getDb } from "@/lib/db";
+import { getDb } from "@/lib/library/store";
 
 /**
  * Dexie only exists in the browser (IndexedDB). We gate rendering of children

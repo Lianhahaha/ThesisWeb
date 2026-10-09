@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { rateLimit } from "@/lib/rate-limit";
+import { rateLimit } from "@/lib/server/rate-limit";
 import { getRelatedPapers } from "@/lib/sources/adapters/openalex";
 import { normalizePaper } from "@/lib/sources/normalize";
 import type { Paper } from "@/lib/types";

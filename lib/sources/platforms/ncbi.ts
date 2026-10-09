@@ -1,5 +1,5 @@
 import { fetchWithTimeout, safeJson, sleep } from "@/lib/utils";
-import { CONTACT_EMAIL } from "@/lib/config";
+import { CONTACT_EMAIL } from "@/lib/server/config";
 
 /**
  * Shared NCBI E-utilities client for the PubMed and PubMed Central adapters.

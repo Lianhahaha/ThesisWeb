@@ -14,7 +14,7 @@ import {
   CITATION_STYLES,
   type CitationStyle,
 } from "@/lib/citations";
-import { mergeRecentPapers } from "@/lib/recent-papers";
+import { mergeRecentPapers } from "@/lib/search/recent-papers";
 import { extractDoi } from "@/lib/text";
 import { getPreferences } from "@/lib/preferences";
 import type { Paper } from "@/lib/types";

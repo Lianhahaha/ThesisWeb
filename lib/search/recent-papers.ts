@@ -1,7 +1,7 @@
 "use client";
 
 import type { Paper } from "@/lib/types";
-import { MAX_RESULTS } from "@/lib/search-params";
+import { MAX_RESULTS } from "@/lib/search/params";
 
 /**
  * Ephemeral store for papers the user has just seen in search results.

@@ -1,5 +1,5 @@
 import type { Paper, SearchResult } from "@/lib/types";
-import { dedupePapers, scoreRelevance } from "@/lib/dedupe";
+import { dedupePapers, scoreRelevance } from "@/lib/server/dedupe";
 import { ADAPTERS } from "@/lib/sources/registry";
 import { normalizePaper } from "@/lib/sources/normalize";
 import type { AdapterOptions } from "@/lib/sources/types";

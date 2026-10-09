@@ -25,7 +25,7 @@ export interface AdapterEntry {
    * scoping. Others get the country name appended as a plain extra word.
    */
   boolean: boolean;
-  /** Per-source time limit; defaults to DEFAULT_DEADLINE_MS in lib/search.ts. */
+  /** Per-source time limit; defaults to DEFAULT_DEADLINE_MS in lib/server/search.ts. */
   deadlineMs?: number;
   /**
    * Set for a national source whose records all come from one country. A

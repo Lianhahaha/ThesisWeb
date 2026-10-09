@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { MATRIX_CELL_MAX, type MatrixKey, type SavedPaper } from "@/lib/types";
-import { updatePaper } from "@/lib/db";
+import { updatePaper } from "@/lib/library/store";
 import { toast } from "@/components/Toaster";
 
 /**

@@ -3,8 +3,8 @@
 import { useEffect, useState } from "react";
 import { Search as SearchIcon, X } from "lucide-react";
 import { CountryCombobox } from "@/components/CountryCombobox";
-import { clearSearchHistory, getSearchHistory } from "@/lib/search-history";
-import { defaultFromYear, MIN_QUERY_LENGTH, type SearchInput } from "@/lib/search-params";
+import { clearSearchHistory, getSearchHistory } from "@/lib/search/history";
+import { defaultFromYear, MIN_QUERY_LENGTH, type SearchInput } from "@/lib/search/params";
 
 const CURRENT_YEAR = new Date().getFullYear();
 

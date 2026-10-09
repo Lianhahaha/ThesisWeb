@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildSearchParams, canonicalCountry, parseSearchParams } from "@/lib/search-params";
+import { buildSearchParams, canonicalCountry, parseSearchParams } from "@/lib/search/params";
 
 const defaults = { fromYear: 2022 };
 

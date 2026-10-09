@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { PaperCard } from "@/components/PaperCard";
-import { mergeRecentPapers } from "@/lib/recent-papers";
+import { mergeRecentPapers } from "@/lib/search/recent-papers";
 import type { Paper } from "@/lib/types";
 import type { RelatedPapers as RelatedData } from "@/lib/sources/adapters/openalex";
 

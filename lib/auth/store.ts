@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { User, onAuthStateChanged, Unsubscribe } from "firebase/auth";
-import { auth } from "./firebase";
-import { migrateRecoveryPin, syncEmailMap } from "./recovery";
+import { auth } from "@/lib/firebase";
+import { migrateRecoveryPin, syncEmailMap } from "@/lib/auth/recovery";
 
 interface AuthState {
   user: User | null;

@@ -1,5 +1,6 @@
 import { fetchWithTimeout, safeJson } from "@/lib/utils";
-import { CONTACT_EMAIL } from "@/lib/config";
+import { CONTACT_EMAIL } from "@/lib/server/config";
+import type { IntegrityStatus } from "@/lib/types";
 
 /**
  * Retraction lookup through Crossref, which carries the Retraction Watch
@@ -10,8 +11,6 @@ import { CONTACT_EMAIL } from "@/lib/config";
  * A notice (the retraction) "updates" the original paper, so the query asks
  * for works whose `update-to` points at one of our DOIs.
  */
-
-export type IntegrityStatus = "retracted" | "concern";
 
 /** Update types that mean "do not cite this". */
 const RETRACTED = new Set(["retraction", "withdrawal", "removal"]);

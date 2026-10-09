@@ -2,8 +2,8 @@
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useState } from "react";
-import { DexieHooksProvider } from "@/components/DexieHooksProvider";
-import { FirebaseAnalytics } from "@/components/FirebaseAnalytics";
+import { DexieHooksProvider } from "@/components/layout/DexieHooksProvider";
+import { FirebaseAnalytics } from "@/components/layout/FirebaseAnalytics";
 
 export function Providers({ children }: { children: React.ReactNode }) {
   const [queryClient] = useState(

@@ -60,7 +60,7 @@ All free, no key needed. The in-app [Databases page](app/databases/page.tsx) (`/
 
 **Trust signals:** results come straight from these databases; nothing is generated. Preprints carry a *Preprint · not peer-reviewed* badge. After results load, every DOI is checked against Crossref (which includes Retraction Watch) for retractions and expressions of concern. Semantic Scholar's one-line summaries are labelled *AI summary*.
 
-**Ranking:** duplicates (same DOI, or title+year) are merged; each paper is scored on word overlap with your query (title, abstract, phrase order, recency, citations — see [`lib/dedupe.ts`](lib/dedupe.ts)). It measures word match, not quality — read the abstract.
+**Ranking:** duplicates (same DOI, or title+year) are merged; each paper is scored on word overlap with your query (title, abstract, phrase order, recency, citations — see [`lib/server/dedupe.ts`](lib/server/dedupe.ts)). It measures word match, not quality — read the abstract.
 
 ---
 
@@ -92,33 +92,45 @@ npm run test:live            # calls every real database once
 
 Rules restrict each user to their own `users/{uid}` data, cap field sizes, and allow single-document (never listing) public reads of `email_map`/`recovery` for password recovery. Test locally with `npx firebase-tools emulators:start --only auth,firestore` + `NEXT_PUBLIC_FIREBASE_EMULATORS=1` (never set that var on Vercel).
 
-**Cost/abuse protection:** Firebase Spark plan never bills — it just pauses at the daily quota. Firestore reads are kept cheap (count queries, in-place patches). Every API route has a per-IP rate limit ([`lib/rate-limit.ts`](lib/rate-limit.ts): search 12/min, cite 10, related 20, pdf/summarize 30, retractions 40, search also capped at 120/min site-wide per instance) returning `429` + `Retry-After`. For a hard global cap, add a Vercel Firewall rate-limit rule on `/api/*`.
+**Cost/abuse protection:** Firebase Spark plan never bills — it just pauses at the daily quota. Firestore reads are kept cheap (count queries, in-place patches). Every API route has a per-IP rate limit ([`lib/server/rate-limit.ts`](lib/server/rate-limit.ts): search 12/min, cite 10, related 20, pdf/summarize 30, retractions 40, search also capped at 120/min site-wide per instance) returning `429` + `Retry-After`. For a hard global cap, add a Vercel Firewall rate-limit rule on `/api/*`.
 
 **Deploy:** import to Vercel → add the env vars → add the Vercel domain to Firebase authorized domains → redeploy.
 
-**Project structure:**
+**Project structure:** grouped by where code runs, so a bug can be traced from the page to the data.
 
 ```
-app/        page.tsx (home), search/, library/, paper/[id]/, cite/,
-            login/ forgot-password/ settings/, api/*
-components/ SearchPanel, PaperCard, SaveButton, ExportDialog,
-            SynthesisMatrix, RelatedPapers, Header, Toaster
-lib/        search.ts (fan-out), dedupe.ts (merge + rank), citations.ts,
-            retractions.ts (Crossref check), db.ts + firestore-library.ts
-            (storage), recovery.ts, preferences.ts, rate-limit.ts, theme.ts
-lib/sources/
-  meta.ts       display data for every source (client-safe): label, region,
-                fields, record type, homepage
-  registry.ts   source id -> adapter; typed so meta and registry can't drift
-  types.ts      Adapter / AdapterOptions contract
-  normalize.ts  validates every record from every adapter
-  adapters/     one file per database
-  platforms/    shared clients: dspace7 (World Bank, CGSpace, IDRC, WHO, DR-NTU, UPSpace, UPOU, UPV, Krishikosh, AIIAS),
-                dspace6 (OpenSearch feed: SEAFDEC/AQD, SSOAR, WVSU),
-                vufind (LA Referencia, BDTD), ncbi (PubMed, PMC),
-                ojs (search page of Open Journal Systems: Acta Medica Philippina, PNU)
-tests/unit/     vitest, no network      tests/live/  real databases
-firestore.rules
+app/                 pages: home, search/, library/, paper/[id]/, cite/, databases/,
+                     login/, forgot-password/, settings/, privacy/, terms/
+app/api/             search, cite, related, pdf, retractions, summarize (server)
+components/          shared UI: SearchPanel, PaperCard, SaveButton, CountryCombobox,
+                     Toaster, plus page parts (DatabasesDialog, ExportDialog,
+                     SynthesisMatrix, RelatedPapers)
+components/layout/   app shell: Header, Footer, Providers, ThemeToggle, analytics
+lib/server/          server only (API routes; may read secret keys): search.ts
+                     (fan-out), dedupe.ts (merge + rank), retractions.ts, summarize.ts,
+                     rate-limit.ts, unpaywall.ts, config.ts
+lib/sources/         the databases (server, except meta.ts)
+  meta.ts            display data for every source (client-safe): label, region,
+                     fields, record type, homepage
+  registry.ts        source id -> adapter; typed so meta and registry can't drift
+  types.ts           Adapter / AdapterOptions contract
+  normalize.ts       validates every record from every adapter
+  adapters/          one file per database
+  platforms/         shared clients: dspace7 (World Bank, CGSpace, IDRC, WHO, DR-NTU,
+                     UPSpace, UPOU, UPV, Krishikosh, AIIAS), dspace6 (OpenSearch feed:
+                     SEAFDEC/AQD, SSOAR, WVSU), vufind (LA Referencia, BDTD),
+                     ncbi (PubMed, PMC), ojs (Acta Medica Philippina, PNU)
+lib/search/          search page (browser): params.ts (URL <-> form, shared with
+                     the API), history.ts, recent-papers.ts, result-view.ts,
+                     related-terms.ts, integrity.ts (asks the retraction route)
+lib/library/         saved papers (browser): store.ts (IndexedDB or Firestore),
+                     firestore.ts, merge.ts (combining two copies), backup.ts
+lib/auth/            accounts (browser): store.ts, errors.ts, recovery.ts (PIN,
+                     email lookup), username-cache.ts
+lib/                 shared: types.ts, text.ts, utils.ts, citations.ts, countries.ts,
+                     preferences.ts, theme.ts, firebase.ts, legal.ts
+tests/unit/          vitest, no network      tests/live/  real databases
+firestore.rules      publish in the Firebase console after every change
 ```
 
 **Adding a database:**

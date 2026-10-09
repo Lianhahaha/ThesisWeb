@@ -7,15 +7,15 @@ import { ChevronDown } from "lucide-react";
 import { PaperCard } from "@/components/PaperCard";
 import { SearchPanel, DEFAULT_FROM_YEAR } from "@/components/SearchPanel";
 import { toast } from "@/components/Toaster";
-import { storeRecentPapers } from "@/lib/recent-papers";
-import { applyIntegrity, fetchIntegrity } from "@/lib/integrity-client";
+import { storeRecentPapers } from "@/lib/search/recent-papers";
+import { applyIntegrity, fetchIntegrity } from "@/lib/search/integrity";
 import type { SearchResult } from "@/lib/types";
 import { SOURCE_COUNT, sourceLabel, SOURCE_META } from "@/lib/sources/meta";
-import { suggestTerms } from "@/lib/related-terms";
-import { addSearchHistory } from "@/lib/search-history";
-import { buildSearchParams, parseSearchParams, type SearchInput } from "@/lib/search-params";
+import { suggestTerms } from "@/lib/search/related-terms";
+import { addSearchHistory } from "@/lib/search/history";
+import { buildSearchParams, parseSearchParams, type SearchInput } from "@/lib/search/params";
 import { fromYearFor, getPreferences } from "@/lib/preferences";
-import { SORT_OPTIONS, countBySource, filterBySources, sortPapers, type SortKey } from "@/lib/result-view";
+import { SORT_OPTIONS, countBySource, filterBySources, sortPapers, type SortKey } from "@/lib/search/result-view";
 import { trackEvent } from "@/lib/analytics-events";
 
 export default function SearchPage() {

@@ -7,8 +7,8 @@ import { sendPasswordResetEmail } from "firebase/auth";
 import { ArrowLeft } from "lucide-react";
 import { auth } from "@/lib/firebase";
 import { toast } from "@/components/Toaster";
-import { authMessage } from "@/lib/auth-errors";
-import { checkRecoveryPin, lookupUid } from "@/lib/recovery";
+import { authMessage } from "@/lib/auth/errors";
+import { checkRecoveryPin, lookupUid } from "@/lib/auth/recovery";
 
 type Step = "email" | "mpin" | "done";
 

@@ -1,5 +1,5 @@
 import { fetchWithTimeout, safeJson, paperId } from "@/lib/utils";
-import { USER_AGENT } from "@/lib/config";
+import { USER_AGENT } from "@/lib/server/config";
 import { extractDoi, extractYear, flipName, stripHtml } from "@/lib/text";
 import type { Paper } from "@/lib/types";
 import type { AdapterOptions } from "@/lib/sources/types";

@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { NextRequest } from "next/server";
-import { dedupePapers, scoreRelevance } from "@/lib/dedupe";
+import { dedupePapers, scoreRelevance } from "@/lib/server/dedupe";
 import { extractDoi } from "@/lib/text";
-import { rateLimit } from "@/lib/rate-limit";
+import { rateLimit } from "@/lib/server/rate-limit";
 import type { Paper } from "@/lib/types";
 
 const paper = (over: Partial<Paper>): Paper => ({

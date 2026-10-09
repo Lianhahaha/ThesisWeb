@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { rateLimit } from "@/lib/rate-limit";
-import { checkIntegrity } from "@/lib/retractions";
-import { MAX_RESULTS } from "@/lib/search-params";
+import { rateLimit } from "@/lib/server/rate-limit";
+import { checkIntegrity } from "@/lib/server/retractions";
+import { MAX_RESULTS } from "@/lib/search/params";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 30;

@@ -3,11 +3,11 @@
 import { useState, useEffect } from "react";
 import { Bookmark, BookmarkCheck } from "lucide-react";
 import { useLiveQuery } from "dexie-react-hooks";
-import { getDb, savePaper, unsavePaper, isSaved } from "@/lib/db";
+import { getDb, savePaper, unsavePaper, isSaved } from "@/lib/library/store";
 import type { Paper, SavedPaper } from "@/lib/types";
 import { toast } from "@/components/Toaster";
 import { cn } from "@/lib/utils";
-import { useAuth } from "@/lib/auth-store";
+import { useAuth } from "@/lib/auth/store";
 
 interface Props {
   paper: Paper;
