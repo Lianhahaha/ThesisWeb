@@ -8,6 +8,7 @@ import { doc, setDoc } from "firebase/firestore";
 import { Eye, EyeOff } from "lucide-react";
 import { auth, db } from "@/lib/firebase";
 import { useAuth } from "@/lib/auth-store";
+import { cacheUsername } from "@/lib/auth/username-cache";
 import { toast } from "@/components/Toaster";
 import { setRecoveryPin, writeEmailMap } from "@/lib/recovery";
 import { trackEvent } from "@/lib/analytics-events";
@@ -86,9 +87,8 @@ export default function LoginPage() {
           toast("Account created, but part of your profile could not be saved yet. Check your name and recovery PIN in Settings.", "info");
         }
 
-        localStorage.setItem(`tw_username_${uid}`, name);
         // The header may have looked before the profile existed; tell it now.
-        window.dispatchEvent(new CustomEvent("tw:usernameChanged", { detail: name }));
+        cacheUsername(uid, name);
         toast(`Account created. We sent a link to ${email} to confirm the address.`, "success");
         trackEvent("sign_up", { method: "password" });
         router.push("/library");
@@ -233,7 +233,8 @@ export default function LoginPage() {
               aria-describedby="signup-pin-hint"
             />
             <p id="signup-pin-hint" className="field-hint">
-              The only way to reset a forgotten password. Write it down; you can change it in Settings.
+              The only way to reset a forgotten password. Don&apos;t reuse your bank or phone PIN. Write it
+              down; you can change it in Settings.
             </p>
           </div>
         )}

@@ -2,7 +2,6 @@
 
 import { deleteDoc, doc, getDoc, setDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
-import { hashMPIN } from "@/lib/utils";
 
 /**
  * Recovery PIN and email lookup for the signed-out "forgot password" page.
@@ -11,7 +10,35 @@ import { hashMPIN } from "@/lib/utils";
  * stay private. It only gates sending Firebase's reset email, and that email
  * always goes to the account's own inbox, so a guessed PIN can't take over an
  * account.
+ *
+ * recovery/{uid} is publicly readable (the signed-out page has to check the
+ * PIN), and students reuse their bank or phone PIN, so the hash must not be
+ * cheap to reverse. New PINs are stored as PBKDF2-SHA256, salted with the
+ * account's uid, 200,000 rounds. PINs set before that are plain SHA-256; they
+ * still work and are replaced the next time the owner sets a PIN.
  */
+
+const toHex = (buf: ArrayBuffer) =>
+  Array.from(new Uint8Array(buf), (b) => b.toString(16).padStart(2, "0")).join("");
+
+const PIN_ROUNDS = 200_000;
+
+/** The stored form of a PIN: 64 hex characters, like the old hashes, so the rules need no change. */
+async function pinHash(uid: string, pin: string): Promise<string> {
+  const enc = new TextEncoder();
+  const key = await crypto.subtle.importKey("raw", enc.encode(pin), "PBKDF2", false, ["deriveBits"]);
+  const bits = await crypto.subtle.deriveBits(
+    { name: "PBKDF2", hash: "SHA-256", salt: enc.encode(`thesisweb-recovery:${uid}`), iterations: PIN_ROUNDS },
+    key,
+    256
+  );
+  return toHex(bits);
+}
+
+/** How PINs were stored before PBKDF2. Only checked, never written. */
+async function legacyPinHash(pin: string): Promise<string> {
+  return toHex(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(pin)));
+}
 
 /** Raised when an account has no PIN, so the UI can say what to do instead. */
 export class NoRecoveryPinError extends Error {
@@ -61,7 +88,7 @@ export async function syncEmailMap(uid: string, email: string): Promise<void> {
 }
 
 export async function setRecoveryPin(uid: string, pin: string): Promise<void> {
-  await setDoc(doc(db, "recovery", uid), { mpinHash: await hashMPIN(pin) });
+  await setDoc(doc(db, "recovery", uid), { mpinHash: await pinHash(uid, pin) });
 }
 
 /** uid for an email, or null if no account registered it. */
@@ -77,7 +104,8 @@ export async function lookupUid(email: string): Promise<string | null> {
 export async function checkRecoveryPin(uid: string, pin: string): Promise<boolean> {
   const snap = await getDoc(doc(db, "recovery", uid));
   if (!snap.exists()) throw new NoRecoveryPinError();
-  return (await hashMPIN(pin)) === (snap.data().mpinHash as string);
+  const stored = snap.data().mpinHash as string;
+  return stored === (await pinHash(uid, pin)) || stored === (await legacyPinHash(pin));
 }
 
 /** True once the account has a PIN, so the UI can nudge the owner to set one. */
@@ -88,14 +116,28 @@ export async function hasRecoveryPin(uid: string): Promise<boolean> {
 /**
  * Older accounts kept the PIN hash inside the (now private) profile. When the
  * owner is signed in, copy it across so recovery keeps their chosen PIN. An
- * account with no PIN anywhere is left alone for the owner to set one.
+ * account with no PIN anywhere is left alone for the owner to set one. Runs on
+ * sign-in (auth-store), once per account per browser, so recovery works for
+ * people who never open Settings.
  */
 export async function migrateRecoveryPin(uid: string): Promise<void> {
+  const doneKey = `tw_pinmigrated_${uid}`;
+  try {
+    if (localStorage.getItem(doneKey)) return;
+  } catch {
+    // Storage blocked: check every time.
+  }
   const rec = await getDoc(doc(db, "recovery", uid));
-  if (rec.exists()) return;
-  const profile = await getDoc(doc(db, "users", uid, "profile", "main"));
-  const legacy = profile.exists() ? profile.data().mpinHash : undefined;
-  if (typeof legacy === "string" && legacy.length === 64) {
-    await setDoc(doc(db, "recovery", uid), { mpinHash: legacy });
+  if (!rec.exists()) {
+    const profile = await getDoc(doc(db, "users", uid, "profile", "main"));
+    const legacy = profile.exists() ? profile.data().mpinHash : undefined;
+    if (typeof legacy === "string" && legacy.length === 64) {
+      await setDoc(doc(db, "recovery", uid), { mpinHash: legacy });
+    }
+  }
+  try {
+    localStorage.setItem(doneKey, "1");
+  } catch {
+    // Ignore.
   }
 }

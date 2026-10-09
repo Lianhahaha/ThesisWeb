@@ -91,11 +91,3 @@ export function truncate(s: string, n = 200): string {
   return (lastSpace > 0 ? cut.slice(0, lastSpace) : cut) + "…";
 }
 
-/** Hash an MPIN string using SHA-256. */
-export async function hashMPIN(mpin: string): Promise<string> {
-  const msgUint8 = new TextEncoder().encode(mpin);
-  const hashBuffer = await crypto.subtle.digest("SHA-256", msgUint8);
-  return Array.from(new Uint8Array(hashBuffer))
-    .map(b => b.toString(16).padStart(2, "0"))
-    .join("");
-}

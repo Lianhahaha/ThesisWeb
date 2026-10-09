@@ -16,6 +16,7 @@ import {
 import { Eye, EyeOff, Download, Upload, X } from "lucide-react";
 import { auth, db } from "@/lib/firebase";
 import { useAuth } from "@/lib/auth-store";
+import { cacheUsername, clearCachedUsername, getCachedUsername } from "@/lib/auth/username-cache";
 import { toast } from "@/components/Toaster";
 import { authMessage } from "@/lib/auth-errors";
 import { CountryCombobox } from "@/components/CountryCombobox";
@@ -164,7 +165,7 @@ export default function SettingsPage() {
     if (!user) return;
     setEmail(user.email || "");
     setVerified(user.emailVerified);
-    const cached = localStorage.getItem(`tw_username_${user.uid}`);
+    const cached = getCachedUsername(user.uid);
     // Older builds could cache the email as the name; don't show that.
     if (cached && cached !== user.email) setUsername(cached);
 
@@ -173,7 +174,7 @@ export default function SettingsPage() {
         if (!snap.exists()) return;
         const name = snap.data().username || "";
         setUsername(name);
-        localStorage.setItem(`tw_username_${user.uid}`, name);
+        cacheUsername(user.uid, name);
       })
       .catch(() => {});
     // Older accounts stored the PIN in the profile; copy it to recovery/{uid},
@@ -192,8 +193,7 @@ export default function SettingsPage() {
     setSavingUsername(true);
     try {
       await setDoc(doc(db, "users", user.uid, "profile", "main"), { username: name }, { merge: true });
-      localStorage.setItem(`tw_username_${user.uid}`, name);
-      window.dispatchEvent(new CustomEvent("tw:usernameChanged", { detail: name }));
+      cacheUsername(user.uid, name);
       toast("Display name updated", "success");
     } catch (err) {
       toast(err instanceof Error ? err.message : "Could not update the display name", "error");
@@ -291,6 +291,9 @@ export default function SettingsPage() {
       await user.reload();
       const fresh = auth.currentUser;
       if (fresh?.email && fresh.email !== email) {
+        // The security rules check the email in the sign-in token, which still
+        // holds the old address until it is refreshed.
+        await fresh.getIdToken(true);
         await writeEmailMap(fresh.uid, fresh.email);
         await deleteDoc(doc(db, "email_map", emailKey(email))).catch(() => {});
         setEmail(fresh.email);
@@ -365,8 +368,8 @@ export default function SettingsPage() {
         deleteDoc(doc(db, "email_map", emailKey(user.email))),
       ]);
       await deleteUser(user);
+      clearCachedUsername(uid);
       try {
-        localStorage.removeItem(`tw_username_${uid}`);
         localStorage.removeItem(`tw_emailmap_${uid}`);
       } catch {
         // Ignore.
@@ -387,7 +390,7 @@ export default function SettingsPage() {
   }
 
   async function handleSignOut() {
-    if (user) localStorage.removeItem(`tw_username_${user.uid}`);
+    if (user) clearCachedUsername(user.uid);
     await signOut(auth);
     router.push("/");
   }
@@ -609,7 +612,7 @@ export default function SettingsPage() {
               </p>
             )}
             <form onSubmit={saveMpin}>
-              <label htmlFor="mpin" className="field-label">New PIN (4 to 12 digits)</label>
+              <label htmlFor="mpin" className="field-label">New PIN (4 to 12 digits, not your bank or phone PIN)</label>
               <div className="flex flex-col gap-2 sm:flex-row">
                 <input
                   id="mpin"

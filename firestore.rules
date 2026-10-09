@@ -4,7 +4,9 @@ rules_version = '2';
 // Publish: Firebase console → Firestore Database → Rules → paste → Publish.
 //
 // Layout:
-//   users/{uid}/profile/main     display name, preferences      (owner only)
+//   users/{uid}/profile/main     display name (prefs, mpinHash:  (owner only)
+//                                legacy fields, still allowed so old
+//                                profiles can be updated)
 //   users/{uid}/papers/{paperId} saved papers                   (owner only)
 //   recovery/{uid}               hashed recovery PIN            (public get, owner write)
 //   email_map/{email_key}        email → uid, for recovery      (public get, owner write)
@@ -53,7 +55,7 @@ service cloud.firestore {
         && (!('matrix' in request.resource.data) || request.resource.data.matrix is map);
     }
 
-    // ── Recovery PIN (SHA-256 hex) ───────────────────────────────────────
+    // ── Recovery PIN (64-hex hash, see lib/recovery.ts) ─────────────────
     // Readable one document at a time so the signed-out recovery page can
     // check a PIN. Listing is never allowed.
     match /recovery/{uid} {
@@ -68,7 +70,9 @@ service cloud.firestore {
 
     // ── Email lookup for recovery ────────────────────────────────────────
     // Key is the lower-cased email with "." replaced by "_". An entry can be
-    // claimed only for your own uid, and only you can change or remove it.
+    // claimed only for your own uid and your own signed-in email address, so
+    // nobody can reserve someone else's address before they sign up; only
+    // you can change or remove it.
     match /email_map/{key} {
       allow get: if true;
       allow list: if false;
@@ -79,6 +83,8 @@ service cloud.firestore {
           && request.resource.data.email is string
           && request.resource.data.email.size() <= 254
           && request.resource.data.email == request.resource.data.email.lower()
+          && request.auth.token.email != null
+          && request.resource.data.email == request.auth.token.email.lower()
           && key == request.resource.data.email.replace('[.]', '_');
       }
 

@@ -7,6 +7,7 @@ import { Search, Library, Quote, Home, LogOut, Settings } from "lucide-react";
 import { useLiveQuery } from "dexie-react-hooks";
 import { getDb, LIBRARY_EVENT } from "@/lib/db";
 import { useAuth } from "@/lib/auth-store";
+import { cacheUsername, clearCachedUsername, getCachedUsername, USERNAME_EVENT } from "@/lib/auth/username-cache";
 import { auth, db } from "@/lib/firebase";
 import { signOut } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
@@ -126,17 +127,19 @@ function UserArea() {
 
   useEffect(() => {
     if (!user) { setUsername(null); return; }
-    const cached = localStorage.getItem(`tw_username_${user.uid}`);
-    if (cached) { setUsername(cached); return; }
+    // Show the cached name at once, then read the profile anyway (once per
+    // visit), so a rename made on another device shows up here too.
+    const cached = getCachedUsername(user.uid);
+    if (cached) setUsername(cached);
     getDoc(doc(db, "users", user.uid, "profile", "main"))
       .then((snap) => {
         const name = snap.exists() ? (snap.data().username as string | undefined) : undefined;
         // Cache only a real name. Right after sign-up the profile may not be
         // written yet; caching the email here would stick it in as the name.
-        if (name) localStorage.setItem(`tw_username_${user.uid}`, name);
-        setUsername(name || user.email || "");
+        if (name) cacheUsername(user.uid, name);
+        else if (!cached) setUsername(user.email || "");
       })
-      .catch(() => setUsername(user.email || ""));
+      .catch(() => { if (!cached) setUsername(user.email || ""); });
   }, [user]);
 
   // Settings renames the account; reflect it without a reload.
@@ -145,8 +148,8 @@ function UserArea() {
       const name = (e as CustomEvent<string>).detail;
       if (name) setUsername(name);
     }
-    window.addEventListener("tw:usernameChanged", onChange);
-    return () => window.removeEventListener("tw:usernameChanged", onChange);
+    window.addEventListener(USERNAME_EVENT, onChange);
+    return () => window.removeEventListener(USERNAME_EVENT, onChange);
   }, []);
 
   if (!initialized) return null;
@@ -175,7 +178,7 @@ function UserArea() {
       </Link>
       <button
         onClick={() => {
-          localStorage.removeItem(`tw_username_${user.uid}`);
+          clearCachedUsername(user.uid);
           signOut(auth);
         }}
         className="btn-ghost btn-sm !px-2"

@@ -133,7 +133,7 @@ firestore.rules
 
 ## Data & privacy
 
-Signed out: papers live in that browser's IndexedDB. Signed in: papers/notes live in Firestore under your account. Recovery PIN is a SHA-256 hash in its own document, separate from your profile, and only gates a reset email sent to the account's own inbox. Preferences and search history stay in your browser. Search text and DOIs go only to the databases above.
+Signed out: papers live in that browser's IndexedDB. Signed in: papers/notes live in Firestore under your account. Recovery PIN is stored as a salted PBKDF2 hash (200,000 rounds; PINs set before October 2026 are plain SHA-256 until changed) in its own document, separate from your profile, and only gates a reset email sent to the account's own inbox. Preferences and search history stay in your browser. Search text and DOIs go to the databases above, and search words to Firebase Analytics, as the privacy page says.
 
 ## Ethics
 
