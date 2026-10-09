@@ -1,6 +1,7 @@
 "use client";
 
 import type { Paper } from "@/lib/types";
+import { MAX_RESULTS } from "@/lib/search-params";
 
 /**
  * Ephemeral store for papers the user has just seen in search results.
@@ -16,11 +17,25 @@ import type { Paper } from "@/lib/types";
 
 const KEY = "tw-recent-papers";
 /**
- * Must cover a whole result set (up to ~31 sources x 15 papers, before
- * dedupe): any result past the cap can be listed but not opened. A few
- * hundred papers is well under 1 MB of sessionStorage.
+ * Must cover a whole result set: any result past the cap can be listed but
+ * not opened.
  */
-const MAX = 500;
+const MAX = MAX_RESULTS;
+/** Abstract length kept when the full set doesn't fit in sessionStorage (about 5 MB). */
+const SHORT_ABSTRACT = 1500;
+
+/** Write the map; if it is over the storage quota, try again with shorter abstracts. */
+function write(map: Record<string, Paper>): void {
+  try {
+    sessionStorage.setItem(KEY, JSON.stringify(map));
+  } catch {
+    const short: Record<string, Paper> = {};
+    for (const [id, p] of Object.entries(map)) {
+      short[id] = p.abstract && p.abstract.length > SHORT_ABSTRACT ? { ...p, abstract: p.abstract.slice(0, SHORT_ABSTRACT) + "…" } : p;
+    }
+    sessionStorage.setItem(KEY, JSON.stringify(short));
+  }
+}
 
 export function storeRecentPapers(papers: Paper[]): void {
   if (typeof window === "undefined" || papers.length === 0) return;
@@ -28,7 +43,7 @@ export function storeRecentPapers(papers: Paper[]): void {
     const map: Record<string, Paper> = {};
     // Newest first — keep only the most recent MAX.
     for (const p of papers.slice(0, MAX)) map[p.id] = p;
-    sessionStorage.setItem(KEY, JSON.stringify(map));
+    write(map);
   } catch {
     // Quota exceeded or disabled storage — non-fatal.
   }
@@ -51,7 +66,7 @@ export function mergeRecentPapers(papers: Paper[]): void {
     }
     const keys = Object.keys(map);
     for (const k of keys.slice(0, Math.max(0, keys.length - MAX - 100))) delete map[k];
-    sessionStorage.setItem(KEY, JSON.stringify(map));
+    write(map);
   } catch {
     // Quota exceeded, disabled storage or corrupt JSON — non-fatal.
   }

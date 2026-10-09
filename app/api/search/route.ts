@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { rateLimit } from "@/lib/rate-limit";
 import { metaSearch } from "@/lib/search";
-import { defaultFromYear, MIN_QUERY_LENGTH, parseSearchParams } from "@/lib/search-params";
+import { defaultFromYear, MIN_QUERY_LENGTH, parseSearchParams, PER_SOURCE } from "@/lib/search-params";
 
 export const dynamic = "force-dynamic";
 // Search fans out to every database in lib/sources/registry.ts; give the
@@ -37,7 +37,7 @@ export async function GET(req: NextRequest) {
     const result = await metaSearch(input.query, {
       fromYear: input.fromYear,
       openAccessOnly: input.openAccessOnly,
-      perSource: 15,
+      perSource: PER_SOURCE,
       country: input.country ?? undefined,
     });
     return NextResponse.json(result);

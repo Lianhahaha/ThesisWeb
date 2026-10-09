@@ -1,12 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { rateLimit } from "@/lib/rate-limit";
 import { checkIntegrity } from "@/lib/retractions";
+import { MAX_RESULTS } from "@/lib/search-params";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 30;
 
-/** Most DOIs one request may ask about: a full result set, with room to spare. */
-const MAX_DOIS = 500;
+/** Most DOIs one request may ask about: a full result set. */
+const MAX_DOIS = MAX_RESULTS;
 
 /**
  * POST /api/retractions  { dois: string[] }

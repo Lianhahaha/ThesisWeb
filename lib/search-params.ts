@@ -1,4 +1,5 @@
 import { ALL_COUNTRIES } from "@/lib/countries";
+import { KEYLESS_SOURCE_COUNT } from "@/lib/sources/meta";
 
 /**
  * The search form <-> URL query string, so a search survives a refresh and can
@@ -18,6 +19,13 @@ export interface SearchInput {
 export const MIN_QUERY_LENGTH = 3;
 /** Longest query sent on to the databases. */
 export const MAX_QUERY_LENGTH = 300;
+/** Results asked of each database per search. */
+export const PER_SOURCE = 15;
+/**
+ * Most papers one search can return (every database full, before duplicates
+ * merge). Caches and checks that must cover a whole result set use this.
+ */
+export const MAX_RESULTS = KEYLESS_SOURCE_COUNT * PER_SOURCE;
 
 /** Default "Published since": the last 5 years, counting this one (2022+ in 2026). */
 export function defaultFromYear(currentYear = new Date().getFullYear()): number {

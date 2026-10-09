@@ -4,6 +4,8 @@ import { summarize } from "@/lib/summarize";
 
 export const dynamic = "force-dynamic";
 
+const MAX_TEXT = 50_000;
+
 /**
  * POST /api/summarize
  * Body: { text: string, sentences?: number }
@@ -29,6 +31,11 @@ export async function POST(req: NextRequest) {
       { error: "Provide at least 50 characters of text." },
       { status: 400 }
     );
+  }
+  // Abstracts are capped at 40,000 characters; far longer bodies only cost
+  // time (and past ~200k distinct words the scoring overflows the stack).
+  if (text.length > MAX_TEXT) {
+    return NextResponse.json({ error: "This text is too long to summarize." }, { status: 413 });
   }
   // A negative or fractional count reaches Array.slice() and silently returns
   // the wrong sentences; anything invalid falls back to the automatic length.

@@ -16,8 +16,8 @@ interface Rule {
   windowMs: number;
 }
 
-export const LIMITS = {
-  // A search fans out to ~30 external APIs, so it gets the tightest budget.
+const LIMITS = {
+  // A search fans out to every database, so it gets the tightest budget.
   search: { limit: 12, windowMs: 60_000 },
   cite: { limit: 10, windowMs: 60_000 },
   related: { limit: 20, windowMs: 60_000 },
@@ -39,16 +39,14 @@ function clientIp(req: NextRequest): string {
   return fwd?.split(",")[0].trim() || req.headers.get("x-real-ip") || "unknown";
 }
 
-/** Record a hit; returns seconds until a slot frees up, or 0 if allowed. */
-function take(key: string, rule: Rule, now: number): number {
+/** Longest window of any rule; a key idle this long holds nothing that counts. */
+const MAX_WINDOW_MS = Math.max(GLOBAL_SEARCH.windowMs, ...Object.values(LIMITS).map((r) => r.windowMs));
+
+/** Seconds until `key` has a free slot under `rule`, or 0 if it has one now. Records nothing. */
+function waitFor(key: string, rule: Rule, now: number): number {
   const recent = (hits.get(key) ?? []).filter((t) => now - t < rule.windowMs);
-  if (recent.length >= rule.limit) {
-    hits.set(key, recent);
-    return Math.max(1, Math.ceil((recent[0] + rule.windowMs - now) / 1000));
-  }
-  recent.push(now);
   hits.set(key, recent);
-  return 0;
+  return recent.length >= rule.limit ? Math.max(1, Math.ceil((recent[0] + rule.windowMs - now) / 1000)) : 0;
 }
 
 /** Drop idle keys now and then so the map can't grow without bound. */
@@ -56,7 +54,7 @@ function sweep(now: number): void {
   if (now - lastSweep < 60_000) return;
   lastSweep = now;
   for (const [key, times] of hits) {
-    if (times.every((t) => now - t > 60_000)) hits.delete(key);
+    if (times.every((t) => now - t > MAX_WINDOW_MS)) hits.delete(key);
   }
 }
 
@@ -68,9 +66,15 @@ export function rateLimit(req: NextRequest, name: keyof typeof LIMITS): NextResp
   const now = Date.now();
   sweep(now);
 
-  let wait = take(`${name}:${clientIp(req)}`, LIMITS[name], now);
-  if (!wait && name === "search") wait = take("search:*", GLOBAL_SEARCH, now);
-  if (!wait) return null;
+  // Check every rule before counting the hit, so a request refused by the
+  // site-wide limit doesn't also use up the caller's own slot.
+  const checks: [string, Rule][] = [[`${name}:${clientIp(req)}`, LIMITS[name]]];
+  if (name === "search") checks.push(["search:*", GLOBAL_SEARCH]);
+  const wait = Math.max(...checks.map(([key, rule]) => waitFor(key, rule, now)));
+  if (!wait) {
+    for (const [key] of checks) hits.get(key)!.push(now);
+    return null;
+  }
 
   return NextResponse.json(
     { error: `Too many requests. Please wait ${wait} second${wait === 1 ? "" : "s"} and try again.` },

@@ -49,7 +49,8 @@ function cleanDoi(v: unknown): string | null {
 /** A clean copy of `p`, or null if it has no usable title. */
 export function normalizePaper(p: Paper, sourceId: string): Paper | null {
   const title = str(p?.title, 1000)?.replace(/\s+/g, " ");
-  if (!title) return null;
+  // Several adapters fall back to "Untitled"; such a record can't be cited or found again.
+  if (!title || /^untitled$/i.test(title)) return null;
 
   const doi = cleanDoi(p.doi);
   const sources = strings(p.sources, 50, 50);

@@ -296,7 +296,10 @@ export function scoreRelevance(papers: Paper[], query: string): Paper[] {
       }
 
       // ── 7. Citation authority signal (0-5 points) ──
-      const citeScore = Math.log10(((p.citedByCount ?? 0) + 1) / (maxCites + 1)) * 3 + 5;
+      // Clamped: unclamped, an uncited paper scored -4 next to a result with
+      // 1,000 citations (-8 at 20,000), so one classic in the set pushed
+      // borderline papers under the cut-off below.
+      const citeScore = Math.max(0, Math.log10(((p.citedByCount ?? 0) + 1) / (maxCites + 1)) * 3 + 5);
 
       // ── Total raw score ──
       const raw = titleScore + absScore + phraseScore + bigramScore + positionScore + recencyScore + citeScore;

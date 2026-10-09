@@ -44,10 +44,26 @@ export function flipName(name: string): string {
   return given ? `${given} ${family}` : family;
 }
 
+/** A whole string that is one DOI, with or without a doi.org or "doi:" prefix. */
+const BARE_DOI = /^(?:(?:https?:\/\/)?(?:dx\.)?doi\.org\/|doi:\s*)?(10\.\d{4,9}\/\S+)$/i;
+
 /** Pull a bare DOI ("10.1234/abc") out of a URL or free text; null if none. */
 export function extractDoi(s: string | null | undefined): string | null {
   if (!s) return null;
-  const m = s.match(/\b(10\.\d{4,9}\/[^\s"<>]+)/i);
+  let text = s.trim();
+  // doi.org links percent-encode characters such as < and >.
+  if (/%[0-9a-f]{2}/i.test(text)) {
+    try {
+      text = decodeURIComponent(text);
+    } catch {
+      // Not valid percent-encoding; use as is.
+    }
+  }
+  // A line that is only a DOI may hold < and >, as old Wiley "SICI" DOIs do
+  // (10.1002/(SICI)1097-4679(199711)53:7<657::AID-JCLP4>3.0.CO;2-F).
+  const bare = text.match(BARE_DOI);
+  if (bare) return bare[1].replace(/[.,;]+$/, "");
+  const m = text.match(/\b(10\.\d{4,9}\/[^\s"<>]+)/i);
   // Trailing punctuation is almost never part of the DOI.
   return m ? m[1].replace(/[.,;)\]]+$/, "") : null;
 }
