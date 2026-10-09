@@ -242,6 +242,10 @@ const META = {
     label: "PNU Journals", blurb: "Philippine Normal University's open-access education journals: The Normal Lights, APHERJ, AsTEN Journal of Teacher Education, Paghabi", color: "#003f87",
     region: "Philippines", fields: ["education"], kind: "journals", url: "https://po.pnuresearchportal.org/ejournal",
   },
+  ejournalsph: {
+    label: "Philippine E-Journals", blurb: "Articles from hundreds of Philippine university and society journals, most with a free PDF: education, business, health, sciences, social sciences (C&E Publishing)", color: "#0b6e4f",
+    region: "Philippines", fields: ["all"], kind: "journals", url: "https://ejournals.ph",
+  },
   krishikosh: {
     label: "Krishikosh (India)", blurb: "150k+ agricultural theses from India's agricultural universities: agronomy, horticulture, fisheries, veterinary, food technology (ICAR)", color: "#3b7d23",
     region: "India", fields: ["agriculture", "sciences"], kind: "theses", url: "https://krishikosh.egranth.ac.in",

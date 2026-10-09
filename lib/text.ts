@@ -21,6 +21,9 @@ export function decodeEntities(s: string): string {
     })
     .replace(/&ccedil;/g, "ç")
     .replace(/&ntilde;/g, "ñ")
+    // Typographic punctuation, common on Philippine journal sites.
+    .replace(/&(lsquo|rsquo|ldquo|rdquo|ndash|mdash|hellip);/g, (_, n: string) =>
+      ({ lsquo: "‘", rsquo: "’", ldquo: "“", rdquo: "”", ndash: "–", mdash: "—", hellip: "…" })[n] ?? "")
     .replace(/&amp;/g, "&"); // last, so "&amp;lt;" stays a literal "&lt;"
 }
 

@@ -49,6 +49,7 @@ import { searchUpd } from "@/lib/sources/adapters/upd";
 import { searchAiias } from "@/lib/sources/adapters/aiias";
 import { searchActaMedica } from "@/lib/sources/adapters/actamedica";
 import { searchPnu } from "@/lib/sources/adapters/pnu";
+import { searchEjournalsPh } from "@/lib/sources/adapters/ejournalsph";
 
 /**
  * The adapter for every source in lib/sources/meta.ts. Typed as a Record over
@@ -112,4 +113,6 @@ export const ADAPTERS: Record<SourceId, AdapterEntry> = {
   aiias:           { run: searchAiias, boolean: false, country: "Philippines" },
   actamedica:      { run: searchActaMedica, boolean: false, country: "Philippines" },
   pnu:             { run: searchPnu, boolean: false, country: "Philippines" },
+  // A list page, then one article page per result, so it needs extra room.
+  ejournalsph:     { run: searchEjournalsPh, boolean: false, country: "Philippines", deadlineMs: 16000 },
 };
