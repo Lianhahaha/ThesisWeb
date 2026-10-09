@@ -3,14 +3,12 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { ChevronRight } from "lucide-react";
 import { SearchPanel, DEFAULT_FROM_YEAR } from "@/components/SearchPanel";
-import { KEYLESS_SOURCE_COUNT, SOURCE_META } from "@/lib/sources/meta";
+import { DatabasesDialog } from "@/components/DatabasesDialog";
+import { KEYLESS_SOURCE_COUNT } from "@/lib/sources/meta";
 import { buildSearchParams, type SearchInput } from "@/lib/search-params";
 import { fromYearFor, getPreferences } from "@/lib/preferences";
-
-const SOURCE_NAMES = Object.values(SOURCE_META)
-  .filter((s) => !s.needsKey)
-  .map((s) => s.label);
 
 const STEPS: { title: string; body: React.ReactNode }[] = [
   {
@@ -56,6 +54,7 @@ export default function HomePage() {
     openAccessOnly: false,
     country: null,
   });
+  const [showDatabases, setShowDatabases] = useState(false);
 
   // Saved defaults live in localStorage, so apply them after mount.
   useEffect(() => {
@@ -82,14 +81,11 @@ export default function HomePage() {
           />
         </div>
 
-        <ul className="mt-6 flex flex-wrap justify-center gap-1.5" aria-label="Databases searched">
-          {SOURCE_NAMES.map((name) => (
-            <li key={name} className="tag">{name}</li>
-          ))}
-        </ul>
-        <p className="mt-3 text-sm">
-          <Link href="/databases" className="text-accent underline">What each database covers</Link>
-        </p>
+        <button type="button" onClick={() => setShowDatabases(true)} className="btn-ghost btn-sm mt-6">
+          See all {KEYLESS_SOURCE_COUNT} databases
+          <ChevronRight className="h-3.5 w-3.5" aria-hidden />
+        </button>
+        {showDatabases && <DatabasesDialog onClose={() => setShowDatabases(false)} />}
       </section>
 
       <section id="readme" className="mx-auto max-w-4xl py-8" aria-labelledby="readme-h">
