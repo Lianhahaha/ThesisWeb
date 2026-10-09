@@ -1,6 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { rateLimit } from "@/lib/rate-limit";
 import { getRelatedPapers } from "@/lib/sources/adapters/openalex";
+import { normalizePaper } from "@/lib/sources/normalize";
+import type { Paper } from "@/lib/types";
+
+/** The same checks every search result gets, before these reach links and the library. */
+const clean = (papers: Paper[]) =>
+  papers.map((p) => normalizePaper(p, "openalex")).filter((p): p is Paper => p !== null);
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 20;
@@ -27,7 +33,12 @@ export async function GET(req: NextRequest) {
     if (!related) {
       return NextResponse.json({ error: "This paper isn't in OpenAlex, so its citations aren't available." }, { status: 404 });
     }
-    return NextResponse.json(related);
+    return NextResponse.json({
+      ...related,
+      references: clean(related.references),
+      citedBy: clean(related.citedBy),
+      similar: clean(related.similar),
+    });
   } catch (e) {
     return NextResponse.json(
       { error: e instanceof Error ? e.message : "Lookup failed" },

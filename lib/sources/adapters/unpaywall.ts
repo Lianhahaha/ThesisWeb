@@ -1,4 +1,4 @@
-import { fetchWithTimeout, safeJson } from "@/lib/utils";
+import { fetchWithTimeout, safeJson, upstreamError } from "@/lib/utils";
 
 /**
  * Unpaywall adapter — find a legal, open-access PDF for a given DOI.
@@ -45,11 +45,13 @@ export interface OaResult {
 }
 
 export async function findOaPdf(doi: string): Promise<OaResult> {
-  // If no real email is configured, skip cleanly instead of hitting a 422.
-  if (!EMAIL) return { found: false, url: null, kind: null };
+  // Unpaywall refuses requests without a real email (422). Say so, rather
+  // than telling the student the paper has no free copy.
+  if (!EMAIL) throw new Error("Free-PDF lookup is not set up on this server.");
   const url = `${BASE}/${encodeURIComponent(doi)}?email=${encodeURIComponent(EMAIL)}`;
   const res = await fetchWithTimeout(url);
-  if (!res.ok) return { found: false, url: null };
+  if (res.status === 404) return { found: false, url: null };
+  if (!res.ok) throw upstreamError("Unpaywall", res.status);
   const data = await safeJson<UnpaywallResponse>(res);
   if (!data) return { found: false, url: null };
 

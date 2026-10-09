@@ -1,8 +1,8 @@
-import { fetchWithTimeout, safeJson, paperId } from "@/lib/utils";
+import { fetchWithTimeout, safeJson, paperId, upstreamError } from "@/lib/utils";
 import type { Paper } from "@/lib/types";
 import type { AdapterOptions } from "@/lib/sources/types";
 import { CONTACT_EMAIL } from "@/lib/config";
-import { stripHtml } from "@/lib/text";
+import { doiUrlPath, stripHtml } from "@/lib/text";
 
 /**
  * Crossref adapter — metadata, DOIs, reference lists.
@@ -116,11 +116,14 @@ function itemToPaper(it: CrossrefItem): Paper {
   };
 }
 
-/** Look up one work by DOI. Returns null when Crossref doesn't know it. */
+/**
+ * Look up one work by DOI. Returns null when Crossref doesn't know it; throws
+ * when Crossref fails, so an outage is not reported as "no record".
+ */
 export async function getCrossrefByDoi(doi: string): Promise<Paper | null> {
-  const path = doi.split("/").map(encodeURIComponent).join("/");
-  const res = await fetchWithTimeout(`${BASE}/${path}?mailto=${encodeURIComponent(MAILTO)}`);
-  if (!res.ok) return null;
+  const res = await fetchWithTimeout(`${BASE}/${doiUrlPath(doi)}?mailto=${encodeURIComponent(MAILTO)}`);
+  if (res.status === 404) return null;
+  if (!res.ok) throw upstreamError("Crossref", res.status);
   const data = await safeJson<{ message?: CrossrefItem }>(res);
   return data?.message ? itemToPaper(data.message) : null;
 }

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { rateLimit } from "@/lib/rate-limit";
 import { getCrossrefByDoi } from "@/lib/sources/adapters/crossref";
 import { getOpenAlexByDoi } from "@/lib/sources/adapters/openalex";
+import { normalizePaper } from "@/lib/sources/normalize";
 import { extractDoi } from "@/lib/text";
 import type { Paper } from "@/lib/types";
 
@@ -21,7 +22,7 @@ export interface CiteResult {
  * POST /api/cite  { items: string[] }
  * Resolves each DOI (or doi.org link, or any text containing a DOI) to a
  * paper record. Crossref is the registry of record for DOIs, so it goes
- * first; OpenAlex fills in when Crossref has no entry.
+ * first; OpenAlex fills in when Crossref has no entry or is down.
  */
 export async function POST(req: NextRequest) {
   const limited = rateLimit(req, "cite");
@@ -44,14 +45,20 @@ export async function POST(req: NextRequest) {
     lines.map(async (input): Promise<CiteResult> => {
       const doi = extractDoi(input);
       if (!doi) return { input, doi: null, paper: null, error: "No DOI found in this line." };
-      try {
-        const paper = (await getCrossrefByDoi(doi)) ?? (await getOpenAlexByDoi(doi));
-        return paper
-          ? { input, doi, paper }
-          : { input, doi, paper: null, error: "No record found for this DOI." };
-      } catch {
-        return { input, doi, paper: null, error: "Lookup failed. Try again." };
+      let found: Paper | null = null;
+      let failed = false;
+      for (const lookup of [getCrossrefByDoi, getOpenAlexByDoi]) {
+        try {
+          found = await lookup(doi);
+        } catch {
+          failed = true;
+        }
+        if (found) break;
       }
+      const paper = found && normalizePaper(found, found.sources[0] ?? "crossref");
+      if (paper) return { input, doi, paper };
+      // "Not found" only when both registries answered that they don't know it.
+      return { input, doi, paper: null, error: failed ? "Lookup failed. Try again." : "No record found for this DOI." };
     })
   );
 

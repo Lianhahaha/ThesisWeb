@@ -11,10 +11,17 @@ describe("normalizePaper", () => {
   });
 
   it("blocks non-http links", () => {
-    expect(normalizePaper(raw({ openAccessUrl: "javascript:alert(1)" }), "src")?.openAccessUrl).toBeNull();
-    expect(normalizePaper(raw({ openAccessUrl: "https://x.org/a.pdf" }), "src")?.openAccessUrl).toBe(
+    expect(normalizePaper(raw({ isOpenAccess: true, openAccessUrl: "javascript:alert(1)" }), "src")?.openAccessUrl).toBeNull();
+    expect(normalizePaper(raw({ isOpenAccess: true, openAccessUrl: "https://x.org/a.pdf" }), "src")?.openAccessUrl).toBe(
       "https://x.org/a.pdf"
     );
+  });
+
+  it("counts a record as free only with a free link, and a link as free only when flagged", () => {
+    expect(normalizePaper(raw({ isOpenAccess: true }), "src")?.isOpenAccess).toBe(false);
+    // A paywalled page sent as the free link stays reachable, as the record's link.
+    const closed = normalizePaper(raw({ isOpenAccess: false, openAccessUrl: "https://publisher.com/x" }), "src");
+    expect(closed).toMatchObject({ isOpenAccess: false, openAccessUrl: null, url: "https://publisher.com/x" });
   });
 
   it("reduces DOI links to bare DOIs and keeps bare ones intact", () => {

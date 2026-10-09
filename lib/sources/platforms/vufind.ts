@@ -66,7 +66,8 @@ export function vufindAdapter(cfg: VufindConfig): Adapter {
       if (!r.title) continue;
       const title = stripHtml(r.title);
       const doi = extractDoi(r.dois?.[0]) ?? (r.urls ?? []).map((u) => extractDoi(u.url)).find(Boolean) ?? null;
-      const link = r.urls?.find((u) => u.url && /^https?:/i.test(u.url))?.url ?? (r.id ? cfg.recordUrl(r.id) : null);
+      // A repository link is the free copy; the portal's own record page is only a catalogue entry.
+      const link = r.urls?.find((u) => u.url && /^https?:/i.test(u.url))?.url ?? null;
       const people = [...Object.keys(r.authors?.primary ?? {}), ...Object.keys(r.authors?.secondary ?? {})];
       const format = r.formats?.[0];
 

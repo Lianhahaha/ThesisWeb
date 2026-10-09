@@ -1,7 +1,8 @@
-import { fetchWithTimeout, safeJson, paperId } from "@/lib/utils";
+import { fetchWithTimeout, safeJson, paperId, upstreamError } from "@/lib/utils";
 import type { Paper } from "@/lib/types";
 import type { AdapterOptions } from "@/lib/sources/types";
 import { CONTACT_EMAIL } from "@/lib/config";
+import { doiUrlPath } from "@/lib/text";
 
 /**
  * OpenAlex adapter — the primary discovery source.
@@ -82,7 +83,11 @@ export async function searchOpenAlex(
 export function workToPaper(w: OpenAlexWork): Paper {
   const title = w.title || w.display_name || "Untitled";
   const doi = w.doi?.replace("https://doi.org/", "") || null;
-  const oa = w.best_oa_location || w.primary_location;
+  // Only a location OpenAlex marks as open is a free copy. The primary
+  // location of a closed paper is the publisher's paywalled page: that is the
+  // record's link, not its free full text.
+  const oa = w.best_oa_location ?? (w.primary_location?.is_oa ? w.primary_location : null);
+  const freeUrl = oa?.pdf_url || oa?.landing_page_url || null;
   return {
     id: paperId(doi, title),
     title,
@@ -92,8 +97,9 @@ export function workToPaper(w: OpenAlexWork): Paper {
     venue: w.primary_location?.source?.display_name ?? null,
     doi,
     abstract: deinvert(w.abstract_inverted_index) || null,
-    openAccessUrl: oa?.pdf_url || oa?.landing_page_url || null,
-    isOpenAccess: oa?.pdf_url != null || w.primary_location?.is_oa === true,
+    openAccessUrl: freeUrl,
+    isOpenAccess: freeUrl !== null,
+    url: w.primary_location?.landing_page_url ?? null,
     citedByCount: w.cited_by_count ?? 0,
     keywords: (w.keywords || w.concepts || [])
       .slice(0, 5)
@@ -109,15 +115,14 @@ export function workToPaper(w: OpenAlexWork): Paper {
   };
 }
 
-/** URL path for a DOI: each segment encoded, slashes kept (DOIs may contain ? # ; <). */
-function doiPath(doi: string): string {
-  return doi.split("/").map(encodeURIComponent).join("/");
-}
-
-/** Fetch one OpenAlex work by DOI (used to enrich a saved paper). */
+/**
+ * One OpenAlex work by DOI, for the Cite page when Crossref has no record.
+ * Null when OpenAlex doesn't know the DOI; throws when OpenAlex fails.
+ */
 export async function getOpenAlexByDoi(doi: string): Promise<Paper | null> {
-  const res = await fetchWithTimeout(`${BASE}/doi:${doiPath(doi)}?mailto=${MAILTO}${KEY_QUERY}`);
-  if (!res.ok) return null;
+  const res = await fetchWithTimeout(`${BASE}/doi:${doiUrlPath(doi)}?mailto=${MAILTO}${KEY_QUERY}`);
+  if (res.status === 404) return null;
+  if (!res.ok) throw upstreamError("OpenAlex", res.status);
   const w = await safeJson<OpenAlexWork>(res);
   if (!w) return null;
   return { ...workToPaper(w), doi, id: paperId(doi, w.title || w.display_name || "Untitled") };
@@ -147,7 +152,7 @@ async function worksByIds(ids: string[], limit: number): Promise<Paper[]> {
     ...(API_KEY ? { api_key: API_KEY } : {}),
   });
   const res = await fetchWithTimeout(`${BASE}?${params}`);
-  if (!res.ok) return [];
+  if (!res.ok) throw upstreamError("OpenAlex", res.status);
   const data = await safeJson<{ results?: OpenAlexWork[] }>(res);
   return (data?.results ?? []).map(workToPaper);
 }
@@ -155,13 +160,15 @@ async function worksByIds(ids: string[], limit: number): Promise<Paper[]> {
 /**
  * The citation neighbourhood of a paper, for snowballing a literature review:
  * follow what it cites (older foundations), who cites it (newer work), and
- * similar papers. Returns null if OpenAlex doesn't know the DOI.
+ * similar papers. Returns null if OpenAlex doesn't know the DOI, and throws
+ * if any part fails, so a failed lookup never shows as "Cited by (0)".
  */
 export async function getRelatedPapers(doi: string, limit = 10): Promise<RelatedPapers | null> {
   const workRes = await fetchWithTimeout(
-    `${BASE}/doi:${doiPath(doi)}?select=id,referenced_works,related_works&mailto=${MAILTO}${KEY_QUERY}`
+    `${BASE}/doi:${doiUrlPath(doi)}?select=id,referenced_works,related_works&mailto=${MAILTO}${KEY_QUERY}`
   );
-  if (!workRes.ok) return null;
+  if (workRes.status === 404) return null;
+  if (!workRes.ok) throw upstreamError("OpenAlex", workRes.status);
   const work = await safeJson<{ id?: string; referenced_works?: string[]; related_works?: string[] }>(workRes);
   if (!work?.id) return null;
 
@@ -176,9 +183,10 @@ export async function getRelatedPapers(doi: string, limit = 10): Promise<Related
   const [references, similar, citedByRes] = await Promise.all([
     worksByIds(work.referenced_works ?? [], limit),
     worksByIds(work.related_works ?? [], limit),
-    fetchWithTimeout(`${BASE}?${citedByParams}`).then((r) =>
-      r.ok ? safeJson<{ meta?: { count?: number }; results?: OpenAlexWork[] }>(r) : null
-    ),
+    fetchWithTimeout(`${BASE}?${citedByParams}`).then((r) => {
+      if (!r.ok) throw upstreamError("OpenAlex", r.status);
+      return safeJson<{ meta?: { count?: number }; results?: OpenAlexWork[] }>(r);
+    }),
   ]);
 
   return {

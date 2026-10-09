@@ -25,6 +25,15 @@ export async function fetchWithTimeout(
   return fetch(url, { ...options, signal });
 }
 
+/** Error for a failed call to an outside service, worded for the person using the app. */
+export function upstreamError(service: string, status: number): Error {
+  return new Error(
+    status === 429 || status === 503
+      ? `${service} is busy right now. Try again in a minute.`
+      : `${service} answered with an error (HTTP ${status}). Try again later.`
+  );
+}
+
 /** Try to parse JSON, return null on failure (instead of throwing). */
 export async function safeJson<T = unknown>(res: Response): Promise<T | null> {
   try {

@@ -113,8 +113,9 @@ export default function PaperDetailPage({ params }: { params: Promise<{ id: stri
   const findPdf = useMutation({
     mutationFn: async (doi: string) => {
       const res = await fetch(`/api/pdf?doi=${encodeURIComponent(doi)}`);
-      if (!res.ok) throw new Error("Lookup failed");
-      return res.json();
+      const body = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(body.error || "PDF lookup failed. Try again.");
+      return body;
     },
     onSuccess: (data) => {
       if (data.found && data.url) {
@@ -130,7 +131,7 @@ export default function PaperDetailPage({ params }: { params: Promise<{ id: stri
         toast("No legal open-access copy found for this DOI.", "error");
       }
     },
-    onError: () => toast("PDF lookup failed. Try again.", "error"),
+    onError: (e: Error) => toast(e.message, "error"),
   });
 
   const summarize = useMutation({
@@ -140,10 +141,11 @@ export default function PaperDetailPage({ params }: { params: Promise<{ id: stri
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ text, sentences: 3 }),
       });
-      if (!res.ok) throw new Error("Summarize failed");
-      return res.json();
+      const body = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(body.error || "Could not summarize this abstract.");
+      return body;
     },
-    onError: () => toast("Could not summarize this abstract.", "error"),
+    onError: (e: Error) => toast(e.message, "error"),
   });
 
   if (dbLoading && noRecent) {

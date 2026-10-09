@@ -52,6 +52,11 @@ export function extractDoi(s: string | null | undefined): string | null {
   return m ? m[1].replace(/[.,;)\]]+$/, "") : null;
 }
 
+/** URL path for a DOI: each segment encoded, slashes kept (DOIs may contain ? # ; <). */
+export function doiUrlPath(doi: string): string {
+  return doi.split("/").map(encodeURIComponent).join("/");
+}
+
 /** First 4-digit year (1500-2100) found in a string, or null. */
 export function extractYear(s: string | null | undefined): number | null {
   const m = s?.match(/\b(1[5-9]\d\d|20\d\d|2100)\b/);

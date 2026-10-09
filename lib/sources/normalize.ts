@@ -68,9 +68,12 @@ export function normalizePaper(p: Paper, sourceId: string): Paper | null {
     doi,
     abstract: str(p.abstract, 40000),
     tldr: str(p.tldr, 2000),
-    openAccessUrl: safeUrl(p.openAccessUrl),
-    url: safeUrl(p.url),
-    isOpenAccess: p.isOpenAccess === true,
+    // A record counts as free only with a link to the free copy, and a link is
+    // shown as free only when the source says it is: "Free full text only"
+    // and the "Free PDF" button rely on both agreeing.
+    openAccessUrl: p.isOpenAccess === true ? safeUrl(p.openAccessUrl) : null,
+    url: safeUrl(p.url) ?? (p.isOpenAccess === true ? null : safeUrl(p.openAccessUrl)),
+    isOpenAccess: p.isOpenAccess === true && safeUrl(p.openAccessUrl) !== null,
     citedByCount:
       typeof p.citedByCount === "number" && Number.isFinite(p.citedByCount) && p.citedByCount >= 0
         ? Math.floor(p.citedByCount)

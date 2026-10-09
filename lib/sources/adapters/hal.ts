@@ -81,6 +81,8 @@ export async function searchHal(
       abstract: d.abstract_s?.[0] ? stripHtml(d.abstract_s[0]) : null,
       openAccessUrl: isOA ? d.fileMain_s ?? d.uri_s ?? null : null,
       isOpenAccess: isOA,
+      // The HAL record page, so papers with no DOI and no file can still be opened.
+      url: d.uri_s ?? null,
       keywords: (d.keyword_s ?? []).slice(0, 5),
       // UNDEFINED is HAL's code for a preprint / working paper.
       preprint: d.docType_s === "UNDEFINED" ? true : d.docType_s === "ART" ? false : undefined,
