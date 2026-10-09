@@ -2,7 +2,7 @@
   "name": "thesis-web",
   "version": "0.1.0",
   "private": true,
-  "description": "RRL discovery, reference manager, and AI-detection self-check for thesis writers",
+  "description": "RRL discovery across free academic databases, a reference library and citations for thesis writers",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
@@ -20,7 +20,6 @@
     "firebase": "^12.16.0",
     "lucide-react": "^0.471.2",
     "next": "^16.2.10",
-    "pdfjs-dist": "^4.10.38",
     "react": "19.0.0",
     "react-dom": "19.0.0",
     "tailwind-merge": "^2.6.0",

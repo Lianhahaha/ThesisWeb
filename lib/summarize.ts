@@ -1,5 +1,5 @@
 /**
- * Extractive summarization — TextRank-style sentence scoring.
+ * Extractive summarization: sentences scored by the frequency of their words.
  *
  * Why extractive (not abstractive)? We run "free/heuristic only" — no LLM API.
  * Extractive summarization picks the most central sentences from the text

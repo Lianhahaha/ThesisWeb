@@ -11,6 +11,7 @@ import {
   inTextCitation,
   toBibtexList,
   toRis,
+  CITATION_STYLES,
   type CitationStyle,
 } from "@/lib/citations";
 import { mergeRecentPapers } from "@/lib/recent-papers";
@@ -18,13 +19,6 @@ import { extractDoi } from "@/lib/text";
 import { getPreferences } from "@/lib/preferences";
 import type { Paper } from "@/lib/types";
 import type { CiteResult } from "@/app/api/cite/route";
-
-const STYLES: { id: CitationStyle; label: string }[] = [
-  { id: "apa", label: "APA 7" },
-  { id: "mla", label: "MLA 9" },
-  { id: "ieee", label: "IEEE" },
-  { id: "chicago", label: "Chicago" },
-];
 
 const EXAMPLE = "10.1038/nature12373\nhttps://doi.org/10.1016/j.compedu.2019.103778";
 
@@ -128,7 +122,7 @@ export default function CitePage() {
 
         <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
           <div className="seg" role="group" aria-label="Citation style">
-            {STYLES.map((s) => (
+            {CITATION_STYLES.map((s) => (
               <button key={s.id} type="button" data-on={style === s.id} onClick={() => setStyle(s.id)}>
                 {s.label}
               </button>

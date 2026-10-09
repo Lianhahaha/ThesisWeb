@@ -120,26 +120,3 @@ export async function searchSemanticScholar(
     });
 }
 
-/** Fetch S2 metadata for one paper by DOI — enriches the saved-paper view. */
-export async function getSemanticScholarByDoi(doi: string): Promise<Paper | null> {
-  const url = `https://api.semanticscholar.org/graph/v1/paper/DOI:${doi}?fields=title,abstract,year,publicationDate,venue,citationCount,openAccessPdf,tldr,authors`;
-  const res = await s2Fetch(url);
-  if (!res.ok) return null;
-  const p = await safeJson<S2Paper>(res);
-  if (!p) return null;
-  return {
-    id: paperId(doi, p.title || ""),
-    title: p.title || "Untitled",
-    authors: (p.authors || []).map((a) => a.name),
-    year: p.year ?? null,
-    publishedDate: p.publicationDate ?? null,
-    venue: p.venue ?? null,
-    doi,
-    abstract: p.abstract ?? null,
-    tldr: p.tldr?.text ?? null,
-    openAccessUrl: p.openAccessPdf?.url ?? null,
-    isOpenAccess: !!p.openAccessPdf?.url,
-    citedByCount: p.citationCount ?? 0,
-    sources: ["semanticscholar"],
-  };
-}

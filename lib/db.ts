@@ -199,13 +199,3 @@ export async function allPapers(): Promise<SavedPaper[]> {
   return all.sort((a, b) => b.savedAt - a.savedAt);
 }
 
-export async function listCollections(): Promise<string[]> {
-  const uid = auth.currentUser?.uid;
-  if (uid) {
-    return fs.fsListCollections(uid);
-  }
-  const all = await getDb().papers.toArray();
-  const set = new Set<string>();
-  for (const p of all) if (p.collection) set.add(p.collection);
-  return Array.from(set).sort();
-}

@@ -30,7 +30,14 @@ export function citationToText(html: string): string {
  */
 
 export type CitationStyle = "apa" | "mla" | "ieee" | "chicago";
-export type ExportFormat = "bibtex" | "ris";
+
+/** The styles offered everywhere a style is picked, in display order. */
+export const CITATION_STYLES: { id: CitationStyle; label: string }[] = [
+  { id: "apa", label: "APA 7" },
+  { id: "mla", label: "MLA 9" },
+  { id: "ieee", label: "IEEE" },
+  { id: "chicago", label: "Chicago" },
+];
 
 /** Year as a string, with "n.d." fallback for APA/MLA. */
 function yr(p: Paper, fallback = "n.d."): string {

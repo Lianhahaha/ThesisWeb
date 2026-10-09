@@ -1,6 +1,6 @@
 "use client";
 
-import type { CitationStyle } from "@/lib/citations";
+import { CITATION_STYLES, type CitationStyle } from "@/lib/citations";
 
 /**
  * Per-device preferences (localStorage). Used by search defaults and
@@ -24,7 +24,6 @@ export const DEFAULT_PREFERENCES: Preferences = {
 };
 
 const KEY = "tw-prefs";
-const STYLES: CitationStyle[] = ["apa", "mla", "ieee", "chicago"];
 const YEARS = [0, 1, 2, 4, 9];
 
 /**
@@ -45,7 +44,7 @@ export function getPreferences(): Preferences {
       yearsBack: YEARS.includes(savedYears) ? savedYears : DEFAULT_PREFERENCES.yearsBack,
       country: typeof raw.country === "string" && raw.country ? raw.country.slice(0, 60) : null,
       openAccessOnly: raw.openAccessOnly === true,
-      citationStyle: STYLES.includes(raw.citationStyle as CitationStyle)
+      citationStyle: CITATION_STYLES.some((s) => s.id === raw.citationStyle)
         ? (raw.citationStyle as CitationStyle)
         : DEFAULT_PREFERENCES.citationStyle,
     };

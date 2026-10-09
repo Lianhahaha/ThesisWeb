@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ExternalLink } from "lucide-react";
-import { FIELDS, KINDS, KEYLESS_SOURCE_COUNT, SOURCE_META, type Field, type Kind, type SourceMeta } from "@/lib/sources/meta";
+import { FIELDS, KINDS, SOURCE_COUNT, SOURCE_META, type Field, type Kind, type SourceMeta } from "@/lib/sources/meta";
 
 export const metadata: Metadata = {
   title: "Databases · Thesisweb",
@@ -59,7 +59,7 @@ export default function DatabasesPage() {
           The <em>databases</em>
         </h1>
         <p className="mt-2 max-w-2xl text-muted">
-          Every search goes to all {KEYLESS_SOURCE_COUNT} of these at once. All are free, run by
+          Every search goes to all {SOURCE_COUNT} of these at once. All are free, run by
           universities, publishers, governments or international agencies, and none of their
           records are generated. <Link href="/search" className="text-accent underline">Start a search</Link>.
         </p>

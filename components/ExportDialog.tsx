@@ -9,17 +9,11 @@ import {
   inTextCitation,
   toBibtexList,
   toRis,
+  CITATION_STYLES,
   type CitationStyle,
 } from "@/lib/citations";
 import { getPreferences } from "@/lib/preferences";
 import { toast } from "@/components/Toaster";
-
-const STYLES: { id: CitationStyle; label: string }[] = [
-  { id: "apa", label: "APA 7" },
-  { id: "mla", label: "MLA 9" },
-  { id: "ieee", label: "IEEE" },
-  { id: "chicago", label: "Chicago" },
-];
 
 export function ExportDialog({ papers, onClose }: { papers: SavedPaper[]; onClose: () => void }) {
   const [style, setStyle] = useState<CitationStyle>(() => getPreferences().citationStyle);
@@ -101,7 +95,7 @@ export function ExportDialog({ papers, onClose }: { papers: SavedPaper[]; onClos
 
         <div className="overflow-y-auto p-4">
           <div className="seg" role="group" aria-label="Citation style">
-            {STYLES.map((s) => (
+            {CITATION_STYLES.map((s) => (
               <button
                 key={s.id}
                 type="button"

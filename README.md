@@ -92,7 +92,7 @@ npm run test:live            # calls every real database once
 
 Rules restrict each user to their own `users/{uid}` data, cap field sizes, and allow single-document (never listing) public reads of `email_map`/`recovery` for password recovery. Test locally with `npx firebase-tools emulators:start --only auth,firestore` + `NEXT_PUBLIC_FIREBASE_EMULATORS=1` (never set that var on Vercel).
 
-**Cost/abuse protection:** Firebase Spark plan never bills — it just pauses at the daily quota. Firestore reads are kept cheap (count queries, in-place patches). Every API route has a per-IP rate limit ([`lib/rate-limit.ts`](lib/rate-limit.ts): search 12/min, cite 10, related 20, pdf/summarize 30, search also capped at 120/min site-wide per instance) returning `429` + `Retry-After`. For a hard global cap, add a Vercel Firewall rate-limit rule on `/api/*`.
+**Cost/abuse protection:** Firebase Spark plan never bills — it just pauses at the daily quota. Firestore reads are kept cheap (count queries, in-place patches). Every API route has a per-IP rate limit ([`lib/rate-limit.ts`](lib/rate-limit.ts): search 12/min, cite 10, related 20, pdf/summarize 30, retractions 40, search also capped at 120/min site-wide per instance) returning `429` + `Retry-After`. For a hard global cap, add a Vercel Firewall rate-limit rule on `/api/*`.
 
 **Deploy:** import to Vercel → add the env vars → add the Vercel domain to Firebase authorized domains → redeploy.
 

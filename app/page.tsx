@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { ChevronRight } from "lucide-react";
 import { SearchPanel, DEFAULT_FROM_YEAR } from "@/components/SearchPanel";
 import { DatabasesDialog } from "@/components/DatabasesDialog";
-import { KEYLESS_SOURCE_COUNT } from "@/lib/sources/meta";
+import { SOURCE_COUNT } from "@/lib/sources/meta";
 import { buildSearchParams, type SearchInput } from "@/lib/search-params";
 import { fromYearFor, getPreferences } from "@/lib/preferences";
 
@@ -70,7 +70,7 @@ export default function HomePage() {
           Research, <em>simplified.</em>
         </h1>
         <p className="mx-auto mt-4 max-w-lg text-muted">
-          One search across {KEYLESS_SOURCE_COUNT} free academic databases.
+          One search across {SOURCE_COUNT} free academic databases.
         </p>
 
         <div className="mt-8">
@@ -82,7 +82,7 @@ export default function HomePage() {
         </div>
 
         <button type="button" onClick={() => setShowDatabases(true)} className="btn-ghost btn-sm mt-6">
-          See all {KEYLESS_SOURCE_COUNT} databases
+          See all {SOURCE_COUNT} databases
           <ChevronRight className="h-3.5 w-3.5" aria-hidden />
         </button>
         {showDatabases && <DatabasesDialog onClose={() => setShowDatabases(false)} />}

@@ -5,14 +5,7 @@ import { useMutation } from "@tanstack/react-query";
 import { PaperCard } from "@/components/PaperCard";
 import { mergeRecentPapers } from "@/lib/recent-papers";
 import type { Paper } from "@/lib/types";
-
-interface Related {
-  references: Paper[];
-  referencesTotal: number;
-  citedBy: Paper[];
-  citedByTotal: number;
-  similar: Paper[];
-}
+import type { RelatedPapers as RelatedData } from "@/lib/sources/adapters/openalex";
 
 type Tab = "citedBy" | "references" | "similar";
 
@@ -29,7 +22,7 @@ export function RelatedPapers({ doi }: { doi: string }) {
       const res = await fetch(`/api/related?doi=${encodeURIComponent(doi)}`);
       const body = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(body.error || "Could not load related papers.");
-      return body as Related;
+      return body as RelatedData;
     },
     onSuccess: (data) => {
       // Let the cards below open their detail pages, which read this store.

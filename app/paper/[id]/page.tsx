@@ -9,20 +9,13 @@ import { getDb, savePaper, unsavePaper, updatePaper, getPaper } from "@/lib/db";
 import { getRecentPaper, mergeRecentPapers } from "@/lib/recent-papers";
 import { fetchIntegrity } from "@/lib/integrity-client";
 import type { IntegrityStatus } from "@/lib/retractions";
-import { formatCitation, citationToText, inTextCitation, toBibtex, type CitationStyle } from "@/lib/citations";
+import { formatCitation, citationToText, inTextCitation, toBibtex, CITATION_STYLES, type CitationStyle } from "@/lib/citations";
 import { toast } from "@/components/Toaster";
 import type { Paper, SavedPaper } from "@/lib/types";
 import { useAuth } from "@/lib/auth-store";
 import { RelatedPapers } from "@/components/RelatedPapers";
 import { sourceLabel } from "@/lib/sources/meta";
 import { getPreferences } from "@/lib/preferences";
-
-const STYLES: { id: CitationStyle; label: string }[] = [
-  { id: "apa", label: "APA" },
-  { id: "mla", label: "MLA" },
-  { id: "ieee", label: "IEEE" },
-  { id: "chicago", label: "Chicago" },
-];
 
 export default function PaperDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
@@ -387,7 +380,7 @@ export default function PaperDetailPage({ params }: { params: Promise<{ id: stri
         <div className="flex flex-wrap items-center justify-between gap-3">
           <h2 id="cite" className="text-lg">Cite this paper</h2>
           <div className="seg" role="group" aria-label="Citation style">
-            {STYLES.map((s) => (
+            {CITATION_STYLES.map((s) => (
               <button key={s.id} type="button" data-on={style === s.id} onClick={() => setStyle(s.id)}>
                 {s.label}
               </button>

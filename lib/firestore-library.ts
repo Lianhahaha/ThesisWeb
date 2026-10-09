@@ -129,13 +129,6 @@ export async function fsCountPapers(uid: string): Promise<number> {
   return snap.data().count;
 }
 
-export async function fsListCollections(uid: string): Promise<string[]> {
-  const all = await fsAllPapers(uid);
-  const set = new Set<string>();
-  for (const p of all) if (p.collection) set.add(p.collection);
-  return Array.from(set).sort();
-}
-
 /** Delete every saved paper (account deletion). Batches hold at most 500 writes. */
 export async function fsDeleteAllPapers(uid: string): Promise<void> {
   const snap = await getDocs(collection(db, "users", uid, "papers"));

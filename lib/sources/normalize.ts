@@ -3,7 +3,7 @@ import { paperId } from "@/lib/utils";
 import { extractDoi } from "@/lib/text";
 
 /**
- * Last line of defence between ~20 independently written adapters and the
+ * Last line of defence between the independently written adapters and the
  * UI. Every record passes through here, so one adapter's bug (an array where
  * a string belongs, a year of 20231, a `javascript:` link, a DOI as a URL)
  * can't break rendering, deduping or saving for every other result.

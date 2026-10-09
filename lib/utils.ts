@@ -53,13 +53,6 @@ export function normalizeTitle(s: string): string {
 }
 
 /** Format an ISO date string to a short "Mon YYYY" label. */
-export function formatYear(iso?: string | null): string {
-  if (!iso) return "—";
-  const d = new Date(iso);
-  if (isNaN(d.getTime())) return iso.slice(0, 4);
-  return d.toLocaleDateString("en-US", { year: "numeric", month: "short" });
-}
-
 /** Build a stable id for a paper from its DOI or title hash. */
 export function paperId(doi?: string | null, title?: string | null): string {
   if (doi) return "doi:" + doi.toLowerCase();

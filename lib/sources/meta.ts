@@ -45,8 +45,6 @@ export interface SourceMeta {
   kind: Kind;
   /** The database's own site, for students who want to search it directly. */
   url: string;
-  /** True if the adapter is skipped unless an API key is configured. */
-  needsKey?: boolean;
 }
 
 const META = {
@@ -258,15 +256,8 @@ export type SourceId = keyof typeof META;
 /** Metadata by id; indexable by any string, since ids arrive from the API. */
 export const SOURCE_META: Record<string, SourceMeta> = META;
 
-/** Number of sources that work out of the box, with no API key. */
-export const KEYLESS_SOURCE_COUNT = Object.values(SOURCE_META).filter((s) => !s.needsKey).length;
-
-/** Badge colors for a source, derived from its hex color. */
-export function sourceStyle(id: string): { bg: string; color: string; border: string } {
-  const hex = SOURCE_META[id]?.color;
-  if (!hex) return { bg: "rgba(139,148,158,0.1)", color: "rgb(var(--muted))", border: "rgb(var(--border))" };
-  return { bg: `${hex}1a`, color: hex, border: `${hex}4d` };
-}
+/** Number of databases every search goes to. */
+export const SOURCE_COUNT = Object.keys(SOURCE_META).length;
 
 export function sourceLabel(id: string): string {
   return SOURCE_META[id]?.label ?? id;

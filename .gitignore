@@ -29,6 +29,10 @@ yarn-error.log*
 # vercel
 .vercel
 
+# tool output and local state
+eslint-report.json
+.mimocode/.cron-lock
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts

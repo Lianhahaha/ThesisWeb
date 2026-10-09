@@ -26,7 +26,7 @@ import { emailKey, hasRecoveryPin, migrateRecoveryPin, setRecoveryPin, writeEmai
 import { getPreferences, setPreferences, type Preferences } from "@/lib/preferences";
 import { clearSearchHistory } from "@/lib/search-history";
 import { applyTheme, savedThemeChoice, type ThemeChoice } from "@/lib/theme";
-import type { CitationStyle } from "@/lib/citations";
+import { CITATION_STYLES, type CitationStyle } from "@/lib/citations";
 import type { SavedPaper } from "@/lib/types";
 import { parseBackup } from "@/lib/library/backup";
 
@@ -37,13 +37,6 @@ const YEAR_OPTIONS = [
   { value: 4, label: "Last 5 years" },
   { value: 9, label: "Last 10 years" },
   { value: 0, label: "Any year" },
-];
-
-const STYLES: { id: CitationStyle; label: string }[] = [
-  { id: "apa", label: "APA 7" },
-  { id: "mla", label: "MLA 9" },
-  { id: "ieee", label: "IEEE" },
-  { id: "chicago", label: "Chicago" },
 ];
 
 function Section({
@@ -530,7 +523,7 @@ export default function SettingsPage() {
             <div>
               <span className="field-label">Default citation style</span>
               <div className="seg" role="group" aria-label="Default citation style">
-                {STYLES.map((s) => (
+                {CITATION_STYLES.map((s) => (
                   <button
                     key={s.id}
                     type="button"

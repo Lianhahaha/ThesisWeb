@@ -10,7 +10,7 @@ import { toast } from "@/components/Toaster";
 import { storeRecentPapers } from "@/lib/recent-papers";
 import { applyIntegrity, fetchIntegrity } from "@/lib/integrity-client";
 import type { SearchResult } from "@/lib/types";
-import { KEYLESS_SOURCE_COUNT, sourceLabel, SOURCE_META } from "@/lib/sources/meta";
+import { SOURCE_COUNT, sourceLabel, SOURCE_META } from "@/lib/sources/meta";
 import { suggestTerms } from "@/lib/related-terms";
 import { addSearchHistory } from "@/lib/search-history";
 import { buildSearchParams, parseSearchParams, type SearchInput } from "@/lib/search-params";
@@ -127,7 +127,7 @@ export default function SearchPage() {
           </h1>
           <p className="mt-2 text-muted">
             <Link href="/databases" className="underline decoration-dotted underline-offset-2 hover:text-text">
-              {KEYLESS_SOURCE_COUNT} free databases
+              {SOURCE_COUNT} free databases
             </Link>
             , searched together and ranked by relevance.
           </p>
@@ -265,7 +265,7 @@ export default function SearchPage() {
         {search.isPending && (
           <div>
             <p role="status" className="text-sm text-muted">
-              Searching {KEYLESS_SOURCE_COUNT} databases. Slow ones are dropped after a few seconds.
+              Searching {SOURCE_COUNT} databases. Slow ones are dropped after a few seconds.
             </p>
             <div className="card mt-3 divide-y divide-border" aria-hidden>
               {Array.from({ length: 5 }).map((_, i) => (

@@ -3,7 +3,7 @@
 import { useEffect, useRef } from "react";
 import Link from "next/link";
 import { ExternalLink, X } from "lucide-react";
-import { KEYLESS_SOURCE_COUNT, KINDS, SOURCE_META, type SourceMeta } from "@/lib/sources/meta";
+import { SOURCE_COUNT, KINDS, SOURCE_META, type SourceMeta } from "@/lib/sources/meta";
 
 const ASIA = ["Japan", "Thailand", "Singapore", "India"];
 
@@ -16,7 +16,7 @@ const GROUPS: { title: string; match: (region: string) => boolean }[] = [
 ];
 
 function grouped() {
-  const left = Object.values(SOURCE_META).filter((s) => !s.needsKey);
+  const left = Object.values(SOURCE_META);
   return GROUPS.map((g) => {
     const list = left.filter((s) => g.match(s.region)).sort((a, b) => a.label.localeCompare(b.label));
     for (const s of list) left.splice(left.indexOf(s), 1);
@@ -52,7 +52,7 @@ export function DatabasesDialog({ onClose }: { onClose: () => void }) {
         className="flex max-h-[85vh] w-full max-w-2xl flex-col rounded-t-2xl border border-border bg-surface text-left sm:rounded-2xl"
       >
         <header className="flex items-center justify-between border-b border-border p-4">
-          <h2 id="databases-title" className="text-lg">{KEYLESS_SOURCE_COUNT} databases searched</h2>
+          <h2 id="databases-title" className="text-lg">{SOURCE_COUNT} databases searched</h2>
           <button ref={closeRef} onClick={onClose} className="btn-ghost btn-sm !px-2" aria-label="Close">
             <X className="h-4 w-4" aria-hidden />
           </button>

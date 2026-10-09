@@ -2,7 +2,7 @@ import type { Paper } from "@/lib/types";
 
 /**
  * Client-side views over an already-fetched result list: re-sorting and
- * narrowing by source without another round-trip to the 18 APIs.
+ * narrowing by source without another round-trip to the databases.
  */
 
 export type SortKey = "relevance" | "citations" | "newest" | "oldest";
