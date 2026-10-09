@@ -2,7 +2,7 @@
 
 A free web app that helps thesis students find related literature (RRL), keep it organised, and cite it correctly.
 
-- **Search** — one topic, 47 free academic databases at once, merged, de-duplicated and ranked, with preprint, retraction and expression-of-concern warnings.
+- **Search** — one topic, 49 free academic databases at once, merged, de-duplicated and ranked, with preprint, retraction and expression-of-concern warnings.
 - **Library** — save papers, group them by chapter, take notes, fill a synthesis matrix.
 - **Cite** — paste DOIs and get references in APA, MLA, IEEE or Chicago, or export your whole library.
 
@@ -38,8 +38,10 @@ All free, no key needed. The in-app [Databases page](app/databases/page.tsx) (`/
 | DOAJ, PLOS, J-STAGE, ThaiJO | Peer-reviewed open-access journals (ThaiJO = Thai journals, English abstracts) |
 | PubMed, PubMed Central, Europe PMC | Medicine, nursing, health, life sciences |
 | HERDIN | Philippine health research: articles, theses and reports (DOST-PCHRD) |
+| Acta Medica Philippina | Philippine clinical, nursing and public health journal articles (UP Manila) |
 | WHO IRIS | WHO guidelines, health reports, Western Pacific (Manila) publications |
 | ERIC | Education and teaching |
+| PNU Journals | Philippine education journals (Philippine Normal University) |
 | EconBiz, World Bank OKR, NBER | Economics, business, development, poverty (NBER = working papers) |
 | SERP-P (PIDS) | Philippine socioeconomic research: PIDS, BSP, NEDA and university studies |
 | CGSpace (CGIAR, incl. IRRI), GBIF Literature, Krishikosh | Agriculture, fisheries, food, biodiversity (Krishikosh = Indian agricultural theses) |
@@ -112,13 +114,14 @@ lib/sources/
   adapters/     one file per database
   platforms/    shared clients: dspace7 (World Bank, CGSpace, IDRC, WHO, DR-NTU, UPSpace, UPOU, UPV, Krishikosh, AIIAS),
                 dspace6 (OpenSearch feed: SEAFDEC/AQD, SSOAR, WVSU),
-                vufind (LA Referencia, BDTD), ncbi (PubMed, PMC)
+                vufind (LA Referencia, BDTD), ncbi (PubMed, PMC),
+                ojs (search page of Open Journal Systems: Acta Medica Philippina, PNU)
 tests/unit/     vitest, no network      tests/live/  real databases
 firestore.rules
 ```
 
 **Adding a database:**
-1. Write `lib/sources/adapters/<id>.ts` exporting an `Adapter` (see [`lib/sources/types.ts`](lib/sources/types.ts)). If the site runs DSpace (any version) or VuFind, it is a few lines on top of [`lib/sources/platforms/`](lib/sources/platforms/). Throw on HTTP errors, return `[]` for no matches, set `sources: ["<id>"]`, and set `preprint` / `url` when the API says.
+1. Write `lib/sources/adapters/<id>.ts` exporting an `Adapter` (see [`lib/sources/types.ts`](lib/sources/types.ts)). If the site runs DSpace (any version), VuFind or OJS, it is a few lines on top of [`lib/sources/platforms/`](lib/sources/platforms/). Throw on HTTP errors, return `[]` for no matches, set `sources: ["<id>"]`, and set `preprint` / `url` when the API says.
 2. Add its entry to [`lib/sources/meta.ts`](lib/sources/meta.ts) (label, blurb, color, region, fields, kind, url) and to `ADAPTERS` in [`lib/sources/registry.ts`](lib/sources/registry.ts). The type checker and `npm test` fail if either is missing.
 3. Run `LIVE_ONLY=<id> LIVE_QUERY="your topic" npm run test:live`.
 4. Only add databases that are free, keyless or free-key, run by a trustworthy organisation, and answer within ~10 s.

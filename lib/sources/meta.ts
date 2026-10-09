@@ -234,6 +234,14 @@ const META = {
     label: "AIIAS Repository", blurb: "Adventist International Institute of Advanced Studies (Cavite) graduate theses and dissertations: education, business, public health, nursing, theology", color: "#1f4e79",
     region: "Philippines", fields: ["education", "business", "medicine", "humanities"], kind: "theses", url: "https://dspace.aiias.edu",
   },
+  actamedica: {
+    label: "Acta Medica Philippina", blurb: "UP Manila's national health sciences journal since 1939: peer-reviewed, open-access Philippine clinical, nursing and public health studies", color: "#7a0019",
+    region: "Philippines", fields: ["medicine"], kind: "journals", url: "https://actamedicaphilippina.upm.edu.ph",
+  },
+  pnu: {
+    label: "PNU Journals", blurb: "Philippine Normal University's open-access education journals: The Normal Lights, APHERJ, AsTEN Journal of Teacher Education, Paghabi", color: "#003f87",
+    region: "Philippines", fields: ["education"], kind: "journals", url: "https://po.pnuresearchportal.org/ejournal",
+  },
   krishikosh: {
     label: "Krishikosh (India)", blurb: "150k+ agricultural theses from India's agricultural universities: agronomy, horticulture, fisheries, veterinary, food technology (ICAR)", color: "#3b7d23",
     region: "India", fields: ["agriculture", "sciences"], kind: "theses", url: "https://krishikosh.egranth.ac.in",

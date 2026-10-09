@@ -47,6 +47,8 @@ import { searchSerpp } from "@/lib/sources/adapters/serpp";
 import { searchKrishikosh } from "@/lib/sources/adapters/krishikosh";
 import { searchUpd } from "@/lib/sources/adapters/upd";
 import { searchAiias } from "@/lib/sources/adapters/aiias";
+import { searchActaMedica } from "@/lib/sources/adapters/actamedica";
+import { searchPnu } from "@/lib/sources/adapters/pnu";
 
 /**
  * The adapter for every source in lib/sources/meta.ts. Typed as a Record over
@@ -108,4 +110,6 @@ export const ADAPTERS: Record<SourceId, AdapterEntry> = {
   krishikosh:      { run: searchKrishikosh, boolean: false },
   upd:             { run: searchUpd, boolean: false, country: "Philippines" },
   aiias:           { run: searchAiias, boolean: false, country: "Philippines" },
+  actamedica:      { run: searchActaMedica, boolean: false, country: "Philippines" },
+  pnu:             { run: searchPnu, boolean: false, country: "Philippines" },
 };
