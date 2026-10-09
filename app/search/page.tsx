@@ -66,10 +66,7 @@ export default function SearchPage() {
 
   const search = useMutation({
     mutationFn: async (input: SearchInput) => {
-      const params = new URLSearchParams({ q: input.query, fromYear: String(input.fromYear) });
-      if (input.openAccessOnly) params.set("openAccessOnly", "1");
-      if (input.country) params.set("country", input.country);
-      const res = await fetch(`/api/search?${params}`);
+      const res = await fetch(`/api/search?${buildSearchParams(input)}`);
       if (!res.ok) {
         const err = await res.json().catch(() => ({ error: "Search failed" }));
         throw new Error(err.error || "Search failed");

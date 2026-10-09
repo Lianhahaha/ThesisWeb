@@ -1,54 +1,44 @@
 import { NextRequest, NextResponse } from "next/server";
 import { rateLimit } from "@/lib/rate-limit";
 import { metaSearch } from "@/lib/search";
+import { defaultFromYear, MIN_QUERY_LENGTH, parseSearchParams } from "@/lib/search-params";
 
 export const dynamic = "force-dynamic";
-// Search fans out to ~20 external APIs; give the function room beyond the
-// platform default so the per-source deadline (not the platform) ends slow ones.
+// Search fans out to every database in lib/sources/registry.ts; give the
+// function room beyond the platform default so the per-source deadline (not
+// the platform) ends slow ones.
 export const maxDuration = 30;
 
 /**
- * GET /api/search?q=...&fromYear=...&openAccessOnly=...
- * Server-side meta-search across OpenAlex, Crossref, Semantic Scholar.
- *
- * The server proxies these calls to:
- *  - Avoid CORS issues from the browser
- *  - Centralize rate-limit handling and timeouts
- *  - Keep the source adapters out of the client bundle (smaller, no secret keys)
+ * GET /api/search?q=...&from=...&oa=1&country=...
+ * The same query string as the search page's URL (lib/search-params.ts), so
+ * both sides validate it the same way. Runs the meta-search on the server to
+ * avoid CORS, keep API keys and adapters out of the client bundle, and apply
+ * one rate limit.
  */
 export async function GET(req: NextRequest) {
   const limited = rateLimit(req, "search");
   if (limited) return limited;
 
-  const { searchParams } = new URL(req.url);
-  // Caps keep a single request from fanning huge strings out to ~30 APIs.
-  const query = (searchParams.get("q") || "").trim().slice(0, 300);
-  const fromYear = searchParams.get("fromYear");
-  const openAccessOnly = searchParams.get("openAccessOnly") === "1";
-  const country = (searchParams.get("country") || "").trim().slice(0, 60) || null;
+  const qs = new URL(req.url).searchParams;
+  // Pages loaded before the switch to the shared names still send these.
+  if (!qs.has("from") && qs.has("fromYear")) qs.set("from", qs.get("fromYear")!);
+  if (!qs.has("oa") && qs.get("openAccessOnly") === "1") qs.set("oa", "1");
 
-  if (!query || query.length < 3) {
+  const input = parseSearchParams(qs.toString(), { fromYear: defaultFromYear() });
+  if (!input) {
     return NextResponse.json(
-      { error: "Query must be at least 3 characters." },
+      { error: `Query must be at least ${MIN_QUERY_LENGTH} characters.` },
       { status: 400 }
     );
   }
 
-  // Default recency: last 5 years, counting this one (2022+ in 2026), the
-  // same as the search form's default. It used to be one year wider.
-  const currentYear = new Date().getFullYear();
-  const defaultYear = currentYear - 4;
-  const parsedYear = fromYear ? Number(fromYear) : defaultYear;
-  const year = Number.isFinite(parsedYear) && parsedYear >= 0 && parsedYear <= currentYear + 1
-    ? parsedYear
-    : defaultYear;
-
   try {
-    const result = await metaSearch(query, {
-      fromYear: year,
-      openAccessOnly,
+    const result = await metaSearch(input.query, {
+      fromYear: input.fromYear,
+      openAccessOnly: input.openAccessOnly,
       perSource: 15,
-      country: country ?? undefined,
+      country: input.country ?? undefined,
     });
     return NextResponse.json(result);
   } catch (e) {

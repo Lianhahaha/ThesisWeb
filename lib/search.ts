@@ -119,9 +119,13 @@ export async function metaSearch(
 
   let deduped = dedupePapers(all);
 
-  // Client-side year filter safety net: APIs sometimes return out-of-range results
+  // Many databases can't filter by year or by free full text themselves, so
+  // both filters are applied again to the merged list.
   if (opts.fromYear && opts.fromYear > 0) {
     deduped = deduped.filter((p) => !p.year || p.year >= opts.fromYear!);
+  }
+  if (opts.openAccessOnly) {
+    deduped = deduped.filter((p) => p.isOpenAccess);
   }
 
   // Score relevance against the *original* user query (not the country-injected one)

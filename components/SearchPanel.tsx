@@ -4,11 +4,11 @@ import { useEffect, useState } from "react";
 import { Search as SearchIcon, X } from "lucide-react";
 import { CountryCombobox } from "@/components/CountryCombobox";
 import { clearSearchHistory, getSearchHistory } from "@/lib/search-history";
-import { MIN_QUERY_LENGTH, type SearchInput } from "@/lib/search-params";
+import { defaultFromYear, MIN_QUERY_LENGTH, type SearchInput } from "@/lib/search-params";
 
 const CURRENT_YEAR = new Date().getFullYear();
 
-export const DEFAULT_FROM_YEAR = CURRENT_YEAR - 4;
+export const DEFAULT_FROM_YEAR = defaultFromYear(CURRENT_YEAR);
 
 // The year filter is inclusive, so "last N years" counts this one: N years back
 // is an offset of N - 1.
