@@ -38,6 +38,7 @@ export async function searchPubMed(query: string, opts: AdapterOptions = {}): Pr
       // A PMC copy is the free full text.
       openAccessUrl: pmcId ? `https://www.ncbi.nlm.nih.gov/pmc/articles/${pmcId}/` : null,
       isOpenAccess: !!pmcId,
+      url: `https://pubmed.ncbi.nlm.nih.gov/${pmid}/`,
       citedByCount: 0,
       keywords: [],
       preprint: false,

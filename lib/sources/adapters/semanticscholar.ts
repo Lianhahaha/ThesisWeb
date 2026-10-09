@@ -112,6 +112,7 @@ export async function searchSemanticScholar(
         tldr: p.tldr?.text ?? null,
         openAccessUrl: p.openAccessPdf?.url ?? null,
         isOpenAccess: !!p.openAccessPdf?.url,
+        url: p.paperId ? `https://www.semanticscholar.org/paper/${p.paperId}` : null,
         citedByCount: p.citationCount ?? 0,
         keywords: (p.fieldsOfStudy || []).slice(0, 5),
         sources: ["semanticscholar"],

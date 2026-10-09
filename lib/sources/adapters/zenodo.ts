@@ -51,7 +51,8 @@ export async function searchZenodo(
   });
   if (openAccessOnly) params.set("access_status", "open");
 
-  const res = await fetchWithTimeout(`${BASE}?${params}`, { headers: { "User-Agent": USER_AGENT } });
+  // Zenodo often takes 7-8 s to answer a full-text search.
+  const res = await fetchWithTimeout(`${BASE}?${params}`, { headers: { "User-Agent": USER_AGENT } }, 11000);
   if (!res.ok) throw new Error(`Zenodo ${res.status}`);
   const data = await safeJson<{ hits?: { hits?: ZenodoHit[] } }>(res);
   const hits = data?.hits?.hits ?? [];
@@ -78,6 +79,8 @@ export async function searchZenodo(
       abstract: m.description ? stripHtml(m.description) : null,
       openAccessUrl: isOpen ? pdf ?? h.links?.self_html ?? null : null,
       isOpenAccess: isOpen,
+      // The record page, also for embargoed and restricted records.
+      url: h.links?.self_html ?? null,
       keywords: (m.keywords ?? []).slice(0, 5),
       preprint: m.resource_type?.subtype === "preprint" ? true : undefined,
       sources: ["zenodo"],

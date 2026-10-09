@@ -60,6 +60,7 @@ export async function searchGbif(query: string, opts: AdapterOptions = {}): Prom
       abstract: r.abstract ? stripHtml(r.abstract).replace(/^Abstract(?=[A-Z])/, "") : null,
       openAccessUrl: r.openAccess ? link : null,
       isOpenAccess: r.openAccess === true,
+      url: link,
       keywords: (r.keywords ?? []).slice(0, 5),
       // GBIF records whether a work went through peer review.
       preprint: r.literatureType === "JOURNAL" && r.peerReview ? false : undefined,

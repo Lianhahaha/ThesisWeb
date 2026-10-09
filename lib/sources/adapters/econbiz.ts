@@ -60,6 +60,7 @@ export async function searchEconBiz(query: string, opts: AdapterOptions = {}): P
       abstract: null,
       openAccessUrl: freeUrl,
       isOpenAccess: !!freeUrl,
+      url: h.id ? `https://www.econbiz.de/Record/${encodeURIComponent(h.id)}` : null,
       keywords: (h.subject ?? []).slice(0, 5),
       sources: ["econbiz"],
     });

@@ -58,6 +58,7 @@ export async function searchDoaj(
       abstract,
       openAccessUrl,
       isOpenAccess: true, // DOAJ is fully open access
+      url: r.id ? `https://doaj.org/article/${r.id}` : null,
       citedByCount: 0, // DOAJ does not provide citation counts
       keywords,
       preprint: false,

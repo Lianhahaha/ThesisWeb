@@ -79,6 +79,7 @@ export async function searchEric(
       abstract: d.description ? decodeEntities(d.description) : null,
       openAccessUrl: pdf ?? null,
       isOpenAccess: hasFullText,
+      url: d.id ? `https://eric.ed.gov/?id=${encodeURIComponent(d.id)}` : null,
       keywords: (d.subject ?? []).map(decodeEntities).slice(0, 5),
       sources: ["eric"],
     });

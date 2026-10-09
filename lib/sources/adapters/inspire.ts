@@ -97,6 +97,7 @@ export async function searchInspire(
       abstract: abstract ? stripHtml(abstract) : null,
       openAccessUrl: arxivId ? `https://arxiv.org/pdf/${arxivId}` : null,
       isOpenAccess: Boolean(arxivId),
+      url: m.control_number ? `https://inspirehep.net/literature/${m.control_number}` : null,
       citedByCount: m.citation_count ?? 0,
       keywords: (m.keywords ?? []).map((k) => k.value ?? "").filter(Boolean).slice(0, 5),
       sources: ["inspire"],

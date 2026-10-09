@@ -106,6 +106,7 @@ export async function searchEuropePMC(
       abstract: r.abstractText || null,
       openAccessUrl: isOA ? openAccessUrl : null,
       isOpenAccess: isOA,
+      url: r.source && r.id ? `https://europepmc.org/article/${r.source}/${r.id}` : null,
       citedByCount: r.citedByCount ?? 0,
       keywords,
       preprint: r.source === "PPR" ? true : r.source === "MED" ? false : undefined,
