@@ -1,4 +1,4 @@
-import { paperId } from "@/lib/utils";
+import { fetchWithTimeout, paperId } from "@/lib/utils";
 import { USER_AGENT } from "@/lib/config";
 import { decodeEntities, extractYear, stripHtml } from "@/lib/text";
 import type { Paper } from "@/lib/types";
@@ -94,11 +94,7 @@ export async function searchEjournalsPh(query: string, opts: AdapterOptions = {}
   const headers = { "User-Agent": USER_AGENT };
 
   const started = Date.now();
-  // AbortSignal.timeout, not fetchWithTimeout: the limit has to cover reading the body too.
-  const res = await fetch(`${BASE}/search.php?searchStr=${encodeURIComponent(query)}`, {
-    headers,
-    signal: AbortSignal.timeout(9000),
-  });
+  const res = await fetchWithTimeout(`${BASE}/search.php?searchStr=${encodeURIComponent(query)}`, { headers }, 9000);
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
   const html = await readStart(res, LIST_BYTES);
   // A changed page layout should show up as a failed source, not as "no results".
@@ -111,7 +107,7 @@ export async function searchEjournalsPh(query: string, opts: AdapterOptions = {}
   async function worker() {
     while (next < hits.length && Date.now() - started < BUDGET_MS) {
       const i = next++;
-      pages[i] = await fetch(`${BASE}/article.php?id=${hits[i].id}`, { headers, signal: AbortSignal.timeout(ARTICLE_MS) })
+      pages[i] = await fetchWithTimeout(`${BASE}/article.php?id=${hits[i].id}`, { headers }, ARTICLE_MS)
         .then((r) => (r.ok ? r.text() : null))
         .catch(() => null);
     }

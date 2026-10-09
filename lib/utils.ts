@@ -11,20 +11,18 @@ export const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 /**
  * Fetch with a timeout — external academic APIs can hang.
- * Aborts and throws after `ms`, so the meta-search can fall back to other sources.
+ * Aborts and throws after `ms`, so the meta-search can fall back to other
+ * sources. The limit covers reading the body as well as the headers: a
+ * server that sends headers quickly and then trickles the body is cut off too.
  */
 export async function fetchWithTimeout(
   url: string,
   options: RequestInit = {},
   ms = 8000
 ): Promise<Response> {
-  const controller = new AbortController();
-  const id = setTimeout(() => controller.abort(), ms);
-  try {
-    return await fetch(url, { ...options, signal: controller.signal });
-  } finally {
-    clearTimeout(id);
-  }
+  const timeout = AbortSignal.timeout(ms);
+  const signal = options.signal ? AbortSignal.any([options.signal, timeout]) : timeout;
+  return fetch(url, { ...options, signal });
 }
 
 /** Try to parse JSON, return null on failure (instead of throwing). */
