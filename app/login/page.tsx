@@ -10,7 +10,6 @@ import { auth, db } from "@/lib/firebase";
 import { useAuth } from "@/lib/auth/store";
 import { cacheUsername } from "@/lib/auth/username-cache";
 import { toast } from "@/components/Toaster";
-import { setRecoveryPin, writeEmailMap } from "@/lib/auth/recovery";
 import { trackEvent } from "@/lib/analytics-events";
 import { authMessage } from "@/lib/auth/errors";
 import { googleErrorMessage, isInAppBrowser, signInWithGoogle } from "@/lib/auth/google";
@@ -26,7 +25,6 @@ export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
-  const [pin, setPin] = useState("");
   const [username, setUsername] = useState("");
   const [googleBusy, setGoogleBusy] = useState(false);
   // Google refuses to sign in inside Facebook/Messenger's own browser.
@@ -67,14 +65,9 @@ export default function LoginPage() {
       toast("Enter a display name.", "error");
       return;
     }
-    // A mistyped password at sign-up locks a new account out: there is no
-    // recovery PIN yet to reset it with.
+    // A mistyped password at sign-up locks a new account out until a reset email arrives.
     if (mode === "signup" && password !== confirm) {
       toast("The two passwords don't match.", "error");
-      return;
-    }
-    if (mode === "signup" && !/^\d{4,12}$/.test(pin)) {
-      toast("The recovery PIN must be 4 to 12 digits, numbers only.", "error");
       return;
     }
 
@@ -94,18 +87,12 @@ export default function LoginPage() {
         sendEmailVerification(cred.user).catch(() => {});
         const name = username.trim().slice(0, 60);
 
-        // The account exists at this point. If a profile write fails (offline,
-        // rules not published yet) the user can still use the app, so warn
-        // instead of failing the sign-up.
-        // The PIN is the user's own choice, never a default; it is the only
-        // way to reset a forgotten password, so ask for it up front.
-        const results = await Promise.allSettled([
-          setDoc(doc(db, "users", uid, "profile", "main"), { username: name, createdAt: Date.now() }),
-          writeEmailMap(uid, email),
-          setRecoveryPin(uid, pin),
-        ]);
-        if (results.some((r) => r.status === "rejected")) {
-          toast("Account created, but part of your profile could not be saved yet. Check your name and recovery PIN in Settings.", "info");
+        // The account exists at this point. If the profile write fails (offline)
+        // the user can still use the app, so warn instead of failing the sign-up.
+        try {
+          await setDoc(doc(db, "users", uid, "profile", "main"), { username: name, createdAt: Date.now() });
+        } catch {
+          toast("Account created, but your display name could not be saved yet. Set it in Settings.", "info");
         }
 
         // The header may have looked before the profile existed; tell it now.
@@ -245,31 +232,6 @@ export default function LoginPage() {
             {mismatch && (
               <p id="confirm-hint" className="field-hint text-danger">Doesn&apos;t match the password above.</p>
             )}
-          </div>
-        )}
-
-        {mode === "signup" && (
-          <div>
-            <label htmlFor="signup-pin" className="field-label">Recovery PIN</label>
-            <input
-              id="signup-pin"
-              type="password"
-              inputMode="numeric"
-              pattern="[0-9]{4,12}"
-              required
-              minLength={4}
-              maxLength={12}
-              autoComplete="off"
-              className="input"
-              placeholder="4 to 12 digits"
-              value={pin}
-              onChange={(e) => setPin(e.target.value.replace(/\D/g, ""))}
-              aria-describedby="signup-pin-hint"
-            />
-            <p id="signup-pin-hint" className="field-hint">
-              The only way to reset a forgotten password. Don&apos;t reuse your bank or phone PIN. Write it
-              down; you can change it in Settings.
-            </p>
           </div>
         )}
 

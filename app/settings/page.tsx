@@ -10,6 +10,7 @@ import {
   EmailAuthProvider,
   verifyBeforeUpdateEmail,
   sendEmailVerification,
+  sendPasswordResetEmail,
   deleteUser,
   signOut,
 } from "firebase/auth";
@@ -24,7 +25,6 @@ import { GoogleButton } from "@/components/GoogleButton";
 import { CountryCombobox } from "@/components/CountryCombobox";
 import { allPapers, localPapers, moveLocalPapersToAccount, savePapers } from "@/lib/library/store";
 import { fsDeleteAllPapers } from "@/lib/library/firestore";
-import { emailKey, hasRecoveryPin, migrateRecoveryPin, setRecoveryPin, writeEmailMap } from "@/lib/auth/recovery";
 import { getPreferences, setPreferences, type Preferences } from "@/lib/preferences";
 import { clearSearchHistory } from "@/lib/search/history";
 import { applyTheme, savedThemeChoice, type ThemeChoice } from "@/lib/theme";
@@ -136,11 +136,6 @@ export default function SettingsPage() {
   const [email, setEmail] = useState("");
   const [savingUsername, setSavingUsername] = useState(false);
 
-  const [mpin, setMpin] = useState("");
-  const [savingMpin, setSavingMpin] = useState(false);
-  // null until the account has been checked, so the warning never flashes.
-  const [hasPin, setHasPin] = useState<boolean | null>(null);
-
   const [currentPass, setCurrentPass] = useState("");
   const [newPass, setNewPass] = useState("");
   const [confirmPass, setConfirmPass] = useState("");
@@ -172,13 +167,6 @@ export default function SettingsPage() {
         cacheUsername(user.uid, name);
       })
       .catch(() => {});
-    // Older accounts stored the PIN in the profile; copy it to recovery/{uid},
-    // then find out whether this account has a PIN at all.
-    migrateRecoveryPin(user.uid)
-      .catch(() => {})
-      .then(() => hasRecoveryPin(user.uid))
-      .then(setHasPin)
-      .catch(() => {});
   }, [user]);
 
   async function saveUsername(e: React.FormEvent) {
@@ -197,23 +185,17 @@ export default function SettingsPage() {
     }
   }
 
-  async function saveMpin(e: React.FormEvent) {
-    e.preventDefault();
-    if (!user || !mpin) return;
-    if (!/^\d{4,12}$/.test(mpin)) {
-      toast("The PIN must be 4 to 12 digits, numbers only.", "error");
-      return;
-    }
-    setSavingMpin(true);
+  const [resetBusy, setResetBusy] = useState(false);
+  async function sendResetLink() {
+    if (!user?.email) return;
+    setResetBusy(true);
     try {
-      await setRecoveryPin(user.uid, mpin);
-      setMpin("");
-      setHasPin(true);
-      toast("Recovery PIN saved", "success");
-    } catch {
-      toast("Could not save the PIN. Try again.", "error");
+      await sendPasswordResetEmail(auth, user.email, { url: `${window.location.origin}/login` });
+      toast(`Reset link sent to ${user.email}.`, "success");
+    } catch (err) {
+      toast(authMessage(err, "Could not send the reset link. Try again."), "error");
     } finally {
-      setSavingMpin(false);
+      setResetBusy(false);
     }
   }
 
@@ -259,9 +241,6 @@ export default function SettingsPage() {
         url: `${window.location.origin}/settings`,
         handleCodeInApp: false,
       });
-      // The lookup entry is written only once the new address is verified —
-      // claiming it now would point recovery at an address the account may
-      // never own, and password reset for it would fail with user-not-found.
       setPendingEmail(newEmail.trim().toLowerCase());
       setNewEmail("");
       setEmailPass("");
@@ -286,11 +265,6 @@ export default function SettingsPage() {
       await user.reload();
       const fresh = auth.currentUser;
       if (fresh?.email && fresh.email !== email) {
-        // The security rules check the email in the sign-in token, which still
-        // holds the old address until it is refreshed.
-        await fresh.getIdToken(true);
-        await writeEmailMap(fresh.uid, fresh.email);
-        await deleteDoc(doc(db, "email_map", emailKey(email))).catch(() => {});
         setEmail(fresh.email);
         setPendingEmail("");
         toast("Email updated", "success");
@@ -300,7 +274,7 @@ export default function SettingsPage() {
     } catch (err) {
       const code = (err as { code?: string })?.code;
       // Verifying the new address revokes this session, so reload fails. That
-      // means the change went through: the next sign-in updates the lookup.
+      // means the change went through.
       if (code === "auth/user-token-expired") {
         setPendingEmail("");
         await signOut(auth).catch(() => {});
@@ -369,18 +343,9 @@ export default function SettingsPage() {
       }
       const uid = user.uid;
       await fsDeleteAllPapers(uid);
-      await Promise.allSettled([
-        deleteDoc(doc(db, "users", uid, "profile", "main")),
-        deleteDoc(doc(db, "recovery", uid)),
-        deleteDoc(doc(db, "email_map", emailKey(user.email ?? ""))),
-      ]);
+      await deleteDoc(doc(db, "users", uid, "profile", "main")).catch(() => {});
       await deleteUser(user);
       clearCachedUsername(uid);
-      try {
-        localStorage.removeItem(`tw_emailmap_${uid}`);
-      } catch {
-        // Ignore.
-      }
       toast("Your account has been deleted", "success");
       router.push("/");
     } catch (err) {
@@ -610,37 +575,6 @@ export default function SettingsPage() {
             </form>
           </Section>
 
-          <Section
-            title="Recovery PIN"
-            description="Needed on the Forgot password page. It is the only way back into your account if you forget your password."
-          >
-            {hasPin === false && (
-              <p role="alert" className="notice notice-danger mb-3">
-                <strong>You have no recovery PIN yet.</strong>{" "}
-                Set one now — without it a forgotten password cannot be reset.
-              </p>
-            )}
-            <form onSubmit={saveMpin}>
-              <label htmlFor="mpin" className="field-label">New PIN (4 to 12 digits, not your bank or phone PIN)</label>
-              <div className="flex flex-col gap-2 sm:flex-row">
-                <input
-                  id="mpin"
-                  type="password"
-                  inputMode="numeric"
-                  pattern="[0-9]*"
-                  maxLength={12}
-                  autoComplete="off"
-                  className="input flex-1"
-                  value={mpin}
-                  onChange={(e) => setMpin(e.target.value.replace(/\D/g, ""))}
-                />
-                <button type="submit" disabled={savingMpin} className="btn-primary">
-                  {savingMpin ? "Saving…" : "Save PIN"}
-                </button>
-              </div>
-            </form>
-          </Section>
-
           {!hasPassword(user) && (
             <Section title="Signed in with Google" description="Your password and recovery are handled by your Google account.">
               <p className="text-sm text-muted break-all">{user.email}</p>
@@ -746,15 +680,19 @@ export default function SettingsPage() {
 
       {user ? (
         <>
-          <Section title="Forgot your password?" description="Use your recovery PIN to get a reset email without the old password.">
-            <Link href="/forgot-password" className="btn-secondary">Open account recovery</Link>
-          </Section>
+          {hasPassword(user) && (
+            <Section title="Forgot your password?" description={`We email a link to ${user.email ?? "your address"} to set a new one.`}>
+              <button onClick={sendResetLink} disabled={resetBusy} className="btn-secondary">
+                {resetBusy ? "Sending…" : "Email me a reset link"}
+              </button>
+            </Section>
+          )}
           <Section title="Sign out" description="Your saved papers stay in your account.">
             <button onClick={handleSignOut} className="btn-danger w-full sm:w-auto">Sign out of Thesisweb</button>
           </Section>
           <Section
             title="Delete account"
-            description="Removes your account, saved papers, notes, matrix and recovery PIN for good. Download a library backup first if you want to keep anything."
+            description="Removes your account, saved papers, notes and matrix for good. Download a library backup first if you want to keep anything."
           >
             {hasPassword(user) ? (
               <form onSubmit={deleteAccount} className="space-y-4">

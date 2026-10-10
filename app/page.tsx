@@ -124,9 +124,8 @@ export default function HomePage() {
               <li>Preprints (arXiv, some Zenodo records) are not peer-reviewed. Check before you cite.</li>
               <li>Always check a generated citation against your school&apos;s style guide.</li>
               <li>
-                Set a recovery PIN in{" "}
-                <Link href="/settings" className="underline">Settings</Link> as soon as you sign up.
-                Without one, a forgotten password cannot be reset.
+                Signing in? <em>Continue with Google</em> means no new password to forget. With email and
+                password, confirm your address: that is where a reset link goes.
               </li>
               <li>No results? Drop a word, widen <em>Published since</em>, or untick <em>Free full text only</em>.</li>
               <li>Search with keywords, not a full question. &ldquo;Senior high school anxiety&rdquo; beats a sentence.</li>

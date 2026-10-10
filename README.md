@@ -18,7 +18,7 @@ No account needed to search. Only links to legal open-access full text. Light an
 4. **Save & organise.** Press **Save** on any result. In **Library**, group papers into collections and fill the **synthesis matrix** (Method, Findings, Limitations, Relevance) — this becomes your written RRL. Download the matrix for Excel/Google Sheets (.csv) or as a Word table (.rtf) for your adviser. Signed out, the library lives in that browser only; sign in to sync it, or copy it into your account later.
 5. **Cite.** Export your library as APA/MLA/IEEE/Chicago (copy it, or download an .rtf that opens in Word or Google Docs with hanging indents and italics), BibTeX or RIS — or paste DOIs into **Cite** to generate references without saving anything first.
 6. **Install (optional).** On a phone, open the browser menu → *Add to Home screen* (Android/Chrome) or *Share → Add to Home Screen* (iPhone); on a computer, the install icon in Chrome's address bar. The app opens in its own window, and pages you've visited, plus a library kept in the browser, open offline.
-7. **Account (optional).** **Continue with Google** (no new password), or sign up with a name, email, password and recovery PIN — you're signed in immediately; a verification link confirms the email. Under your name (or the gear icon signed out): **Preferences** (defaults for year/country/OA/citation style/theme, no account needed), display name, recovery PIN, password, email, and a JSON library backup/import.
+7. **Account (optional).** **Continue with Google** (no new password), or sign up with a name, email and password — you're signed in immediately; a verification link confirms the email, and *Forgot password?* emails a reset link to it. Under your name (or the gear icon signed out): **Preferences** (defaults for year/country/OA/citation style/theme, no account needed), display name, password and email (email accounts), and a JSON library backup/import.
 
 ---
 
@@ -88,10 +88,10 @@ npm run test:live            # calls every real database once
 
 **Firebase setup:**
 1. Auth → Sign-in method → enable **Email/Password** and **Google**.
-2. Firestore → Rules → paste [`firestore.rules`](firestore.rules) → **Publish**. Until published, Firestore is locked and saving/PIN/recovery fail (accounts still work).
+2. Firestore → Rules → paste [`firestore.rules`](firestore.rules) → **Publish**. Until published, Firestore is locked and saving and sharing fail (accounts still work).
 3. Auth → Settings → Authorized domains → add your Vercel domain.
 
-Rules restrict each user to their own `users/{uid}` data, cap field sizes, and allow single-document (never listing) public reads of `email_map`/`recovery` for password recovery. Test locally with `npx firebase-tools emulators:start --only auth,firestore` + `NEXT_PUBLIC_FIREBASE_EMULATORS=1` (never set that var on Vercel).
+Rules restrict each user to their own `users/{uid}` data, cap field sizes, and allow single-document (never listing) public reads of a shared library by its link. Test locally with `npx firebase-tools emulators:start --only auth,firestore` + `NEXT_PUBLIC_FIREBASE_EMULATORS=1` (never set that var on Vercel).
 
 **Cost/abuse protection:** Firebase Spark plan never bills — it just pauses at the daily quota. Firestore reads are kept cheap (count queries, in-place patches). Every API route has a per-IP rate limit ([`lib/server/rate-limit.ts`](lib/server/rate-limit.ts): search 12/min, cite 10, related 20, pdf/summarize 30, retractions 40, search also capped at 120/min site-wide per instance) returning `429` + `Retry-After`. For a hard global cap, add a Vercel Firewall rate-limit rule on `/api/*`.
 
@@ -133,8 +133,8 @@ lib/library/         saved papers (browser): store.ts (IndexedDB or Firestore),
                      import.ts (.bib/.ris), scope.ts (Local/Foreign),
                      reference-list.ts, rtf.ts + matrix-export.ts (Word/Excel
                      downloads), shared-copy.ts + share.ts (group libraries)
-lib/auth/            accounts (browser): store.ts, errors.ts, recovery.ts (PIN,
-                     email lookup), username-cache.ts
+lib/auth/            accounts (browser): store.ts, errors.ts, google.ts (Google
+                     sign-in), username-cache.ts, legacy-cleanup.ts
 lib/                 shared: types.ts, text.ts, utils.ts, citations.ts, countries.ts
                      (names, demonyms, "is this local"), preferences.ts, theme.ts,
                      firebase.ts, legal.ts
@@ -155,7 +155,7 @@ firestore.rules      publish in the Firebase console after every change
 
 ## Data & privacy
 
-Signed out: papers live in that browser's IndexedDB. Signed in: papers/notes live in Firestore under your account. Recovery PIN is stored as a salted PBKDF2 hash (200,000 rounds; PINs set before October 2026 are plain SHA-256 until changed) in its own document, separate from your profile, and only gates a reset email sent to the account's own inbox. Preferences and search history stay in your browser. Search text and DOIs go to the databases above, and search words to Firebase Analytics, as the privacy page says.
+Signed out: papers live in that browser's IndexedDB. Signed in: papers/notes live in Firestore under your account. A forgotten password is reset by Firebase's email link; nothing about an account is readable by anyone else, except libraries you share by link. Preferences and search history stay in your browser. Search text and DOIs go to the databases above, and search words to Firebase Analytics, as the privacy page says.
 
 ## Ethics
 

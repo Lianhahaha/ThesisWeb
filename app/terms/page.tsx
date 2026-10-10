@@ -46,11 +46,10 @@ export default function TermsPage() {
 
       <h2 className="mt-8 text-xl">Your account</h2>
       <p className="mt-2">
-        Accounts are free. Keep your password and recovery PIN to yourself — anyone holding them can
-        reach your library. Set a recovery PIN in{" "}
-        <Link href="/settings" className="underline">Settings</Link> when you sign up: without one
-        a forgotten password cannot be reset. You are responsible for what happens under your
-        account.
+        Accounts are free. Keep your password, or your Google account, to yourself — anyone holding it
+        can reach your library. A forgotten password is reset by a link sent to your email address, so
+        keep it current in <Link href="/settings" className="underline">Settings</Link>. You are
+        responsible for what happens under your account.
       </p>
 
       <h2 className="mt-8 text-xl">Papers and other people&apos;s content</h2>

@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { User, onAuthStateChanged, Unsubscribe } from "firebase/auth";
 import { auth } from "@/lib/firebase";
-import { migrateRecoveryPin, syncEmailMap } from "@/lib/auth/recovery";
+import { removeRetiredRecoveryData } from "@/lib/auth/legacy-cleanup";
 
 interface AuthState {
   user: User | null;
@@ -20,8 +20,6 @@ let _authUnsub: Unsubscribe | null = null;
 if (typeof window !== "undefined" && !_authUnsub) {
   _authUnsub = onAuthStateChanged(auth, (user) => {
     useAuth.setState({ user, loading: false, initialized: true });
-    // Keep account recovery able to find this account by its current email.
-    if (user?.email) syncEmailMap(user.uid, user.email).catch(() => {});
-    if (user) migrateRecoveryPin(user.uid).catch(() => {});
+    if (user) removeRetiredRecoveryData(user.uid).catch(() => {});
   });
 }

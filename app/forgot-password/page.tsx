@@ -2,57 +2,35 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { sendPasswordResetEmail } from "firebase/auth";
 import { ArrowLeft } from "lucide-react";
 import { auth } from "@/lib/firebase";
 import { toast } from "@/components/Toaster";
 import { authMessage } from "@/lib/auth/errors";
-import { checkRecoveryPin, lookupUid } from "@/lib/auth/recovery";
 
-type Step = "email" | "mpin" | "done";
-
-const STEP_NUMBER: Record<Step, number> = { email: 1, mpin: 2, done: 3 };
-
+/**
+ * Forgotten password: Firebase emails a reset link to the address. The page
+ * says the same thing whether or not an account uses that address, so it
+ * can't be used to find out who has signed up.
+ */
 export default function ForgotPasswordPage() {
-  const router = useRouter();
-
-  const [step, setStep] = useState<Step>("email");
-  const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState("");
-  const [mpin, setMpin] = useState("");
-  // Set once the email is matched to an account.
-  const [uid, setUid] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [sentTo, setSentTo] = useState<string | null>(null);
 
-  async function handleEmailSubmit(e: React.FormEvent) {
+  async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!email) return;
+    const address = email.trim().toLowerCase();
+    if (!address) return;
     setLoading(true);
     try {
-      const found = await lookupUid(email);
-      if (!found) throw new Error("No account found with that email address.");
-      setUid(found);
-      setStep("mpin");
+      await sendPasswordResetEmail(auth, address, { url: `${window.location.origin}/login` });
+      setSentTo(address);
     } catch (err) {
-      toast(errorText(err, "Email lookup failed. Try again."), "error");
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  async function handleMpinSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    if (!mpin || !uid) return;
-    setLoading(true);
-    try {
-      if (!(await checkRecoveryPin(uid, mpin))) {
-        throw new Error("That PIN does not match this account.");
-      }
-
-      await sendPasswordResetEmail(auth, email.toLowerCase());
-      setStep("done");
-    } catch (err) {
-      toast(errorText(err, "Verification failed. Try again."), "error");
+      const code = (err as { code?: string })?.code;
+      // Same answer as a success: whether an address has an account stays private.
+      if (code === "auth/user-not-found") setSentTo(address);
+      else toast(authMessage(err, "Could not send the reset link. Try again."), "error");
     } finally {
       setLoading(false);
     }
@@ -65,11 +43,28 @@ export default function ForgotPasswordPage() {
         Back to sign in
       </Link>
 
-      <p className="eyebrow">Step {STEP_NUMBER[step]} of 3</p>
-      <h1 className="display mt-3 text-3xl">Recover your account</h1>
+      <p className="eyebrow">Account</p>
+      <h1 className="display mt-3 text-3xl">Reset your password</h1>
+      <p className="mt-2 text-muted">
+        Signed up with Google? There is no Thesisweb password to reset: go back and use{" "}
+        <em>Continue with Google</em>.
+      </p>
 
-      {step === "email" && (
-        <form onSubmit={handleEmailSubmit} className="panel mt-6 space-y-4">
+      {sentTo ? (
+        <div className="panel mt-6 space-y-4">
+          <p role="status" className="notice notice-ok">
+            If an account uses <strong className="break-all">{sentTo}</strong>, a link to set a new password is
+            on its way. Check your spam folder if it doesn&apos;t arrive within a few minutes.
+          </p>
+          <div className="flex flex-wrap gap-2">
+            <Link href="/login" className="btn-primary">Back to sign in</Link>
+            <button type="button" onClick={() => setSentTo(null)} className="btn-ghost">
+              Use a different email
+            </button>
+          </div>
+        </div>
+      ) : (
+        <form onSubmit={onSubmit} className="panel mt-6 space-y-4">
           <div>
             <label htmlFor="email" className="field-label">Email address</label>
             <input
@@ -83,59 +78,13 @@ export default function ForgotPasswordPage() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
             />
-            <p className="field-hint">The address you signed up with.</p>
+            <p className="field-hint">The address you signed up with. We email it a reset link.</p>
           </div>
           <button type="submit" disabled={loading} className="btn-primary w-full">
-            {loading ? "Checking…" : "Continue"}
+            {loading ? "Sending…" : "Send reset link"}
           </button>
         </form>
-      )}
-
-      {step === "mpin" && (
-        <form onSubmit={handleMpinSubmit} className="panel mt-6 space-y-4">
-          <div>
-            <label htmlFor="mpin" className="field-label">Recovery PIN</label>
-            <input
-              id="mpin"
-              type="text"
-              inputMode="numeric"
-              pattern="[0-9]*"
-              required
-              autoFocus
-              autoComplete="off"
-              className="input"
-              placeholder="4 to 12 digits"
-              value={mpin}
-              onChange={(e) => setMpin(e.target.value)}
-            />
-            <p className="field-hint">The PIN you chose in Settings.</p>
-          </div>
-          <p className="notice notice-info">
-            Without the PIN this account cannot be recovered.
-          </p>
-          <button type="submit" disabled={loading} className="btn-primary w-full">
-            {loading ? "Checking…" : "Verify PIN"}
-          </button>
-        </form>
-      )}
-
-      {step === "done" && (
-        <div className="panel mt-6 space-y-4">
-          <p className="notice notice-ok">
-            A password reset link was sent to <strong>{email}</strong>. Open it to set a new
-            password. Check your spam folder if it does not arrive shortly.
-          </p>
-          <button onClick={() => router.push("/login")} className="btn-primary w-full">
-            Back to sign in
-          </button>
-        </div>
       )}
     </div>
   );
-}
-
-/** Our own errors carry a readable message; Firebase ones carry a code. */
-function errorText(err: unknown, fallback: string): string {
-  if ((err as { code?: string })?.code) return authMessage(err, fallback);
-  return err instanceof Error ? err.message : fallback;
 }

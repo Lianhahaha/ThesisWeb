@@ -49,6 +49,10 @@ export default function PrivacyPage() {
           hashed by Firebase and is never visible to this app or to its author.
         </li>
         <li>
+          <strong>If you continue with Google:</strong> the name and email address of your Google
+          account, as Google shares them. Your Google password never reaches Thesisweb.
+        </li>
+        <li>
           <strong>Your display name and preferences</strong>, if you set them.
         </li>
         <li>
@@ -56,13 +60,9 @@ export default function PrivacyPage() {
           your synthesis matrix entries and your collection names.
         </li>
         <li>
-          <strong>Your recovery PIN, as a hash.</strong> The PIN itself is not stored. The hash
-          gates sending a password-reset email, and that email only ever goes to the address on the
-          account.
-        </li>
-        <li>
-          <strong>A lookup entry mapping your email address to your account ID</strong>, so the
-          &ldquo;forgot password&rdquo; page can find your account before you are signed in.
+          <strong>Libraries you choose to share</strong>: a copy of those papers (and, if you tick the
+          box, your notes and matrix for them), readable by anyone who has the link, until you stop
+          sharing.
         </li>
       </ul>
       <p className="mt-2">
