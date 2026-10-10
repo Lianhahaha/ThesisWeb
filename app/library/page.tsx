@@ -19,6 +19,7 @@ import {
 import { PaperCard } from "@/components/PaperCard";
 import { SynthesisMatrix } from "@/components/SynthesisMatrix";
 import { ExportDialog } from "@/components/ExportDialog";
+import { ImportReferencesButton } from "@/components/ImportReferencesButton";
 import { toast } from "@/components/Toaster";
 import type { SavedPaper } from "@/lib/types";
 import { useAuth } from "@/lib/auth/store";
@@ -199,6 +200,7 @@ export default function LibraryPage() {
   }
 
   const total = papers?.length ?? 0;
+  const savedIds = new Set((papers ?? []).map((p) => p.id));
 
   return (
     <div className="mx-auto max-w-4xl">
@@ -211,12 +213,15 @@ export default function LibraryPage() {
             {user ? " · synced to your account" : " · stored in this browser only"}
           </p>
         </div>
-        {total > 0 && (
-          <button onClick={() => setExportOpen(true)} className="btn-primary">
-            <Download className="h-4 w-4" aria-hidden />
-            Export references
-          </button>
-        )}
+        <div className="flex flex-wrap gap-2">
+          <ImportReferencesButton existingIds={savedIds} />
+          {total > 0 && (
+            <button onClick={() => setExportOpen(true)} className="btn-primary">
+              <Download className="h-4 w-4" aria-hidden />
+              Export references
+            </button>
+          )}
+        </div>
       </header>
 
       {!user && total > 0 && (
@@ -246,12 +251,15 @@ export default function LibraryPage() {
           <p className="mx-auto mt-2 max-w-md text-sm text-muted">
             Search for papers and press <strong className="text-text">Save</strong>. Saved papers can
             be grouped by chapter, annotated, compared in a synthesis matrix and exported as
-            citations.
+            citations. Already using Zotero or Mendeley? Export a .bib or .ris file there and import it.
           </p>
-          <Link href="/search" className="btn-primary mt-6">
-            <SearchIcon className="h-4 w-4" aria-hidden />
-            Find papers
-          </Link>
+          <div className="mt-6 flex flex-wrap justify-center gap-2">
+            <Link href="/search" className="btn-primary">
+              <SearchIcon className="h-4 w-4" aria-hidden />
+              Find papers
+            </Link>
+            <ImportReferencesButton existingIds={savedIds} />
+          </div>
         </div>
       ) : (
         <>

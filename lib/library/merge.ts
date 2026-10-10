@@ -33,6 +33,8 @@ export function mergeSavedPaper(kept: SavedPaper | undefined, incoming: SavedPap
     ...kept,
     ...fresh,
     id: kept.id,
+    // A shorter author list (a file that lists only the first author) never trims a fuller one.
+    authors: (incoming.authors?.length ?? 0) >= (kept.authors?.length ?? 0) ? incoming.authors : kept.authors,
     notes: joinNotes(kept.notes, incoming.notes),
     matrix: Object.keys(matrix).length ? matrix : undefined,
     collection: kept.collection || incoming.collection || undefined,

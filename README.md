@@ -3,7 +3,7 @@
 A free web app that helps thesis students find related literature (RRL), keep it organised, and cite it correctly.
 
 - **Search** — one topic, 50 free academic databases at once, merged, de-duplicated and ranked, with preprint, retraction and expression-of-concern warnings.
-- **Library** — save papers, group them by chapter, take notes, fill a synthesis matrix.
+- **Library** — save papers, group them by chapter, take notes, fill a synthesis matrix, or import a .bib/.ris file from Zotero, Mendeley or EndNote.
 - **Cite** — paste DOIs and get references in APA, MLA, IEEE or Chicago, or export your whole library.
 
 No account needed to search. Only links to legal open-access full text. Light and soft dark themes.

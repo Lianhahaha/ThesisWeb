@@ -260,5 +260,6 @@ export const SOURCE_META: Record<string, SourceMeta> = META;
 export const SOURCE_COUNT = Object.keys(SOURCE_META).length;
 
 export function sourceLabel(id: string): string {
-  return SOURCE_META[id]?.label ?? id;
+  // "imported": added from a .bib/.ris file (lib/library/import.ts), not found by a search.
+  return SOURCE_META[id]?.label ?? (id === "imported" ? "an imported file" : id);
 }

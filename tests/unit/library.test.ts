@@ -49,6 +49,11 @@ describe("mergeSavedPaper", () => {
     });
   });
 
+  it("keeps the fuller author list", () => {
+    const merged = mergeSavedPaper(paper({ authors: ["Ana Cruz", "José Reyes"] }), paper({ authors: ["Ana Cruz"] }));
+    expect(merged.authors).toEqual(["Ana Cruz", "José Reyes"]);
+  });
+
   it("joins tags and keeps the saved collection", () => {
     const merged = mergeSavedPaper(paper({ tags: ["a"], collection: "Local studies" }), paper({ tags: ["a", "b"], collection: "Other" }));
     expect(merged.tags).toEqual(["a", "b"]);
