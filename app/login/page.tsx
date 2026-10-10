@@ -13,6 +13,8 @@ import { toast } from "@/components/Toaster";
 import { setRecoveryPin, writeEmailMap } from "@/lib/auth/recovery";
 import { trackEvent } from "@/lib/analytics-events";
 import { authMessage } from "@/lib/auth/errors";
+import { googleErrorMessage, isInAppBrowser, signInWithGoogle } from "@/lib/auth/google";
+import { GoogleButton } from "@/components/GoogleButton";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -26,10 +28,29 @@ export default function LoginPage() {
   const [confirm, setConfirm] = useState("");
   const [pin, setPin] = useState("");
   const [username, setUsername] = useState("");
+  const [googleBusy, setGoogleBusy] = useState(false);
+  // Google refuses to sign in inside Facebook/Messenger's own browser.
+  const [inApp, setInApp] = useState(false);
 
   useEffect(() => {
     if (initialized && user) router.replace("/library");
   }, [initialized, user, router]);
+  useEffect(() => setInApp(isInAppBrowser(navigator.userAgent)), []);
+
+  async function continueWithGoogle() {
+    setGoogleBusy(true);
+    try {
+      const { isNew } = await signInWithGoogle();
+      toast(isNew ? "Account created with Google" : "Signed in", "success");
+      trackEvent(isNew ? "sign_up" : "login", { method: "google" });
+      router.push("/library");
+    } catch (err) {
+      const message = googleErrorMessage(err);
+      if (message) toast(message, "error");
+    } finally {
+      setGoogleBusy(false);
+    }
+  }
 
   const mismatch = mode === "signup" && confirm.length > 0 && confirm !== password;
 
@@ -126,7 +147,20 @@ export default function LoginPage() {
         </button>
       </div>
 
-      <form onSubmit={onSubmit} className="panel mt-4 space-y-4">
+      <div className="panel mt-4">
+        {inApp && (
+          <p className="notice notice-info mb-3 text-sm">
+            Google sign-in doesn&apos;t work inside Facebook or Messenger. Open this page in Chrome or Safari
+            (menu → <em>Open in browser</em>), or use email below.
+          </p>
+        )}
+        <GoogleButton onClick={continueWithGoogle} busy={googleBusy} />
+        <p className="field-hint text-center">No new password to remember. Uses your Google account&apos;s name and email.</p>
+      </div>
+
+      <p className="my-4 text-center text-xs text-subtle">or with email and password</p>
+
+      <form onSubmit={onSubmit} className="panel space-y-4">
         {mode === "signup" && (
           <div>
             <label htmlFor="username" className="field-label">Display name</label>

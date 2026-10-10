@@ -19,6 +19,8 @@ import { useAuth } from "@/lib/auth/store";
 import { cacheUsername, clearCachedUsername, getCachedUsername } from "@/lib/auth/username-cache";
 import { toast } from "@/components/Toaster";
 import { authMessage } from "@/lib/auth/errors";
+import { confirmWithGoogle, googleErrorMessage, hasPassword } from "@/lib/auth/google";
+import { GoogleButton } from "@/components/GoogleButton";
 import { CountryCombobox } from "@/components/CountryCombobox";
 import { allPapers, localPapers, moveLocalPapersToAccount, savePapers } from "@/lib/library/store";
 import { fsDeleteAllPapers } from "@/lib/library/firestore";
@@ -343,22 +345,34 @@ export default function SettingsPage() {
   const [deletePass, setDeletePass] = useState("");
   const [deleting, setDeleting] = useState(false);
 
-  async function deleteAccount(e: React.FormEvent) {
-    e.preventDefault();
-    if (!user?.email) return;
-    if (!deletePass) { toast("Enter your password to confirm.", "error"); return; }
+  async function deleteAccount(e?: React.FormEvent) {
+    e?.preventDefault();
+    if (!user) return;
+    const withPassword = hasPassword(user);
+    if (withPassword && !deletePass) { toast("Enter your password to confirm.", "error"); return; }
     if (!window.confirm("Delete your account and every paper, note and matrix saved in it? This cannot be undone.")) return;
     setDeleting(true);
     try {
       // Re-authenticate first: deleteUser refuses an old session, and a wrong
-      // password should stop everything before any data is removed.
-      await reauthenticateWithCredential(user, EmailAuthProvider.credential(user.email, deletePass));
+      // password (or a different Google account) should stop everything
+      // before any data is removed.
+      try {
+        if (withPassword && user.email) {
+          await reauthenticateWithCredential(user, EmailAuthProvider.credential(user.email, deletePass));
+        } else {
+          await confirmWithGoogle(user);
+        }
+      } catch (err) {
+        const message = withPassword ? null : googleErrorMessage(err);
+        if (!withPassword && !message) return; // closed the Google window
+        throw message ? new Error(message) : err;
+      }
       const uid = user.uid;
       await fsDeleteAllPapers(uid);
       await Promise.allSettled([
         deleteDoc(doc(db, "users", uid, "profile", "main")),
         deleteDoc(doc(db, "recovery", uid)),
-        deleteDoc(doc(db, "email_map", emailKey(user.email))),
+        deleteDoc(doc(db, "email_map", emailKey(user.email ?? ""))),
       ]);
       await deleteUser(user);
       clearCachedUsername(uid);
@@ -374,6 +388,8 @@ export default function SettingsPage() {
       toast(
         code === "auth/invalid-credential" || code === "auth/wrong-password"
           ? "Your password is wrong."
+          : err instanceof Error && !code
+          ? err.message
           : authMessage(err, "Could not delete the account. Try again."),
         "error"
       );
@@ -625,6 +641,13 @@ export default function SettingsPage() {
             </form>
           </Section>
 
+          {!hasPassword(user) && (
+            <Section title="Signed in with Google" description="Your password and recovery are handled by your Google account.">
+              <p className="text-sm text-muted break-all">{user.email}</p>
+            </Section>
+          )}
+
+          {hasPassword(user) && (
           <Section title="Change password">
             <form onSubmit={savePassword} className="space-y-4">
               <PasswordField id="cur-pass" label="Current password" value={currentPass} onChange={setCurrentPass} autoComplete="current-password" />
@@ -635,7 +658,9 @@ export default function SettingsPage() {
               </button>
             </form>
           </Section>
+          )}
 
+          {hasPassword(user) && (
           <Section title="Change email" description="We send a link to the new address. Your email only changes after you open it.">
             <form onSubmit={saveEmail} className="space-y-4">
               <div>
@@ -667,6 +692,7 @@ export default function SettingsPage() {
               </div>
             )}
           </Section>
+          )}
         </>
       )}
 
@@ -730,12 +756,18 @@ export default function SettingsPage() {
             title="Delete account"
             description="Removes your account, saved papers, notes, matrix and recovery PIN for good. Download a library backup first if you want to keep anything."
           >
-            <form onSubmit={deleteAccount} className="space-y-4">
-              <PasswordField id="delete-pass" label="Password, to confirm it is you" value={deletePass} onChange={setDeletePass} autoComplete="current-password" />
-              <button type="submit" disabled={deleting} className="btn-danger w-full sm:w-auto">
-                {deleting ? "Deleting…" : "Delete my account"}
-              </button>
-            </form>
+            {hasPassword(user) ? (
+              <form onSubmit={deleteAccount} className="space-y-4">
+                <PasswordField id="delete-pass" label="Password, to confirm it is you" value={deletePass} onChange={setDeletePass} autoComplete="current-password" />
+                <button type="submit" disabled={deleting} className="btn-danger w-full sm:w-auto">
+                  {deleting ? "Deleting…" : "Delete my account"}
+                </button>
+              </form>
+            ) : (
+              <div className="max-w-xs">
+                <GoogleButton onClick={() => deleteAccount()} busy={deleting} label="Confirm with Google and delete" />
+              </div>
+            )}
           </Section>
         </>
       ) : (

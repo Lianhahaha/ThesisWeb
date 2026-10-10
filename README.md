@@ -18,7 +18,7 @@ No account needed to search. Only links to legal open-access full text. Light an
 4. **Save & organise.** Press **Save** on any result. In **Library**, group papers into collections and fill the **synthesis matrix** (Method, Findings, Limitations, Relevance) — this becomes your written RRL. Download the matrix for Excel/Google Sheets (.csv) or as a Word table (.rtf) for your adviser. Signed out, the library lives in that browser only; sign in to sync it, or copy it into your account later.
 5. **Cite.** Export your library as APA/MLA/IEEE/Chicago (copy it, or download an .rtf that opens in Word or Google Docs with hanging indents and italics), BibTeX or RIS — or paste DOIs into **Cite** to generate references without saving anything first.
 6. **Install (optional).** On a phone, open the browser menu → *Add to Home screen* (Android/Chrome) or *Share → Add to Home Screen* (iPhone); on a computer, the install icon in Chrome's address bar. The app opens in its own window, and pages you've visited, plus a library kept in the browser, open offline.
-7. **Account (optional).** Sign up with a name, email, password and recovery PIN — you're signed in immediately; a verification link confirms the email. Under your name (or the gear icon signed out): **Preferences** (defaults for year/country/OA/citation style/theme, no account needed), display name, recovery PIN, password, email, and a JSON library backup/import.
+7. **Account (optional).** **Continue with Google** (no new password), or sign up with a name, email, password and recovery PIN — you're signed in immediately; a verification link confirms the email. Under your name (or the gear icon signed out): **Preferences** (defaults for year/country/OA/citation style/theme, no account needed), display name, recovery PIN, password, email, and a JSON library backup/import.
 
 ---
 
@@ -87,7 +87,7 @@ npm run test:live            # calls every real database once
 | `CORE_API_KEY` | Optional | Higher CORE rate limit (works without, but may fail when busy) |
 
 **Firebase setup:**
-1. Auth → Sign-in method → enable **Email/Password**.
+1. Auth → Sign-in method → enable **Email/Password** and **Google**.
 2. Firestore → Rules → paste [`firestore.rules`](firestore.rules) → **Publish**. Until published, Firestore is locked and saving/PIN/recovery fail (accounts still work).
 3. Auth → Settings → Authorized domains → add your Vercel domain.
 

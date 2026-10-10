@@ -30,7 +30,7 @@ export function authMessage(err: unknown, fallback = "Something went wrong. Try 
     case "auth/user-token-expired":
       return "For your security, sign in again and retry.";
     case "auth/operation-not-allowed":
-      return "Email sign-in is turned off for this site right now. Try again later.";
+      return "This way of signing in is turned off for this site right now. Try another, or try again later.";
     case "auth/unauthorized-continue-uri":
     case "auth/unauthorized-domain":
       return "This site isn't set up to send account emails yet. Try again later.";
