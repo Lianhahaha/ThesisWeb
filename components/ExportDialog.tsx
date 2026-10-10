@@ -3,6 +3,8 @@
 import { useEffect, useRef, useState } from "react";
 import { X, Download } from "lucide-react";
 import type { SavedPaper } from "@/lib/types";
+import { groupReferences, sortBySurname } from "@/lib/library/reference-list";
+import type { Scope } from "@/lib/library/scope";
 import {
   formatCitation,
   citationToText,
@@ -15,8 +17,18 @@ import {
 import { getPreferences } from "@/lib/preferences";
 import { toast } from "@/components/Toaster";
 
-export function ExportDialog({ papers, onClose }: { papers: SavedPaper[]; onClose: () => void }) {
+export function ExportDialog({
+  papers,
+  onClose,
+  scopeOf,
+}: {
+  papers: SavedPaper[];
+  onClose: () => void;
+  /** When given, the list can be split into Local and Foreign. */
+  scopeOf?: (p: SavedPaper) => Scope;
+}) {
   const [style, setStyle] = useState<CitationStyle>(() => getPreferences().citationStyle);
+  const [byScope, setByScope] = useState(false);
   const [copied, setCopied] = useState<string | null>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
 
@@ -29,19 +41,18 @@ export function ExportDialog({ papers, onClose }: { papers: SavedPaper[]; onClos
     return () => document.removeEventListener("keydown", onKey);
   }, [onClose]);
 
-  // Bibliographies are ordered by first-author surname. Names are stored
-  // "Given Family", so compare the last word. Author-less papers sort last.
-  const surname = (p: SavedPaper) => p.authors?.[0]?.trim().split(/\s+/).pop() || "";
-  const sorted = [...papers].sort((a, b) => {
-    const sa = surname(a);
-    const sb = surname(b);
-    if (!sa || !sb) return sa ? -1 : sb ? 1 : 0;
-    return sa.localeCompare(sb, undefined, { sensitivity: "base" });
-  });
+  const sorted = sortBySurname(papers);
+  const groups = groupReferences(papers, byScope ? scopeOf : undefined);
 
   // formatCitation() returns HTML; this is shown in a <pre> and copied, so it
-  // has to be plain text.
-  const refList = sorted.map((p, i) => citationToText(formatCitation(p, style, i + 1))).join("\n\n");
+  // has to be plain text. IEEE numbers run on across the groups.
+  let n = 0;
+  const refList = groups
+    .map((g) => {
+      const entries = g.papers.map((p) => citationToText(formatCitation(p, style, ++n))).join("\n\n");
+      return g.heading ? `${g.heading}\n\n${entries}` : entries;
+    })
+    .join("\n\n\n");
 
   const inTextList = sorted
     .map(
@@ -106,6 +117,19 @@ export function ExportDialog({ papers, onClose }: { papers: SavedPaper[]; onClos
               </button>
             ))}
           </div>
+
+          {scopeOf && (
+            <label className="mt-4 flex cursor-pointer items-center gap-2 text-sm text-muted">
+              <input
+                type="checkbox"
+                checked={byScope}
+                onChange={(e) => setByScope(e.target.checked)}
+                className="h-4 w-4 rounded"
+                style={{ accentColor: "rgb(var(--accent))" }}
+              />
+              Split into Local and Foreign
+            </label>
+          )}
 
           <div className="mt-5 flex items-center justify-between gap-2">
             <h3 className="font-semibold">Reference list ({sorted.length})</h3>

@@ -26,7 +26,7 @@ export interface SharedLibrary {
 export type SharedPaper = Pick<
   SavedPaper,
   | "id" | "title" | "authors" | "year" | "venue" | "doi" | "url" | "openAccessUrl" | "isOpenAccess"
-  | "abstract" | "keywords" | "sources" | "preprint" | "retracted" | "concern" | "notes" | "matrix"
+  | "abstract" | "keywords" | "sources" | "preprint" | "retracted" | "concern" | "notes" | "matrix" | "scope"
 >;
 
 /** Most papers in one share; the rules check the same number. */
@@ -64,6 +64,7 @@ export function toSharedPaper(p: SavedPaper, includeNotes: boolean): SharedPaper
     retracted: p.retracted || undefined,
     concern: p.concern || undefined,
     notes: includeNotes ? cap(p.notes, NOTES_MAX) : undefined,
+    scope: p.scope,
     matrix: Object.keys(matrix).length ? matrix : undefined,
   });
 }
@@ -102,6 +103,7 @@ export function fromShared(share: Pick<SharedLibrary, "name" | "papers">, now = 
       notes: typeof raw.notes === "string" && raw.notes ? raw.notes.slice(0, NOTES_MAX) : undefined,
       matrix: Object.keys(matrix).length ? matrix : undefined,
       collection: share.name.slice(0, 100),
+      scope: raw.scope === "local" || raw.scope === "foreign" ? raw.scope : undefined,
       savedAt: now,
       tags: [],
       readingStatus: "to-read",

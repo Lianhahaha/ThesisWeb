@@ -25,6 +25,8 @@ import { toast } from "@/components/Toaster";
 import type { SavedPaper } from "@/lib/types";
 import { useAuth } from "@/lib/auth/store";
 import { applyIntegrity, fetchIntegrity } from "@/lib/search/integrity";
+import { localCountry, paperScope, SCOPE_LABELS, type Scope } from "@/lib/library/scope";
+import { getPreferences } from "@/lib/preferences";
 import type { IntegrityStatus } from "@/lib/types";
 
 type View = "list" | "matrix";
@@ -120,6 +122,11 @@ export default function LibraryPage() {
   const [view, setView] = useState<View>("list");
   const [filter, setFilter] = useState("");
   const [collectionFilter, setCollectionFilter] = useState("");
+  const [scopeFilter, setScopeFilter] = useState<Scope | "">("");
+  // Local means the student's country focus (Settings), else the Philippines.
+  const [country, setCountry] = useState("Philippines");
+  useEffect(() => setCountry(localCountry(getPreferences().country)), []);
+  const scopeOf = useCallback((p: SavedPaper) => paperScope(p, country), [country]);
   const [exportOpen, setExportOpen] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
 
@@ -129,9 +136,16 @@ export default function LibraryPage() {
     return Array.from(set).sort();
   }, [papers]);
 
+  const scopeCounts = useMemo(() => {
+    const counts: Record<Scope, number> = { local: 0, foreign: 0 };
+    for (const p of papers || []) counts[scopeOf(p)]++;
+    return counts;
+  }, [papers, scopeOf]);
+
   const filtered = useMemo(() => {
     let list = (papers || []).slice().sort((a, b) => b.savedAt - a.savedAt);
     if (collectionFilter) list = list.filter((p) => p.collection === collectionFilter);
+    if (scopeFilter) list = list.filter((p) => scopeOf(p) === scopeFilter);
     if (filter.trim()) {
       const q = filter.toLowerCase();
       list = list.filter(
@@ -142,7 +156,15 @@ export default function LibraryPage() {
       );
     }
     return list;
-  }, [papers, filter, collectionFilter]);
+  }, [papers, filter, collectionFilter, scopeFilter, scopeOf]);
+
+  async function assignScope(id: string, scope: Scope) {
+    try {
+      await updatePaper(id, { scope });
+    } catch {
+      toast("Could not change it. Try again.", "error");
+    }
+  }
 
   async function assignCollection(id: string, collection: string) {
     try {
@@ -301,8 +323,24 @@ export default function LibraryPage() {
             </div>
           </div>
 
+          <div className="mt-4 flex flex-wrap items-center gap-2">
+            <span className="text-xs text-subtle" title={`Local means from or about ${country}. Change a paper's tag below it.`}>
+              Local / foreign
+            </span>
+            {(["", "local", "foreign"] as const).map((s) => (
+              <button
+                key={s || "all"}
+                onClick={() => setScopeFilter(s)}
+                aria-pressed={scopeFilter === s}
+                className={`chip-btn ${scopeFilter === s ? "chip-on" : ""}`}
+              >
+                {s ? `${SCOPE_LABELS[s]} (${scopeCounts[s]})` : "All"}
+              </button>
+            ))}
+          </div>
+
           {collections.length > 0 && (
-            <div className="mt-4 flex flex-wrap items-center gap-2">
+            <div className="mt-3 flex flex-wrap items-center gap-2">
               <span className="text-xs text-subtle">Collection</span>
               <button
                 onClick={() => setCollectionFilter("")}
@@ -334,7 +372,9 @@ export default function LibraryPage() {
                       <LibraryControls
                         paper={p}
                         collections={collections}
+                        scope={scopeOf(p)}
                         onAssign={assignCollection}
+                        onScope={assignScope}
                         onRemove={remove}
                       />
                     </li>
@@ -353,7 +393,7 @@ export default function LibraryPage() {
       )}
 
       {exportOpen && papers && (
-        <ExportDialog papers={filtered} onClose={() => setExportOpen(false)} />
+        <ExportDialog papers={filtered} scopeOf={scopeOf} onClose={() => setExportOpen(false)} />
       )}
       {shareOpen && (
         <ShareDialog papers={filtered} defaultName={collectionFilter} onClose={() => setShareOpen(false)} />
@@ -365,12 +405,16 @@ export default function LibraryPage() {
 function LibraryControls({
   paper,
   collections,
+  scope,
   onAssign,
+  onScope,
   onRemove,
 }: {
   paper: SavedPaper;
   collections: string[];
+  scope: Scope;
   onAssign: (id: string, c: string) => void;
+  onScope: (id: string, s: Scope) => void;
   onRemove: (id: string) => void;
 }) {
   const [adding, setAdding] = useState(false);
@@ -414,6 +458,18 @@ function LibraryControls({
           New collection
         </button>
       )}
+
+      <label htmlFor={`scope-${paper.id}`} className="text-xs text-subtle">Local / foreign</label>
+      <select
+        id={`scope-${paper.id}`}
+        value={scope}
+        onChange={(e) => onScope(paper.id, e.target.value as Scope)}
+        title={paper.scope ? "Set by you" : "Guessed from the paper; change it if it's wrong"}
+        className="input !min-h-[32px] !w-auto !py-1 text-xs"
+      >
+        <option value="local">Local{paper.scope ? "" : " (guess)"}</option>
+        <option value="foreign">Foreign{paper.scope ? "" : " (guess)"}</option>
+      </select>
 
       <span className="chip ml-auto capitalize">{paper.readingStatus.replace("-", " ")}</span>
 

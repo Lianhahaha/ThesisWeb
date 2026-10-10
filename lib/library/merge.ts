@@ -38,6 +38,7 @@ export function mergeSavedPaper(kept: SavedPaper | undefined, incoming: SavedPap
     notes: joinNotes(kept.notes, incoming.notes),
     matrix: Object.keys(matrix).length ? matrix : undefined,
     collection: kept.collection || incoming.collection || undefined,
+    scope: kept.scope ?? incoming.scope,
     tags: Array.from(new Set([...(kept.tags ?? []), ...(incoming.tags ?? [])])),
     readingStatus: kept.readingStatus ?? incoming.readingStatus,
     savedAt: Math.min(kept.savedAt ?? Infinity, incoming.savedAt ?? Infinity),

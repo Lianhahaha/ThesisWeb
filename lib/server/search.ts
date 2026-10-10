@@ -3,6 +3,7 @@ import { dedupePapers, scoreRelevance } from "@/lib/server/dedupe";
 import { ADAPTERS } from "@/lib/sources/registry";
 import { normalizePaper } from "@/lib/sources/normalize";
 import type { AdapterOptions } from "@/lib/sources/types";
+import { countryTerms } from "@/lib/countries";
 
 export interface SearchOpts extends AdapterOptions {
   /** ISO 3166-1 country name or demonym to inject into the query. e.g. "Philippines" */
@@ -16,51 +17,9 @@ export interface SearchOpts extends AdapterOptions {
  *
  * e.g. "supply chain" + "Philippines"
  *  → "supply chain AND (Philippines OR Filipino OR Philippine)"
- *
- * We keep a demonym map for countries where the adjective differs from the noun.
  */
-const DEMONYM_MAP: Record<string, string[]> = {
-  "Philippines":    ["Philippines", "Filipino", "Philippine", "Filipina"],
-  "United States":  ["United States", "American", "USA", "U.S.A", "U.S."],
-  "United Kingdom": ["United Kingdom", "British", "UK", "England", "Wales", "Scotland"],
-  "Australia":      ["Australia", "Australian"],
-  "Canada":         ["Canada", "Canadian"],
-  "Japan":          ["Japan", "Japanese"],
-  "China":          ["China", "Chinese"],
-  "India":          ["India", "Indian"],
-  "Germany":        ["Germany", "German"],
-  "France":         ["France", "French"],
-  "Brazil":         ["Brazil", "Brazilian"],
-  "South Korea":    ["South Korea", "Korean", "Korea"],
-  "Indonesia":      ["Indonesia", "Indonesian"],
-  "Malaysia":       ["Malaysia", "Malaysian"],
-  "Singapore":      ["Singapore", "Singaporean"],
-  "Thailand":       ["Thailand", "Thai"],
-  "Vietnam":        ["Vietnam", "Vietnamese"],
-  "Nigeria":        ["Nigeria", "Nigerian"],
-  "South Africa":   ["South Africa", "South African"],
-  "Pakistan":       ["Pakistan", "Pakistani"],
-  "Bangladesh":     ["Bangladesh", "Bangladeshi"],
-  "Egypt":          ["Egypt", "Egyptian"],
-  "Kenya":          ["Kenya", "Kenyan"],
-  "Mexico":         ["Mexico", "Mexican"],
-  "Argentina":      ["Argentina", "Argentine"],
-  "Netherlands":    ["Netherlands", "Dutch"],
-  "Sweden":         ["Sweden", "Swedish"],
-  "Norway":         ["Norway", "Norwegian"],
-  "Switzerland":    ["Switzerland", "Swiss"],
-  "Spain":          ["Spain", "Spanish"],
-  "Italy":          ["Italy", "Italian"],
-  "Poland":         ["Poland", "Polish"],
-  "Turkey":         ["Turkey", "Turkish"],
-  "Iran":           ["Iran", "Iranian"],
-  "Saudi Arabia":   ["Saudi Arabia", "Saudi"],
-  "Israel":         ["Israel", "Israeli"],
-  "New Zealand":    ["New Zealand", "New Zealander"],
-};
-
 function buildCountryQuery(baseQuery: string, country: string): string {
-  const terms = DEMONYM_MAP[country] ?? [country];
+  const terms = countryTerms(country);
   const clause = terms.map(t => `"${t}"`).join(" OR ");
   return `${baseQuery} AND (${clause})`;
 }

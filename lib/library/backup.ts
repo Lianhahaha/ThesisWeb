@@ -61,6 +61,7 @@ export function parseBackup(raw: unknown): SavedPaper[] {
       })(),
       tags: Array.isArray(p.tags) ? p.tags.filter((t) => typeof t === "string") : [],
       readingStatus: p.readingStatus === "reading" || p.readingStatus === "done" ? p.readingStatus : "to-read",
+      scope: p.scope === "local" || p.scope === "foreign" ? p.scope : undefined,
     } as SavedPaper);
   }
   return out;

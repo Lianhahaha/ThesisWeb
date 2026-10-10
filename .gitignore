@@ -31,6 +31,7 @@ yarn-error.log*
 
 # tool output and local state
 eslint-report.json
+*-debug.log
 .mimocode/.cron-lock
 
 # typescript

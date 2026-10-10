@@ -50,6 +50,8 @@ export interface SavedPaper extends Paper {
   tags: string[];
   notes?: string;
   readingStatus: "to-read" | "reading" | "done";
+  /** Local or foreign, when the student set it; otherwise guessed (lib/library/scope.ts). */
+  scope?: "local" | "foreign";
   /** Entries for the synthesis matrix */
   matrix?: Partial<Record<MatrixKey, string>>;
 }
