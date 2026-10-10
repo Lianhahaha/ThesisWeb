@@ -10,6 +10,7 @@ rules_version = '2';
 //   users/{uid}/papers/{paperId} saved papers                   (owner only)
 //   recovery/{uid}               hashed recovery PIN            (public get, owner write)
 //   email_map/{email_key}        email → uid, for recovery      (public get, owner write)
+//   shared/{shareId}             a group library shared by link (public get, owner write)
 //
 // Anything not matched here is denied. Size checks stop one account from
 // filling the free-tier quota with junk.
@@ -91,6 +92,27 @@ service cloud.firestore {
       allow create: if signedIn() && validEntry();
       allow update: if signedIn() && resource.data.uid == request.auth.uid && validEntry();
       allow delete: if signedIn() && resource.data.uid == request.auth.uid;
+    }
+
+    // ── Shared group libraries ───────────────────────────────────────────
+    // A copy of some papers, readable by anyone who has the link (the id is
+    // random). Only the owner can list, change or remove their shares.
+    match /shared/{shareId} {
+      function validShare() {
+        let d = request.resource.data;
+        return d.keys().hasOnly(['owner', 'ownerName', 'name', 'papers', 'createdAt', 'updatedAt'])
+          && d.owner == request.auth.uid
+          && d.name is string && d.name.size() > 0 && d.name.size() <= 100
+          && d.ownerName is string && d.ownerName.size() <= 60
+          && d.papers is list && d.papers.size() <= 200
+          && d.createdAt is number && d.updatedAt is number;
+      }
+
+      allow get: if true;
+      allow list: if signedIn() && resource.data.owner == request.auth.uid;
+      allow create: if signedIn() && validShare();
+      allow update: if signedIn() && resource.data.owner == request.auth.uid && validShare();
+      allow delete: if signedIn() && resource.data.owner == request.auth.uid;
     }
   }
 }

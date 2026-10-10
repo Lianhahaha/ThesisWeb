@@ -3,7 +3,7 @@
 import { useState, useMemo, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { useLiveQuery } from "dexie-react-hooks";
-import { Download, Search as SearchIcon, Trash2 } from "lucide-react";
+import { Download, Search as SearchIcon, Share2, Trash2 } from "lucide-react";
 import {
   getDb,
   unsavePaper,
@@ -20,6 +20,7 @@ import { PaperCard } from "@/components/PaperCard";
 import { SynthesisMatrix } from "@/components/SynthesisMatrix";
 import { ExportDialog } from "@/components/ExportDialog";
 import { ImportReferencesButton } from "@/components/ImportReferencesButton";
+import { ShareDialog } from "@/components/ShareDialog";
 import { toast } from "@/components/Toaster";
 import type { SavedPaper } from "@/lib/types";
 import { useAuth } from "@/lib/auth/store";
@@ -120,6 +121,7 @@ export default function LibraryPage() {
   const [filter, setFilter] = useState("");
   const [collectionFilter, setCollectionFilter] = useState("");
   const [exportOpen, setExportOpen] = useState(false);
+  const [shareOpen, setShareOpen] = useState(false);
 
   const collections = useMemo(() => {
     const set = new Set<string>();
@@ -215,6 +217,16 @@ export default function LibraryPage() {
         </div>
         <div className="flex flex-wrap gap-2">
           <ImportReferencesButton existingIds={savedIds} />
+          {total > 0 && (
+            <button
+              onClick={() => setShareOpen(true)}
+              className="btn-secondary"
+              title={collectionFilter ? `Share the “${collectionFilter}” collection` : "Share the papers listed below"}
+            >
+              <Share2 className="h-4 w-4" aria-hidden />
+              Share
+            </button>
+          )}
           {total > 0 && (
             <button onClick={() => setExportOpen(true)} className="btn-primary">
               <Download className="h-4 w-4" aria-hidden />
@@ -342,6 +354,9 @@ export default function LibraryPage() {
 
       {exportOpen && papers && (
         <ExportDialog papers={filtered} onClose={() => setExportOpen(false)} />
+      )}
+      {shareOpen && (
+        <ShareDialog papers={filtered} defaultName={collectionFilter} onClose={() => setShareOpen(false)} />
       )}
     </div>
   );
