@@ -56,7 +56,7 @@ service cloud.firestore {
         && (!('matrix' in request.resource.data) || request.resource.data.matrix is map);
     }
 
-    // ── Recovery PIN (64-hex hash, see lib/recovery.ts) ─────────────────
+    // ── Recovery PIN (64-hex hash, see lib/auth/recovery.ts) ────────────
     // Readable one document at a time so the signed-out recovery page can
     // check a PIN. Listing is never allowed.
     match /recovery/{uid} {
