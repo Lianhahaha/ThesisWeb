@@ -3,7 +3,7 @@
 import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import { useMutation } from "@tanstack/react-query";
-import { ChevronDown } from "lucide-react";
+import { Bookmark, BookmarkCheck, ChevronDown } from "lucide-react";
 import { PaperCard } from "@/components/PaperCard";
 import { SearchPanel, DEFAULT_FROM_YEAR } from "@/components/SearchPanel";
 import { toast } from "@/components/Toaster";
@@ -13,10 +13,14 @@ import type { SearchResult } from "@/lib/types";
 import { SOURCE_COUNT, sourceLabel, SOURCE_META } from "@/lib/sources/meta";
 import { suggestTerms } from "@/lib/search/related-terms";
 import { addSearchHistory } from "@/lib/search/history";
+import { checkSavedSearch, removeSavedSearch, saveSearch, savedSearchKey } from "@/lib/search/saved";
 import { buildSearchParams, parseSearchParams, type SearchInput } from "@/lib/search/params";
 import { fromYearFor, getPreferences } from "@/lib/preferences";
 import { SORT_OPTIONS, countBySource, filterBySources, sortPapers, type SortKey } from "@/lib/search/result-view";
 import { trackEvent } from "@/lib/analytics-events";
+
+/** "Oct 3", for "new since" messages. */
+const shortDate = (t: number) => new Date(t).toLocaleDateString("en-PH", { month: "short", day: "numeric" });
 
 export default function SearchPage() {
   const [form, setForm] = useState<SearchInput>({
@@ -33,6 +37,11 @@ export default function SearchPage() {
   // Databases with no results are folded away; with 30+ sources they would
   // otherwise push the useful ones off screen.
   const [showIdle, setShowIdle] = useState(false);
+  // Saved searches: is this one saved, and which results are new since it was last opened.
+  const [isSaved, setIsSaved] = useState(false);
+  const [freshIds, setFreshIds] = useState<ReadonlySet<string>>(new Set());
+  const [freshSince, setFreshSince] = useState<number | null>(null);
+  const [onlyNew, setOnlyNew] = useState(false);
 
   // Suggestions come from the whole result set for the query that produced it —
   // the input may have been edited since.
@@ -50,10 +59,25 @@ export default function SearchPage() {
     const idle = names.filter((n) => !(sourceCounts[n] > 0));
     return [active, idle];
   }, [result, sourceCounts]);
-  const visible = useMemo(
-    () => sortPapers(filterBySources(result?.papers ?? [], selectedSources), sortKey),
-    [result, selectedSources, sortKey]
-  );
+  const visible = useMemo(() => {
+    const list = filterBySources(result?.papers ?? [], selectedSources);
+    return sortPapers(onlyNew ? list.filter((p) => freshIds.has(p.id)) : list, sortKey);
+  }, [result, selectedSources, sortKey, onlyNew, freshIds]);
+
+  function toggleSaved() {
+    if (!searched || !result) return;
+    if (isSaved) {
+      removeSavedSearch(savedSearchKey(searched));
+      setIsSaved(false);
+      setFreshIds(new Set());
+      setOnlyNew(false);
+      toast("Saved search removed", "info");
+    } else {
+      saveSearch(searched, result.papers.map((p) => p.id));
+      setIsSaved(true);
+      toast("Search saved. Open it again later and new papers are marked “New”.", "success");
+    }
+  }
 
   function toggleSource(name: string) {
     setSelectedSources((prev) => {
@@ -89,8 +113,21 @@ export default function SearchPage() {
         storeRecentPapers(papers);
         setResult((prev) => (prev === data ? { ...data, papers } : prev));
       });
+      // A saved search: mark what wasn't there the last time it was opened.
+      const check = checkSavedSearch(input, data.papers.map((p) => p.id));
+      setIsSaved(!!check);
+      setFreshIds(new Set(check?.fresh ?? []));
+      setFreshSince(check?.since ?? null);
+      setOnlyNew(false);
       const ok = Object.values(data.sources).filter((s) => s === "ok").length;
       if (ok === 0) toast("No database returned results. Try different words.", "error");
+      else if (check)
+        toast(
+          check.fresh.length > 0
+            ? `${check.fresh.length} new since ${shortDate(check.since)} · ${data.papers.length} papers`
+            : `Nothing new since ${shortDate(check.since)} · ${data.papers.length} papers`,
+          "success"
+        );
       else toast(`${data.papers.length} papers in ${(data.tookMs / 1000).toFixed(1)}s`, "success");
       trackEvent("search", { search_term: input.query, results: data.papers.length });
     },
@@ -293,6 +330,28 @@ export default function SearchPage() {
                 </span>
               </h2>
 
+              <div className="flex flex-wrap items-center gap-2">
+              {freshIds.size > 0 && (
+                <button
+                  type="button"
+                  onClick={() => setOnlyNew((v) => !v)}
+                  aria-pressed={onlyNew}
+                  className={`chip-btn ${onlyNew ? "chip-on" : ""}`}
+                  title={freshSince ? `Not in this search on ${shortDate(freshSince)}` : undefined}
+                >
+                  New only ({freshIds.size})
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={toggleSaved}
+                aria-pressed={isSaved}
+                className="btn-ghost btn-sm"
+                title={isSaved ? "Stop tracking new papers for this search" : "Keep this search and mark new papers next time"}
+              >
+                {isSaved ? <BookmarkCheck className="h-3.5 w-3.5" aria-hidden /> : <Bookmark className="h-3.5 w-3.5" aria-hidden />}
+                {isSaved ? "Saved search" : "Save search"}
+              </button>
               {result.papers.length > 0 && (
                 <label className="flex items-center gap-2 text-sm text-muted">
                   Sort
@@ -307,6 +366,7 @@ export default function SearchPage() {
                   </select>
                 </label>
               )}
+              </div>
             </div>
 
             {result.papers.length > 0 && (
@@ -321,7 +381,7 @@ export default function SearchPage() {
               <ol className="card mt-4 divide-y divide-border">
                 {visible.map((p, i) => (
                   <li key={p.id}>
-                    <PaperCard paper={p} showScore refNum={i + 1} />
+                    <PaperCard paper={p} showScore refNum={i + 1} isNew={freshIds.has(p.id)} />
                   </li>
                 ))}
               </ol>

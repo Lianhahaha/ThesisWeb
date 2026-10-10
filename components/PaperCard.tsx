@@ -12,9 +12,11 @@ interface Props {
   paper: Paper;
   showScore?: boolean;
   refNum?: number;
+  /** Not seen before in this saved search. */
+  isNew?: boolean;
 }
 
-export function PaperCard({ paper, showScore, refNum }: Props) {
+export function PaperCard({ paper, showScore, refNum, isNew }: Props) {
   const [expanded, setExpanded] = useState(false);
   const summary = paper.tldr || paper.abstract;
   const long = (summary?.length ?? 0) > 220;
@@ -45,6 +47,11 @@ export function PaperCard({ paper, showScore, refNum }: Props) {
           </p>
 
           <div className="mt-2 flex flex-wrap items-center gap-1.5">
+            {isNew && (
+              <span className="chip chip-on" title="Not in this saved search the last time you opened it">
+                New
+              </span>
+            )}
             {paper.retracted && (
               <span
                 className="chip"

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { Search as SearchIcon, X } from "lucide-react";
 import { CountryCombobox } from "@/components/CountryCombobox";
 import { clearSearchHistory, getSearchHistory } from "@/lib/search/history";
+import { listSavedSearches, removeSavedSearch, SAVED_SEARCHES_EVENT, type SavedSearch } from "@/lib/search/saved";
 import { defaultFromYear, MIN_QUERY_LENGTH, type SearchInput } from "@/lib/search/params";
 
 const CURRENT_YEAR = new Date().getFullYear();
@@ -75,9 +76,14 @@ export function SearchPanel({
   const [history, setHistory] = useState<string[]>([]);
   // Random picks differ between server and browser, so choose after mount.
   const [examples, setExamples] = useState<string[]>([]);
+  const [saved, setSaved] = useState<SavedSearch[]>([]);
   useEffect(() => {
     setHistory(getSearchHistory());
     setExamples(pickExamples());
+    const refresh = () => setSaved(listSavedSearches());
+    refresh();
+    window.addEventListener(SAVED_SEARCHES_EVENT, refresh);
+    return () => window.removeEventListener(SAVED_SEARCHES_EVENT, refresh);
   }, []);
 
   const set = (patch: Partial<SearchInput>) => onChange({ ...value, ...patch });
@@ -162,6 +168,37 @@ export function SearchPanel({
           Free full text only
         </label>
       </div>
+
+      {showSuggestions && saved.length > 0 && (
+        <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-border pt-4">
+          <span className="text-xs text-subtle">Saved</span>
+          {saved.map((s) => (
+            <span key={s.key} className="chip !gap-0 !p-0">
+              <button
+                type="button"
+                disabled={pending}
+                onClick={() => {
+                  onChange(s.input);
+                  onSearch(s.input);
+                }}
+                className="max-w-[260px] truncate py-1 pl-2.5 pr-1.5 hover:text-text"
+                title={`${s.input.query} · last opened ${new Date(s.checkedAt).toLocaleDateString("en-PH", { month: "short", day: "numeric" })}. Open it to see what is new.`}
+              >
+                {s.input.query}
+                {s.input.country && <span className="text-subtle"> · {s.input.country}</span>}
+              </button>
+              <button
+                type="button"
+                onClick={() => removeSavedSearch(s.key)}
+                className="py-1 pl-1 pr-2 text-subtle hover:text-text"
+                aria-label={`Remove saved search “${s.input.query}”`}
+              >
+                <X className="h-3 w-3" aria-hidden />
+              </button>
+            </span>
+          ))}
+        </div>
+      )}
 
       {showSuggestions && history.length > 0 && (
         <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-border pt-4">
