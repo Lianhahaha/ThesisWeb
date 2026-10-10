@@ -16,7 +16,21 @@ import { addSearchHistory } from "@/lib/search/history";
 import { checkSavedSearch, removeSavedSearch, saveSearch, savedSearchKey } from "@/lib/search/saved";
 import { buildSearchParams, parseSearchParams, type SearchInput } from "@/lib/search/params";
 import { fromYearFor, getPreferences } from "@/lib/preferences";
-import { SORT_OPTIONS, countBySource, filterBySources, sortPapers, type SortKey } from "@/lib/search/result-view";
+import {
+  MIN_CITATIONS,
+  NO_REFINEMENT,
+  RECORD_TYPES,
+  SORT_OPTIONS,
+  countBySource,
+  filterBySources,
+  recordTypes,
+  refine,
+  sortPapers,
+  type RecordType,
+  type Refinement,
+  type SortKey,
+} from "@/lib/search/result-view";
+import { localCountry } from "@/lib/countries";
 import { trackEvent } from "@/lib/analytics-events";
 
 /** "Oct 3", for "new since" messages. */
@@ -42,10 +56,30 @@ export default function SearchPage() {
   const [freshIds, setFreshIds] = useState<ReadonlySet<string>>(new Set());
   const [freshSince, setFreshSince] = useState<number | null>(null);
   const [onlyNew, setOnlyNew] = useState(false);
+  // Record type, local-only and citation filters over the fetched list.
+  const [refinement, setRefinement] = useState<Refinement>(NO_REFINEMENT);
+  // "Local" is the searched country, else the student's default country, else the Philippines.
+  const [defaultCountry, setDefaultCountry] = useState<string | null>(null);
+  useEffect(() => setDefaultCountry(getPreferences().country), []);
+  const refined = refinement.types.size > 0 || refinement.localTo !== null || refinement.minCitations > 0;
+  const typeCounts = useMemo(() => {
+    const counts: Partial<Record<RecordType, number>> = {};
+    for (const p of result?.papers ?? []) for (const t of recordTypes(p)) counts[t] = (counts[t] ?? 0) + 1;
+    return counts;
+  }, [result]);
+  function toggleType(t: RecordType) {
+    setRefinement((r) => {
+      const types = new Set(r.types);
+      if (types.has(t)) types.delete(t);
+      else types.add(t);
+      return { ...r, types };
+    });
+  }
 
   // Suggestions come from the whole result set for the query that produced it —
   // the input may have been edited since.
   const [searched, setSearched] = useState<SearchInput | null>(null);
+  const local = localCountry(searched?.country ?? defaultCountry);
   const relatedTerms = useMemo(
     () => (result && searched ? suggestTerms(result.papers, searched.query) : []),
     [result, searched]
@@ -60,9 +94,9 @@ export default function SearchPage() {
     return [active, idle];
   }, [result, sourceCounts]);
   const visible = useMemo(() => {
-    const list = filterBySources(result?.papers ?? [], selectedSources);
+    const list = refine(filterBySources(result?.papers ?? [], selectedSources), refinement);
     return sortPapers(onlyNew ? list.filter((p) => freshIds.has(p.id)) : list, sortKey);
-  }, [result, selectedSources, sortKey, onlyNew, freshIds]);
+  }, [result, selectedSources, refinement, sortKey, onlyNew, freshIds]);
 
   function toggleSaved() {
     if (!searched || !result) return;
@@ -119,6 +153,7 @@ export default function SearchPage() {
       setFreshIds(new Set(check?.fresh ?? []));
       setFreshSince(check?.since ?? null);
       setOnlyNew(false);
+      setRefinement(NO_REFINEMENT);
       const ok = Object.values(data.sources).filter((s) => s === "ok").length;
       if (ok === 0) toast("No database returned results. Try different words.", "error");
       else if (check)
@@ -181,6 +216,52 @@ export default function SearchPage() {
 
       {result && !search.isPending && (
         <aside className="min-w-0 space-y-6 lg:sticky lg:top-20 lg:col-start-2 lg:row-span-2 lg:row-start-1 lg:max-h-[calc(100vh-6rem)] lg:overflow-y-auto lg:pr-1">
+          <section aria-labelledby="refine-h">
+            <div className="flex items-baseline justify-between">
+              <h2 id="refine-h" className="eyebrow">Refine</h2>
+              {refined && (
+                <button type="button" onClick={() => setRefinement(NO_REFINEMENT)} className="text-xs text-muted underline">
+                  Clear
+                </button>
+              )}
+            </div>
+            <div className="mt-3 flex flex-wrap gap-1.5" role="group" aria-label="Record type">
+              {RECORD_TYPES.filter((t) => typeCounts[t.key]).map((t) => (
+                <button
+                  key={t.key}
+                  type="button"
+                  onClick={() => toggleType(t.key)}
+                  aria-pressed={refinement.types.has(t.key)}
+                  className={`chip-btn ${refinement.types.has(t.key) ? "chip-on" : ""}`}
+                >
+                  {t.label} <span className="tabular-nums text-subtle">{typeCounts[t.key]}</span>
+                </button>
+              ))}
+            </div>
+            <label className="mt-3 flex cursor-pointer items-center gap-2 text-sm text-muted">
+              <input
+                type="checkbox"
+                checked={refinement.localTo !== null}
+                onChange={(e) => setRefinement((r) => ({ ...r, localTo: e.target.checked ? local : null }))}
+                className="h-4 w-4 rounded"
+                style={{ accentColor: "rgb(var(--accent))" }}
+              />
+              Local studies only ({local})
+            </label>
+            <label className="mt-2 flex items-center gap-2 text-sm text-muted">
+              Cited at least
+              <select
+                value={refinement.minCitations}
+                onChange={(e) => setRefinement((r) => ({ ...r, minCitations: Number(e.target.value) }))}
+                className="input !min-h-[32px] !w-auto !py-1 text-sm"
+              >
+                {MIN_CITATIONS.map((n) => (
+                  <option key={n} value={n}>{n === 0 ? "any" : `${n}×`}</option>
+                ))}
+              </select>
+            </label>
+          </section>
+
           <section aria-labelledby="sources-h">
             <button
               type="button"
@@ -389,7 +470,9 @@ export default function SearchPage() {
               <div className="panel mt-4 text-center">
                 <p className="font-medium">No papers matched.</p>
                 <p className="mt-1 text-sm text-muted">
-                  {selectedSources.size > 0
+                  {refined || onlyNew
+                    ? "No papers pass the filters you chose. Clear them to see the rest."
+                    : selectedSources.size > 0
                     ? "No results from the databases you selected."
                     : searched?.country
                     ? "Try removing the country filter or using a broader topic."

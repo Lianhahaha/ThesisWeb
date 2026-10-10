@@ -25,7 +25,8 @@ import { toast } from "@/components/Toaster";
 import type { SavedPaper } from "@/lib/types";
 import { useAuth } from "@/lib/auth/store";
 import { applyIntegrity, fetchIntegrity } from "@/lib/search/integrity";
-import { localCountry, paperScope, SCOPE_LABELS, type Scope } from "@/lib/library/scope";
+import { paperScope, SCOPE_LABELS, type Scope } from "@/lib/library/scope";
+import { localCountry } from "@/lib/countries";
 import { getPreferences } from "@/lib/preferences";
 import type { IntegrityStatus } from "@/lib/types";
 

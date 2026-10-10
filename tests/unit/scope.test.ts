@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { localCountry, looksLocal, paperScope } from "@/lib/library/scope";
+import { paperScope } from "@/lib/library/scope";
+import { localCountry, looksLocal } from "@/lib/countries";
 import { groupReferences, sortBySurname } from "@/lib/library/reference-list";
 import type { SavedPaper } from "@/lib/types";
 

@@ -1,3 +1,6 @@
+import { SOURCE_META } from "@/lib/sources/meta";
+import type { Paper } from "@/lib/types";
+
 /**
  * Comprehensive world country list — all 195 UN-recognised states.
  * Used in the country filter dropdown on the search page.
@@ -99,4 +102,23 @@ export const COUNTRY_TERMS: Record<string, string[]> = {
 /** Names a paper may use for `country`: the map's words, or just the name. */
 export function countryTerms(country: string): string[] {
   return COUNTRY_TERMS[country] ?? [country];
+}
+
+/** The country whose studies count as local: the student's country focus, else the Philippines. */
+export function localCountry(preferred: string | null | undefined): string {
+  return preferred || "Philippines";
+}
+
+/** Places that mark a Philippine study even when the country isn't named. */
+const PH_PLACES = ["Manila", "Luzon", "Visayas", "Mindanao", "Cebu", "Davao", "Iloilo", "Pilipinas", "Quezon City", "Baguio"];
+
+const escape = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+/** True if the paper's data says it is from or about `country`. */
+export function looksLocal(p: Paper, country: string): boolean {
+  // A database that only holds this country's research.
+  if (p.sources.some((s) => SOURCE_META[s]?.region === country)) return true;
+  const words = [...countryTerms(country), ...(country === "Philippines" ? PH_PLACES : [])];
+  const re = new RegExp(`\\b(?:${words.map(escape).join("|")})`, "i");
+  return re.test([p.title, p.venue, ...(p.keywords ?? []), p.abstract].filter(Boolean).join(" "));
 }
