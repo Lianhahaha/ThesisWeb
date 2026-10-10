@@ -101,12 +101,15 @@ Rules restrict each user to their own `users/{uid}` data, cap field sizes, and a
 
 ```
 app/                 pages: home, search/, library/, paper/[id]/, cite/, databases/,
-                     login/, forgot-password/, settings/, privacy/, terms/
+                     shared/[id]/ (a group library opened by link), login/,
+                     forgot-password/, settings/, privacy/, terms/; manifest.ts
 app/api/             search, cite, related, pdf, retractions, summarize (server)
 components/          shared UI: SearchPanel, PaperCard, SaveButton, CountryCombobox,
                      Toaster, plus page parts (DatabasesDialog, ExportDialog,
-                     SynthesisMatrix, RelatedPapers)
-components/layout/   app shell: Header, Footer, Providers, ThemeToggle, analytics
+                     ShareDialog, ImportReferencesButton, SynthesisMatrix,
+                     RelatedPapers)
+components/layout/   app shell: Header, Footer, Providers, ThemeToggle, analytics,
+                     ServiceWorker (registers public/sw.js for offline use)
 lib/server/          server only (API routes; may read secret keys): search.ts
                      (fan-out), dedupe.ts (merge + rank), retractions.ts, summarize.ts,
                      rate-limit.ts, unpaywall.ts, config.ts
@@ -122,14 +125,20 @@ lib/sources/         the databases (server, except meta.ts)
                      SEAFDEC/AQD, SSOAR, WVSU), vufind (LA Referencia, BDTD),
                      ncbi (PubMed, PMC), ojs (Acta Medica Philippina, PNU)
 lib/search/          search page (browser): params.ts (URL <-> form, shared with
-                     the API), history.ts, recent-papers.ts, result-view.ts,
+                     the API), history.ts, saved.ts (saved searches, "New"),
+                     recent-papers.ts, result-view.ts (sort, refine),
                      related-terms.ts, integrity.ts (asks the retraction route)
 lib/library/         saved papers (browser): store.ts (IndexedDB or Firestore),
-                     firestore.ts, merge.ts (combining two copies), backup.ts
+                     firestore.ts, merge.ts (combining two copies), backup.ts,
+                     import.ts (.bib/.ris), scope.ts (Local/Foreign),
+                     reference-list.ts, rtf.ts + matrix-export.ts (Word/Excel
+                     downloads), shared-copy.ts + share.ts (group libraries)
 lib/auth/            accounts (browser): store.ts, errors.ts, recovery.ts (PIN,
                      email lookup), username-cache.ts
-lib/                 shared: types.ts, text.ts, utils.ts, citations.ts, countries.ts,
-                     preferences.ts, theme.ts, firebase.ts, legal.ts
+lib/                 shared: types.ts, text.ts, utils.ts, citations.ts, countries.ts
+                     (names, demonyms, "is this local"), preferences.ts, theme.ts,
+                     firebase.ts, legal.ts
+public/              sw.js (service worker), icons/
 tests/unit/          vitest, no network      tests/live/  real databases
 firestore.rules      publish in the Firebase console after every change
 ```
