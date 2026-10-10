@@ -1,10 +1,11 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { X, Download } from "lucide-react";
+import { X, Download, FileText } from "lucide-react";
 import type { SavedPaper } from "@/lib/types";
 import { groupReferences, sortBySurname } from "@/lib/library/reference-list";
 import type { Scope } from "@/lib/library/scope";
+import { referenceListRtf } from "@/lib/library/rtf";
 import {
   formatCitation,
   citationToText,
@@ -47,12 +48,19 @@ export function ExportDialog({
   // formatCitation() returns HTML; this is shown in a <pre> and copied, so it
   // has to be plain text. IEEE numbers run on across the groups.
   let n = 0;
-  const refList = groups
+  const formatted = groups.map((g) => ({ heading: g.heading, entries: g.papers.map((p) => formatCitation(p, style, ++n)) }));
+  const refList = formatted
     .map((g) => {
-      const entries = g.papers.map((p) => citationToText(formatCitation(p, style, ++n))).join("\n\n");
+      const entries = g.entries.map(citationToText).join("\n\n");
       return g.heading ? `${g.heading}\n\n${entries}` : entries;
     })
     .join("\n\n\n");
+
+  // Word and Google Docs lose hanging indents and italics on paste; an .rtf keeps them.
+  function downloadForWord() {
+    const rtf = referenceListRtf(formatted, { single: style === "ieee" });
+    download(rtf, `references-${style}.rtf`, "application/rtf");
+  }
 
   const inTextList = sorted
     .map(
@@ -150,6 +158,18 @@ export function ExportDialog({
           <pre className="mt-2 max-h-40 overflow-y-auto whitespace-pre-wrap break-words rounded-lg border border-border bg-surface2 p-3 text-sm">
             {inTextList}
           </pre>
+
+          <h3 className="mt-5 font-semibold">Download for Word or Google Docs</h3>
+          <div className="mt-2 flex flex-wrap gap-2">
+            <button onClick={downloadForWord} className="btn-secondary btn-sm">
+              <FileText className="h-3.5 w-3.5" aria-hidden />
+              Reference list (.rtf)
+            </button>
+          </div>
+          <p className="field-hint">
+            Opens in Word, Google Docs and LibreOffice with hanging indents, italics and{" "}
+            {style === "ieee" ? "single" : "double"} spacing already set.
+          </p>
 
           <h3 className="mt-5 font-semibold">Download for a reference manager</h3>
           <div className="mt-2 flex flex-wrap gap-2">

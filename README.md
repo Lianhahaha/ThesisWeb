@@ -16,7 +16,7 @@ No account needed to search. Only links to legal open-access full text. Light an
 2. **Narrow.** Sort by match, citations or date. The **Databases** list shows how many results each one returned — click to filter to it. **Narrow with** adds a suggested term. The search stays in the URL, so it's shareable.
 3. **Read.** Open a title for its abstract, a free-PDF link, a ready citation, related papers (cited-by / references / similar) and a notes box. **Abstract ≠ RRL** — it's the authors' own summary; use it to judge fit, then read the paper and write your RRL in your own words. Copying abstracts is plagiarism.
 4. **Save & organise.** Press **Save** on any result. In **Library**, group papers into collections and fill the **synthesis matrix** (Method, Findings, Limitations, Relevance) — this becomes your written RRL. Signed out, the library lives in that browser only; sign in to sync it, or copy it into your account later.
-5. **Cite.** Export your library as APA/MLA/IEEE/Chicago, BibTeX or RIS — or paste DOIs into **Cite** to generate references without saving anything first.
+5. **Cite.** Export your library as APA/MLA/IEEE/Chicago (copy it, or download an .rtf that opens in Word or Google Docs with hanging indents and italics), BibTeX or RIS — or paste DOIs into **Cite** to generate references without saving anything first.
 6. **Account (optional).** Sign up with a name, email, password and recovery PIN — you're signed in immediately; a verification link confirms the email. Under your name (or the gear icon signed out): **Preferences** (defaults for year/country/OA/citation style/theme, no account needed), display name, recovery PIN, password, email, and a JSON library backup/import.
 
 ---
