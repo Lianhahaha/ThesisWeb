@@ -1,9 +1,10 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { EB_Garamond } from "next/font/google";
 import "./globals.css";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { Providers } from "@/components/layout/Providers";
+import { ServiceWorker } from "@/components/layout/ServiceWorker";
 import { Toaster } from "@/components/Toaster";
 import { Analytics } from "@vercel/analytics/react";
 import { THEME_SCRIPT } from "@/lib/theme";
@@ -21,6 +22,19 @@ export const metadata: Metadata = {
   title: "Thesisweb",
   description:
     "Find related literature across free academic databases, keep it organised, and generate citations.",
+  applicationName: "Thesisweb",
+  appleWebApp: { capable: true, title: "Thesisweb", statusBarStyle: "default" },
+  icons: {
+    icon: [{ url: "/icons/favicon-48.png", sizes: "48x48", type: "image/png" }],
+    apple: [{ url: "/icons/apple-touch-icon.png", sizes: "180x180" }],
+  },
+};
+
+export const viewport: Viewport = {
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#fdfcf0" },
+    { media: "(prefers-color-scheme: dark)", color: "#191816" },
+  ],
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -39,6 +53,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           {/* The footer carries the bottom padding that clears the mobile tab bar. */}
           <Footer />
           <Toaster />
+          <ServiceWorker />
         </Providers>
         <Analytics />
       </body>
