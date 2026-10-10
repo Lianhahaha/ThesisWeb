@@ -1,7 +1,10 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import { FileSpreadsheet, FileText } from "lucide-react";
 import { MATRIX_CELL_MAX, type MatrixKey, type SavedPaper } from "@/lib/types";
+import { matrixCsv, matrixRows, matrixRtf } from "@/lib/library/matrix-export";
+import type { Scope } from "@/lib/library/scope";
 import { updatePaper } from "@/lib/library/store";
 import { toast } from "@/components/Toaster";
 
@@ -21,7 +24,23 @@ const FIELDS: { key: MatrixKey; label: string; placeholder: string }[] = [
   { key: "relevanceToTopic", label: "Relevance to my topic", placeholder: "Supports my hypothesis that…" },
 ];
 
-export function SynthesisMatrix({ papers }: { papers: SavedPaper[] }) {
+function download(content: string, filename: string, mime: string) {
+  const url = URL.createObjectURL(new Blob([content], { type: mime }));
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+export function SynthesisMatrix({
+  papers,
+  scopeOf,
+}: {
+  papers: SavedPaper[];
+  /** Adds a Local / foreign column to the downloads. */
+  scopeOf?: (p: SavedPaper) => Scope;
+}) {
   if (papers.length === 0) {
     return (
       <div className="panel py-12 text-center">
@@ -35,9 +54,29 @@ export function SynthesisMatrix({ papers }: { papers: SavedPaper[] }) {
 
   return (
     <>
-      <p className="mb-3 text-sm text-muted">
-        Fill a row per paper. Entries save when you click out of a box.
-      </p>
+      <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+        <p className="text-sm text-muted">Fill a row per paper. Entries save when you click out of a box.</p>
+        <div className="flex flex-wrap gap-2">
+          <button
+            type="button"
+            onClick={() => download(matrixCsv(matrixRows(papers, scopeOf)), "synthesis-matrix.csv", "text/csv;charset=utf-8")}
+            className="btn-secondary btn-sm"
+            title="Opens in Excel and Google Sheets"
+          >
+            <FileSpreadsheet className="h-3.5 w-3.5" aria-hidden />
+            Excel (.csv)
+          </button>
+          <button
+            type="button"
+            onClick={() => download(matrixRtf(matrixRows(papers, scopeOf)), "synthesis-matrix.rtf", "application/rtf")}
+            className="btn-secondary btn-sm"
+            title="A landscape table for Word and Google Docs"
+          >
+            <FileText className="h-3.5 w-3.5" aria-hidden />
+            Word (.rtf)
+          </button>
+        </div>
+      </div>
 
       {/* Phones: one card per paper. */}
       <ul className="space-y-3 md:hidden">

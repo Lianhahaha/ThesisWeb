@@ -386,7 +386,7 @@ export default function LibraryPage() {
                 </p>
               )
             ) : (
-              <SynthesisMatrix papers={filtered} />
+              <SynthesisMatrix papers={filtered} scopeOf={scopeOf} />
             )}
           </div>
         </>
