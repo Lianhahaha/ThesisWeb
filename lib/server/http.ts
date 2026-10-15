@@ -68,10 +68,15 @@ export function upstreamError(service: string, status: number): Error {
 /**
  * The JSON body of a response. Throws when the body isn't JSON: a database
  * that answers with a captcha, a block page or a maintenance notice must show
- * as failed (with the reason), not as "no results".
+ * as failed (with the reason), not as "no results". `whenEmpty` is returned
+ * for a blank body, for an API that answers "no matches" with nothing at all.
  */
-export async function readJson<T = unknown>(res: Response): Promise<T> {
+export async function readJson<T = unknown>(res: Response, whenEmpty?: T): Promise<T> {
   const text = await res.text();
+  if (!text.trim()) {
+    if (whenEmpty !== undefined) return whenEmpty;
+    throw new Error("sent an empty answer");
+  }
   try {
     return JSON.parse(text) as T;
   } catch {

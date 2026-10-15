@@ -50,7 +50,7 @@ export async function searchOsti(
   });
   if (!res.ok) throw new Error(`OSTI ${res.status}`);
   // No matches come back as an empty body, not "[]".
-  const records = await readJson<OstiRecord[]>(res);
+  const records = await readJson<OstiRecord[]>(res, []);
   if (!Array.isArray(records)) return [];
 
   const papers: Paper[] = [];

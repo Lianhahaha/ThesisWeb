@@ -13,6 +13,11 @@ describe("readJson", () => {
     await expect(readJson(page)).rejects.toThrow("sent a web page instead of data");
   });
 
+  it("returns the given value for a blank body, and fails without one", async () => {
+    expect(await readJson(new Response(""), [])).toEqual([]);
+    await expect(readJson(new Response("  "))).rejects.toThrow("empty answer");
+  });
+
   it("fails on a body that is neither JSON nor a page", async () => {
     await expect(readJson(new Response("Service Unavailable"))).rejects.toThrow("could not be read");
   });
