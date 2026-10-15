@@ -102,6 +102,9 @@ export interface Refinement {
 
 export const NO_REFINEMENT: Refinement = { types: new Set(), localTo: null, minCitations: 0 };
 
+/** True if any refinement is set. */
+export const isRefined = (r: Refinement) => r.types.size > 0 || r.localTo !== null || r.minCitations > 0;
+
 /** Narrow a result list by record type, country and citations. */
 export function refine(papers: Paper[], r: Refinement): Paper[] {
   return papers.filter((p) => {

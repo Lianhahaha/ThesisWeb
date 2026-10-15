@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo, useRef } from "react";
 import Link from "next/link";
-import { Bookmark, BookmarkCheck, ChevronDown } from "lucide-react";
+import { Bookmark, BookmarkCheck } from "lucide-react";
 import { PaperCard } from "@/components/PaperCard";
 import { SearchPanel, DEFAULT_FROM_YEAR } from "@/components/SearchPanel";
 import { toast } from "@/components/Toaster";
@@ -11,27 +11,23 @@ import { applyIntegrity, fetchIntegrity } from "@/lib/search/integrity";
 import type { Paper, SearchResult } from "@/lib/types";
 import { rankResults } from "@/lib/search/rank";
 import { streamSearch } from "@/lib/search/stream";
-import { SOURCE_COUNT, sourceLabel, SOURCE_META } from "@/lib/sources/meta";
-import { suggestTerms } from "@/lib/search/related-terms";
+import { SOURCE_COUNT } from "@/lib/sources/meta";
 import { addSearchHistory } from "@/lib/search/history";
 import { checkSavedSearch, isSearchSaved, removeSavedSearch, saveSearch, savedSearchKey } from "@/lib/search/saved";
 import { recallSearch, rememberSearch } from "@/lib/search/last-search";
 import { buildSearchParams, parseSearchParams, type SearchInput } from "@/lib/search/params";
 import { fromYearFor, getPreferences } from "@/lib/preferences";
 import {
-  MIN_CITATIONS,
   NO_REFINEMENT,
-  RECORD_TYPES,
   SORT_OPTIONS,
-  countBySource,
   filterBySources,
-  recordTypes,
+  isRefined,
   refine,
   sortPapers,
-  type RecordType,
   type Refinement,
   type SortKey,
 } from "@/lib/search/result-view";
+import { ResultsSidebar } from "@/components/search/ResultsSidebar";
 import { localCountry } from "@/lib/countries";
 import { trackEvent } from "@/lib/analytics-events";
 
@@ -48,11 +44,6 @@ export default function SearchPage() {
   const [result, setResult] = useState<SearchResult | null>(null);
   const [sortKey, setSortKey] = useState<SortKey>("relevance");
   const [selectedSources, setSelectedSources] = useState<Set<string>>(new Set());
-  // Phones only: the database list is folded so results start near the top.
-  const [sourcesOpen, setSourcesOpen] = useState(false);
-  // Databases with no results are folded away; with 30+ sources they would
-  // otherwise push the useful ones off screen.
-  const [showIdle, setShowIdle] = useState(false);
   // Saved searches: is this one saved, and which results are new since it was last opened.
   const [isSaved, setIsSaved] = useState(false);
   const [freshIds, setFreshIds] = useState<ReadonlySet<string>>(new Set());
@@ -63,38 +54,11 @@ export default function SearchPage() {
   // "Local" is the searched country, else the student's default country, else the Philippines.
   const [defaultCountry, setDefaultCountry] = useState<string | null>(null);
   useEffect(() => setDefaultCountry(getPreferences().country), []);
-  const refined = refinement.types.size > 0 || refinement.localTo !== null || refinement.minCitations > 0;
-  const typeCounts = useMemo(() => {
-    const counts: Partial<Record<RecordType, number>> = {};
-    for (const p of result?.papers ?? []) for (const t of recordTypes(p)) counts[t] = (counts[t] ?? 0) + 1;
-    return counts;
-  }, [result]);
-  function toggleType(t: RecordType) {
-    setRefinement((r) => {
-      const types = new Set(r.types);
-      if (types.has(t)) types.delete(t);
-      else types.add(t);
-      return { ...r, types };
-    });
-  }
+  const refined = isRefined(refinement);
 
-  // Suggestions come from the whole result set for the query that produced it —
-  // the input may have been edited since.
+  // The search that produced the results; the form may have been edited since.
   const [searched, setSearched] = useState<SearchInput | null>(null);
   const local = localCountry(searched?.country ?? defaultCountry);
-  const relatedTerms = useMemo(
-    () => (result && searched ? suggestTerms(result.papers, searched.query) : []),
-    [result, searched]
-  );
-
-  const sourceCounts = useMemo(() => countBySource(result?.papers ?? []), [result]);
-  // Databases with results first, most results on top; the rest after.
-  const [activeSources, idleSources] = useMemo(() => {
-    const names = Object.keys(result?.sources ?? {});
-    const active = names.filter((n) => (sourceCounts[n] ?? 0) > 0).sort((a, b) => sourceCounts[b] - sourceCounts[a]);
-    const idle = names.filter((n) => !(sourceCounts[n] > 0));
-    return [active, idle];
-  }, [result, sourceCounts]);
   const visible = useMemo(() => {
     const list = refine(filterBySources(result?.papers ?? [], selectedSources), refinement);
     return sortPapers(onlyNew ? list.filter((p) => freshIds.has(p.id)) : list, sortKey);
@@ -113,15 +77,6 @@ export default function SearchPage() {
       setIsSaved(true);
       toast("Search saved. Open it again later and new papers are marked “New”.", "success");
     }
-  }
-
-  function toggleSource(name: string) {
-    setSelectedSources((prev) => {
-      const next = new Set(prev);
-      if (next.has(name)) next.delete(name);
-      else next.add(name);
-      return next;
-    });
   }
 
   // A search in progress: how many databases have answered, and how to stop it
@@ -288,162 +243,16 @@ export default function SearchPage() {
       </div>
 
       {result && showResults && (
-        <aside className="min-w-0 space-y-6 lg:sticky lg:top-20 lg:col-start-2 lg:row-span-2 lg:row-start-1 lg:max-h-[calc(100vh-6rem)] lg:overflow-y-auto lg:pr-1">
-          <section aria-labelledby="refine-h">
-            <div className="flex items-baseline justify-between">
-              <h2 id="refine-h" className="eyebrow">Refine</h2>
-              {refined && (
-                <button type="button" onClick={() => setRefinement(NO_REFINEMENT)} className="text-xs text-muted underline">
-                  Clear
-                </button>
-              )}
-            </div>
-            <div className="mt-3 flex flex-wrap gap-1.5" role="group" aria-label="Record type">
-              {RECORD_TYPES.filter((t) => typeCounts[t.key]).map((t) => (
-                <button
-                  key={t.key}
-                  type="button"
-                  onClick={() => toggleType(t.key)}
-                  aria-pressed={refinement.types.has(t.key)}
-                  className={`chip-btn ${refinement.types.has(t.key) ? "chip-on" : ""}`}
-                >
-                  {t.label} <span className="tabular-nums text-subtle">{typeCounts[t.key]}</span>
-                </button>
-              ))}
-            </div>
-            <label className="mt-3 flex cursor-pointer items-center gap-2 text-sm text-muted">
-              <input
-                type="checkbox"
-                checked={refinement.localTo !== null}
-                onChange={(e) => setRefinement((r) => ({ ...r, localTo: e.target.checked ? local : null }))}
-                className="h-4 w-4 rounded"
-                style={{ accentColor: "rgb(var(--accent))" }}
-              />
-              Local studies only ({local})
-            </label>
-            <label className="mt-2 flex items-center gap-2 text-sm text-muted">
-              Cited at least
-              <select
-                value={refinement.minCitations}
-                onChange={(e) => setRefinement((r) => ({ ...r, minCitations: Number(e.target.value) }))}
-                className="input !min-h-[32px] !w-auto !py-1 text-sm"
-              >
-                {MIN_CITATIONS.map((n) => (
-                  <option key={n} value={n}>{n === 0 ? "any" : `${n}×`}</option>
-                ))}
-              </select>
-            </label>
-          </section>
-
-          <section aria-labelledby="sources-h">
-            <button
-              type="button"
-              onClick={() => setSourcesOpen((v) => !v)}
-              aria-expanded={sourcesOpen}
-              aria-controls="sources-list"
-              className="list-row justify-between lg:hidden"
-            >
-              <span>
-                <span className="font-medium">Databases</span>
-                <span className="ml-2 text-xs text-subtle">
-                  {selectedSources.size > 0
-                    ? `${selectedSources.size} selected`
-                    : `${Object.values(result.sources).filter((st) => st === "ok").length} with results`}
-                </span>
-              </span>
-              <ChevronDown className={`h-4 w-4 text-subtle ${sourcesOpen ? "rotate-180" : ""}`} aria-hidden />
-            </button>
-            <div className="hidden items-baseline justify-between lg:flex">
-              <h2 id="sources-h" className="eyebrow">Databases</h2>
-              {selectedSources.size > 0 && (
-                <button
-                  type="button"
-                  onClick={() => setSelectedSources(new Set())}
-                  className="text-xs text-muted underline"
-                >
-                  Show all
-                </button>
-              )}
-            </div>
-            <p className={`${sourcesOpen ? "block" : "hidden"} mt-2 text-xs text-subtle lg:mt-1 lg:block`}>
-              Select one or more to narrow the list.
-              {selectedSources.size > 0 && (
-                <button
-                  type="button"
-                  onClick={() => setSelectedSources(new Set())}
-                  className="ml-2 underline lg:hidden"
-                >
-                  Show all
-                </button>
-              )}
-            </p>
-            <ul
-              id="sources-list"
-              className={`${sourcesOpen ? "grid" : "hidden"} mt-3 grid-cols-2 gap-1.5 sm:grid-cols-3 lg:grid lg:grid-cols-1`}
-            >
-              {[...activeSources, ...(showIdle ? idleSources : [])].map((name) => {
-                const failed = result.sources[name] === "error";
-                const n = sourceCounts[name] ?? 0;
-                const on = selectedSources.has(name);
-                const clickable = !failed && n > 0;
-                const reason = result.errors?.[name];
-                // On the <li>: some browsers show no tooltip on a disabled button.
-                return (
-                  <li
-                    key={name}
-                    title={failed ? `${sourceLabel(name)} failed${reason ? `: ${reason}` : " or timed out"}` : SOURCE_META[name]?.blurb ?? name}
-                  >
-                    <button
-                      type="button"
-                      disabled={!clickable}
-                      onClick={() => toggleSource(name)}
-                      aria-pressed={on}
-                      className={`list-row ${on ? "chip-on" : ""} ${clickable ? "" : "opacity-50"}`}
-                    >
-                      <span className="flex-1 truncate">{sourceLabel(name)}</span>
-                      <span className="text-xs tabular-nums text-subtle">{failed ? "failed" : n}</span>
-                    </button>
-                  </li>
-                );
-              })}
-              {idleSources.length > 0 && (
-                <li className="col-span-full">
-                  <button
-                    type="button"
-                    onClick={() => setShowIdle((v) => !v)}
-                    aria-expanded={showIdle}
-                    className="list-row justify-center text-xs text-muted"
-                  >
-                    {showIdle
-                      ? "Hide databases with no results"
-                      : `${idleSources.length} more with no results`}
-                    <ChevronDown className={`h-3.5 w-3.5 ${showIdle ? "rotate-180" : ""}`} aria-hidden />
-                  </button>
-                </li>
-              )}
-            </ul>
-          </section>
-
-          {relatedTerms.length > 0 && searched && (
-            <section aria-labelledby="narrow-h">
-              <h2 id="narrow-h" className="eyebrow">Narrow with</h2>
-              <p className="mt-1 text-xs text-subtle">Adds the term to your search.</p>
-              <div className="mt-3 flex flex-wrap gap-1.5">
-                {relatedTerms.map((t) => (
-                  <button
-                    key={t.term}
-                    type="button"
-                    onClick={() => run({ ...searched, query: `${searched.query} ${t.term}` })}
-                    title={`${t.count} results mention this`}
-                    className="chip-btn"
-                  >
-                    + {t.term}
-                  </button>
-                ))}
-              </div>
-            </section>
-          )}
-        </aside>
+        <ResultsSidebar
+          result={result}
+          searched={searched}
+          local={local}
+          refinement={refinement}
+          onRefinement={setRefinement}
+          selectedSources={selectedSources}
+          onSelectedSources={setSelectedSources}
+          onNarrow={run}
+        />
       )}
 
       <div className="min-w-0 lg:col-start-1 lg:row-start-2">
