@@ -65,11 +65,18 @@ export function upstreamError(service: string, status: number): Error {
   );
 }
 
-/** Try to parse JSON, return null on failure (instead of throwing). */
-export async function safeJson<T = unknown>(res: Response): Promise<T | null> {
+/**
+ * The JSON body of a response. Throws when the body isn't JSON: a database
+ * that answers with a captcha, a block page or a maintenance notice must show
+ * as failed (with the reason), not as "no results".
+ */
+export async function readJson<T = unknown>(res: Response): Promise<T> {
+  const text = await res.text();
   try {
-    return (await res.json()) as T;
+    return JSON.parse(text) as T;
   } catch {
-    return null;
+    throw new Error(
+      /^\s*</.test(text) ? "sent a web page instead of data (blocked or down)" : "sent data that could not be read"
+    );
   }
 }

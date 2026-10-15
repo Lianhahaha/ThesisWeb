@@ -1,5 +1,5 @@
 import { paperId } from "@/lib/utils";
-import { fetchWithTimeout, safeJson } from "@/lib/server/http";
+import { fetchWithTimeout, readJson } from "@/lib/server/http";
 import { USER_AGENT } from "@/lib/server/config";
 import { extractDoi, extractYear, flipName, stripHtml } from "@/lib/text";
 import type { Paper } from "@/lib/types";
@@ -33,7 +33,7 @@ export async function searchEconBiz(query: string, opts: AdapterOptions = {}): P
   const params = new URLSearchParams({ q: query, size: String(fromYear ? perSource * 3 : perSource) });
   const res = await fetchWithTimeout(`${BASE}?${params}`, { headers: { "User-Agent": USER_AGENT } });
   if (!res.ok) throw new Error(`EconBiz ${res.status}`);
-  const data = await safeJson<{ hits?: { hits?: EconBizHit[] } }>(res);
+  const data = await readJson<{ hits?: { hits?: EconBizHit[] } }>(res);
 
   const papers: Paper[] = [];
   for (const h of data?.hits?.hits ?? []) {

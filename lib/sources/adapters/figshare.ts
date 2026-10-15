@@ -1,5 +1,5 @@
 import { paperId } from "@/lib/utils";
-import { fetchWithTimeout, safeJson } from "@/lib/server/http";
+import { fetchWithTimeout, readJson } from "@/lib/server/http";
 import { USER_AGENT } from "@/lib/server/config";
 import { stripHtml } from "@/lib/text";
 import type { Paper } from "@/lib/types";
@@ -64,7 +64,7 @@ export async function searchFigshare(
     body: JSON.stringify(body),
   });
   if (!res.ok) throw new Error(`Figshare ${res.status}`);
-  const summaries = (await safeJson<FigshareSummary[]>(res)) ?? [];
+  const summaries = (await readJson<FigshareSummary[]>(res)) ?? [];
 
   const candidates = summaries
     .filter((s) => s.title && WANTED_TYPES.has(s.defined_type_name ?? ""))
@@ -74,7 +74,7 @@ export async function searchFigshare(
   const details = await Promise.allSettled(
     candidates.map((c) =>
       fetchWithTimeout(`${ARTICLE_URL}/${c.id}`, { headers: { "User-Agent": USER_AGENT } }, 7000)
-        .then((r) => (r.ok ? safeJson<FigshareDetail>(r) : null))
+        .then((r) => (r.ok ? readJson<FigshareDetail>(r) : null))
     )
   );
 

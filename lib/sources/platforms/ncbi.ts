@@ -1,4 +1,4 @@
-import { fetchWithTimeout, safeJson, sleep } from "@/lib/server/http";
+import { fetchWithTimeout, readJson, sleep } from "@/lib/server/http";
 import { CONTACT_EMAIL } from "@/lib/server/config";
 
 /**
@@ -43,7 +43,7 @@ async function eutils(path: string, params: Record<string, string>): Promise<Res
 export async function eSearch(db: string, term: string, retmax: number): Promise<string[]> {
   const res = await eutils("esearch.fcgi", { db, term, retmax: String(retmax), sort: "relevance" });
   if (!res.ok) throw new Error(`esearch ${res.status}`);
-  const data = await safeJson<{ esearchresult?: { idlist?: string[] } }>(res);
+  const data = await readJson<{ esearchresult?: { idlist?: string[] } }>(res);
   return data?.esearchresult?.idlist ?? [];
 }
 
@@ -52,7 +52,7 @@ export async function eSummary(db: string, ids: string[]): Promise<Record<string
   if (ids.length === 0) return {};
   const res = await eutils("esummary.fcgi", { db, id: ids.join(",") });
   if (!res.ok) throw new Error(`esummary ${res.status}`);
-  const data = await safeJson<{ result?: Record<string, any> }>(res);
+  const data = await readJson<{ result?: Record<string, any> }>(res);
   return data?.result ?? {};
 }
 

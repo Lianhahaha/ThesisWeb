@@ -1,4 +1,4 @@
-import { fetchWithTimeout, safeJson, upstreamError } from "@/lib/server/http";
+import { fetchWithTimeout, readJson, upstreamError } from "@/lib/server/http";
 
 /**
  * Unpaywall adapter — find a legal, open-access PDF for a given DOI.
@@ -52,8 +52,7 @@ export async function findOaPdf(doi: string): Promise<OaResult> {
   const res = await fetchWithTimeout(url);
   if (res.status === 404) return { found: false, url: null };
   if (!res.ok) throw upstreamError("Unpaywall", res.status);
-  const data = await safeJson<UnpaywallResponse>(res);
-  if (!data) return { found: false, url: null };
+  const data = await readJson<UnpaywallResponse>(res);
 
   // Prefer a direct PDF, prefer published version, then any OA location.
   const all = [data.best_oa_location, ...(data.oa_locations || [])].filter(Boolean) as NonNullable<

@@ -1,5 +1,5 @@
 import { paperId } from "@/lib/utils";
-import { fetchWithTimeout, safeJson } from "@/lib/server/http";
+import { fetchWithTimeout, readJson } from "@/lib/server/http";
 import { USER_AGENT } from "@/lib/server/config";
 import { extractDoi, flipName, stripHtml } from "@/lib/text";
 import type { Paper } from "@/lib/types";
@@ -83,7 +83,7 @@ export function dspace7Adapter(cfg: Dspace7Config): Adapter {
       cfg.timeoutMs ?? 10000
     );
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const data = await safeJson<DiscoverResponse>(res);
+    const data = await readJson<DiscoverResponse>(res);
     const objects = data?._embedded?.searchResult?._embedded?.objects ?? [];
 
     const papers: Paper[] = [];

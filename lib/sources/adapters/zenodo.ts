@@ -1,5 +1,5 @@
 import { paperId } from "@/lib/utils";
-import { fetchWithTimeout, safeJson } from "@/lib/server/http";
+import { fetchWithTimeout, readJson } from "@/lib/server/http";
 import { USER_AGENT } from "@/lib/server/config";
 import { flipName, stripHtml } from "@/lib/text";
 import type { Paper } from "@/lib/types";
@@ -55,7 +55,7 @@ export async function searchZenodo(
   // Zenodo often takes 7-8 s to answer a full-text search.
   const res = await fetchWithTimeout(`${BASE}?${params}`, { headers: { "User-Agent": USER_AGENT } }, 11000);
   if (!res.ok) throw new Error(`Zenodo ${res.status}`);
-  const data = await safeJson<{ hits?: { hits?: ZenodoHit[] } }>(res);
+  const data = await readJson<{ hits?: { hits?: ZenodoHit[] } }>(res);
   const hits = data?.hits?.hits ?? [];
 
   const papers: Paper[] = [];

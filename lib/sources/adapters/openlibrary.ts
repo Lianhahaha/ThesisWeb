@@ -1,5 +1,5 @@
 import { paperId } from "@/lib/utils";
-import { fetchWithTimeout, safeJson } from "@/lib/server/http";
+import { fetchWithTimeout, readJson } from "@/lib/server/http";
 import { USER_AGENT } from "@/lib/server/config";
 import type { Paper } from "@/lib/types";
 import type { AdapterOptions } from "@/lib/sources/types";
@@ -39,7 +39,7 @@ export async function searchOpenLibrary(query: string, opts: AdapterOptions = {}
     headers: { "User-Agent": USER_AGENT, Accept: "application/json" },
   });
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
-  const data = await safeJson<{ docs?: OpenLibraryDoc[] }>(res);
+  const data = await readJson<{ docs?: OpenLibraryDoc[] }>(res);
 
   const papers: Paper[] = [];
   for (const d of data?.docs ?? []) {

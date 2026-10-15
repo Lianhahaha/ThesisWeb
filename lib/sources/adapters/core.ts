@@ -1,5 +1,5 @@
 import { paperId } from "@/lib/utils";
-import { fetchWithTimeout, safeJson } from "@/lib/server/http";
+import { fetchWithTimeout, readJson } from "@/lib/server/http";
 import { USER_AGENT } from "@/lib/server/config";
 import { extractDoi, flipName, stripHtml } from "@/lib/text";
 import type { Paper } from "@/lib/types";
@@ -72,7 +72,7 @@ export async function searchCore(query: string, opts: AdapterOptions = {}): Prom
   }
   if (res.status === 429) throw new Error(API_KEY ? "rate limited" : "rate limited (set CORE_API_KEY)");
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
-  const data = await safeJson<{ results?: CoreWork[] }>(res);
+  const data = await readJson<{ results?: CoreWork[] }>(res);
 
   const papers: Paper[] = [];
   for (const w of data?.results ?? []) {

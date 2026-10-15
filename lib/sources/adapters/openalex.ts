@@ -1,5 +1,5 @@
 import { paperId } from "@/lib/utils";
-import { fetchWithTimeout, safeJson, upstreamError } from "@/lib/server/http";
+import { fetchWithTimeout, readJson, upstreamError } from "@/lib/server/http";
 import type { Paper } from "@/lib/types";
 import type { AdapterOptions } from "@/lib/sources/types";
 import { CONTACT_EMAIL } from "@/lib/server/config";
@@ -74,7 +74,7 @@ export async function searchOpenAlex(
 
   const res = await fetchWithTimeout(`${BASE}?${params}`);
   if (!res.ok) throw new Error(`OpenAlex ${res.status}`);
-  const data = await safeJson<{ results: OpenAlexWork[] }>(res);
+  const data = await readJson<{ results: OpenAlexWork[] }>(res);
   if (!data?.results) return [];
 
   return data.results.map(workToPaper);
@@ -124,8 +124,7 @@ export async function getOpenAlexByDoi(doi: string): Promise<Paper | null> {
   const res = await fetchWithTimeout(`${BASE}/doi:${doiUrlPath(doi)}?mailto=${MAILTO}${KEY_QUERY}`);
   if (res.status === 404) return null;
   if (!res.ok) throw upstreamError("OpenAlex", res.status);
-  const w = await safeJson<OpenAlexWork>(res);
-  if (!w) return null;
+  const w = await readJson<OpenAlexWork>(res);
   return { ...workToPaper(w), doi, id: paperId(doi, w.title || w.display_name || "Untitled") };
 }
 
@@ -154,7 +153,7 @@ async function worksByIds(ids: string[], limit: number): Promise<Paper[]> {
   });
   const res = await fetchWithTimeout(`${BASE}?${params}`);
   if (!res.ok) throw upstreamError("OpenAlex", res.status);
-  const data = await safeJson<{ results?: OpenAlexWork[] }>(res);
+  const data = await readJson<{ results?: OpenAlexWork[] }>(res);
   return (data?.results ?? []).map(workToPaper);
 }
 
@@ -170,7 +169,7 @@ export async function getRelatedPapers(doi: string, limit = 10): Promise<Related
   );
   if (workRes.status === 404) return null;
   if (!workRes.ok) throw upstreamError("OpenAlex", workRes.status);
-  const work = await safeJson<{ id?: string; referenced_works?: string[]; related_works?: string[] }>(workRes);
+  const work = await readJson<{ id?: string; referenced_works?: string[]; related_works?: string[] }>(workRes);
   if (!work?.id) return null;
 
   const citedByParams = new URLSearchParams({
@@ -186,7 +185,7 @@ export async function getRelatedPapers(doi: string, limit = 10): Promise<Related
     worksByIds(work.related_works ?? [], limit),
     fetchWithTimeout(`${BASE}?${citedByParams}`).then((r) => {
       if (!r.ok) throw upstreamError("OpenAlex", r.status);
-      return safeJson<{ meta?: { count?: number }; results?: OpenAlexWork[] }>(r);
+      return readJson<{ meta?: { count?: number }; results?: OpenAlexWork[] }>(r);
     }),
   ]);
 

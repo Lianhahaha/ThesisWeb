@@ -1,5 +1,5 @@
 import { paperId } from "@/lib/utils";
-import { fetchWithTimeout, safeJson } from "@/lib/server/http";
+import { fetchWithTimeout, readJson } from "@/lib/server/http";
 import { USER_AGENT } from "@/lib/server/config";
 import { stripHtml } from "@/lib/text";
 import type { Paper } from "@/lib/types";
@@ -61,7 +61,7 @@ export async function searchHal(
 
   const res = await fetchWithTimeout(`${BASE}?${params}`, { headers: { "User-Agent": USER_AGENT } });
   if (!res.ok) throw new Error(`HAL ${res.status}`);
-  const data = await safeJson<{ response?: { docs?: HalDoc[] } }>(res);
+  const data = await readJson<{ response?: { docs?: HalDoc[] } }>(res);
   const docs = data?.response?.docs ?? [];
 
   const papers: Paper[] = [];

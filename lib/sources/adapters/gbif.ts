@@ -1,5 +1,5 @@
 import { paperId } from "@/lib/utils";
-import { fetchWithTimeout, safeJson } from "@/lib/server/http";
+import { fetchWithTimeout, readJson } from "@/lib/server/http";
 import { USER_AGENT } from "@/lib/server/config";
 import { extractDoi, stripHtml } from "@/lib/text";
 import type { Paper } from "@/lib/types";
@@ -38,7 +38,7 @@ export async function searchGbif(query: string, opts: AdapterOptions = {}): Prom
 
   const res = await fetchWithTimeout(`${BASE}?${params}`, { headers: { "User-Agent": USER_AGENT } });
   if (!res.ok) throw new Error(`GBIF ${res.status}`);
-  const data = await safeJson<{ results?: GbifRecord[] }>(res);
+  const data = await readJson<{ results?: GbifRecord[] }>(res);
 
   const papers: Paper[] = [];
   for (const r of data?.results ?? []) {

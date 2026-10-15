@@ -1,5 +1,5 @@
 import { paperId } from "@/lib/utils";
-import { fetchWithTimeout, safeJson } from "@/lib/server/http";
+import { fetchWithTimeout, readJson } from "@/lib/server/http";
 import { USER_AGENT } from "@/lib/server/config";
 import { extractDoi, flipName, stripHtml } from "@/lib/text";
 import type { Paper } from "@/lib/types";
@@ -50,7 +50,7 @@ export async function searchOsti(
   });
   if (!res.ok) throw new Error(`OSTI ${res.status}`);
   // No matches come back as an empty body, not "[]".
-  const records = await safeJson<OstiRecord[]>(res);
+  const records = await readJson<OstiRecord[]>(res);
   if (!Array.isArray(records)) return [];
 
   const papers: Paper[] = [];

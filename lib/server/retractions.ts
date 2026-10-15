@@ -1,4 +1,4 @@
-import { fetchWithTimeout, safeJson } from "@/lib/server/http";
+import { fetchWithTimeout, readJson } from "@/lib/server/http";
 import { CONTACT_EMAIL } from "@/lib/server/config";
 import type { IntegrityStatus } from "@/lib/types";
 
@@ -48,7 +48,7 @@ async function checkChunk(dois: string[], ms: number): Promise<Map<string, Integ
   });
   const res = await fetchWithTimeout(`https://api.crossref.org/works?${params}`, {}, ms);
   if (!res.ok) throw new Error(`Crossref ${res.status}`);
-  const data = await safeJson<{ message?: { items?: CrossrefNotice[] } }>(res);
+  const data = await readJson<{ message?: { items?: CrossrefNotice[] } }>(res);
 
   const wanted = new Set(dois);
   const found = new Map<string, IntegrityStatus>();

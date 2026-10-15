@@ -1,5 +1,5 @@
 import { paperId } from "@/lib/utils";
-import { fetchWithTimeout, safeJson, sleep } from "@/lib/server/http";
+import { fetchWithTimeout, readJson, sleep } from "@/lib/server/http";
 import type { Paper } from "@/lib/types";
 import type { AdapterOptions } from "@/lib/sources/types";
 
@@ -93,7 +93,7 @@ export async function searchSemanticScholar(
   if (!res.ok) {
     throw new Error(res.status === 429 ? "rate limited (429)" : `HTTP ${res.status}`);
   }
-  const data = await safeJson<{ data: S2Paper[]; total?: number }>(res);
+  const data = await readJson<{ data: S2Paper[]; total?: number }>(res);
   if (!data?.data) return [];
 
   return data.data

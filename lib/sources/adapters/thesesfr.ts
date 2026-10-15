@@ -1,5 +1,5 @@
 import { paperId } from "@/lib/utils";
-import { fetchWithTimeout, safeJson } from "@/lib/server/http";
+import { fetchWithTimeout, readJson } from "@/lib/server/http";
 import { USER_AGENT } from "@/lib/server/config";
 import { extractDoi } from "@/lib/text";
 import type { Paper } from "@/lib/types";
@@ -40,7 +40,7 @@ export async function searchThesesFr(query: string, opts: AdapterOptions = {}): 
   const params = new URLSearchParams({ q: query, nombre: String(perSource * 3), debut: "0" });
   const res = await fetchWithTimeout(`${BASE}?${params}`, { headers: { "User-Agent": USER_AGENT } });
   if (!res.ok) throw new Error(`theses.fr ${res.status}`);
-  const data = await safeJson<{ theses?: ThesisRecord[] }>(res);
+  const data = await readJson<{ theses?: ThesisRecord[] }>(res);
 
   const papers: Paper[] = [];
   for (const t of data?.theses ?? []) {

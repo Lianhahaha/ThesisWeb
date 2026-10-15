@@ -1,5 +1,5 @@
 import { paperId } from "@/lib/utils";
-import { fetchWithTimeout, safeJson } from "@/lib/server/http";
+import { fetchWithTimeout, readJson } from "@/lib/server/http";
 import { USER_AGENT } from "@/lib/server/config";
 import { extractDoi, stripHtml } from "@/lib/text";
 import type { Paper } from "@/lib/types";
@@ -48,7 +48,7 @@ export async function searchOsf(query: string, opts: AdapterOptions = {}): Promi
     headers: { "User-Agent": USER_AGENT, Accept: "application/vnd.api+json" },
   });
   if (!res.ok) throw new Error(`OSF ${res.status}`);
-  const data = await safeJson<{ included?: Card[] }>(res);
+  const data = await readJson<{ included?: Card[] }>(res);
 
   const papers: Paper[] = [];
   for (const card of data?.included ?? []) {

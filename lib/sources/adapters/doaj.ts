@@ -1,5 +1,5 @@
 import { paperId } from "@/lib/utils";
-import { fetchWithTimeout, safeJson } from "@/lib/server/http";
+import { fetchWithTimeout, readJson } from "@/lib/server/http";
 import { extractDoi } from "@/lib/text";
 import type { Paper } from "@/lib/types";
 import type { AdapterOptions } from "@/lib/sources/types";
@@ -23,7 +23,7 @@ export async function searchDoaj(
 
   const res = await fetchWithTimeout(url);
   if (!res.ok) throw new Error(`DOAJ ${res.status}`);
-  const data = await safeJson<{ results: any[] }>(res);
+  const data = await readJson<{ results: any[] }>(res);
   if (!data?.results) return [];
 
   const papers: Paper[] = [];

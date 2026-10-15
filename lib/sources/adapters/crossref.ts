@@ -1,5 +1,5 @@
 import { paperId } from "@/lib/utils";
-import { fetchWithTimeout, safeJson, upstreamError } from "@/lib/server/http";
+import { fetchWithTimeout, readJson, upstreamError } from "@/lib/server/http";
 import type { Paper } from "@/lib/types";
 import type { AdapterOptions } from "@/lib/sources/types";
 import { CONTACT_EMAIL } from "@/lib/server/config";
@@ -86,7 +86,7 @@ export async function searchCrossref(
 
   const res = await fetchWithTimeout(`${BASE}?${params}`);
   if (!res.ok) throw new Error(`Crossref ${res.status}`);
-  const data = await safeJson<{ message: { items: CrossrefItem[] } }>(res);
+  const data = await readJson<{ message: { items: CrossrefItem[] } }>(res);
   if (!data?.message?.items) return [];
 
   const items = openAccessOnly
@@ -125,6 +125,6 @@ export async function getCrossrefByDoi(doi: string): Promise<Paper | null> {
   const res = await fetchWithTimeout(`${BASE}/${doiUrlPath(doi)}?mailto=${encodeURIComponent(MAILTO)}`);
   if (res.status === 404) return null;
   if (!res.ok) throw upstreamError("Crossref", res.status);
-  const data = await safeJson<{ message?: CrossrefItem }>(res);
+  const data = await readJson<{ message?: CrossrefItem }>(res);
   return data?.message ? itemToPaper(data.message) : null;
 }

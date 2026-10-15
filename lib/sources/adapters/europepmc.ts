@@ -1,5 +1,5 @@
 import { paperId } from "@/lib/utils";
-import { fetchWithTimeout, safeJson, sleep } from "@/lib/server/http";
+import { fetchWithTimeout, readJson, sleep } from "@/lib/server/http";
 import type { Paper } from "@/lib/types";
 import type { AdapterOptions } from "@/lib/sources/types";
 
@@ -61,7 +61,7 @@ export async function searchEuropePMC(
   async function fetchOnce() {
     const res = await fetchWithTimeout(`${BASE}?${params}`);
     if (!res.ok) throw new Error(`EuropePMC ${res.status}`);
-    return safeJson<{ resultList?: { result?: EPMCResult[] } }>(res);
+    return readJson<{ resultList?: { result?: EPMCResult[] } }>(res);
   }
   let data = await fetchOnce();
   if (!data?.resultList) {

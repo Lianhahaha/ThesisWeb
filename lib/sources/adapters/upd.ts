@@ -1,5 +1,5 @@
 import { paperId } from "@/lib/utils";
-import { fetchWithTimeout, safeJson } from "@/lib/server/http";
+import { fetchWithTimeout, readJson } from "@/lib/server/http";
 import { USER_AGENT } from "@/lib/server/config";
 import { extractYear, flipName, stripHtml } from "@/lib/text";
 import type { Paper } from "@/lib/types";
@@ -97,7 +97,7 @@ export async function searchUpd(query: string, opts: AdapterOptions = {}): Promi
             body: new URLSearchParams({ AjaxRequest: "MoveToPage", pagenum: String(i + 2), SearchID: searchId[1] ?? searchId[2] }),
           },
           8000
-        ).then((r) => (r.ok ? safeJson<{ SearchResult?: string }>(r) : null))
+        ).then((r) => (r.ok ? readJson<{ SearchResult?: string }>(r) : null))
       )
     );
     // A later page that fails only costs its five results.

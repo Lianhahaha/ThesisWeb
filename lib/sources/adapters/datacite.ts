@@ -1,5 +1,5 @@
 import { paperId } from "@/lib/utils";
-import { fetchWithTimeout, safeJson } from "@/lib/server/http";
+import { fetchWithTimeout, readJson } from "@/lib/server/http";
 import { USER_AGENT } from "@/lib/server/config";
 import { flipName, stripHtml } from "@/lib/text";
 import type { Paper } from "@/lib/types";
@@ -68,7 +68,7 @@ export async function searchDataCite(
 
   const res = await fetchWithTimeout(`${BASE}?${params}`, { headers: { "User-Agent": USER_AGENT } }, 10000);
   if (!res.ok) throw new Error(`DataCite ${res.status}`);
-  const data = await safeJson<{ data?: { attributes?: DataCiteAttrs }[] }>(res);
+  const data = await readJson<{ data?: { attributes?: DataCiteAttrs }[] }>(res);
 
   const papers: Paper[] = [];
   for (const item of data?.data ?? []) {

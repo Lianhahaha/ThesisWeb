@@ -1,5 +1,5 @@
 import { paperId } from "@/lib/utils";
-import { fetchWithTimeout, safeJson } from "@/lib/server/http";
+import { fetchWithTimeout, readJson } from "@/lib/server/http";
 import { USER_AGENT } from "@/lib/server/config";
 import { flipName, stripHtml } from "@/lib/text";
 import type { Paper } from "@/lib/types";
@@ -73,7 +73,7 @@ export async function searchInspire(
 
   const res = await fetchWithTimeout(`${BASE}?${params}`, { headers: { "User-Agent": USER_AGENT } });
   if (!res.ok) throw new Error(`INSPIRE ${res.status}`);
-  const data = await safeJson<{ hits?: { hits?: { metadata?: InspireMeta }[] } }>(res);
+  const data = await readJson<{ hits?: { hits?: { metadata?: InspireMeta }[] } }>(res);
   const hits = data?.hits?.hits ?? [];
 
   const papers: Paper[] = [];

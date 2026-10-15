@@ -1,7 +1,22 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { fetchWithTimeout, sleep, withAbortSignal } from "@/lib/server/http";
+import { fetchWithTimeout, readJson, sleep, withAbortSignal } from "@/lib/server/http";
 
 afterEach(() => vi.unstubAllGlobals());
+
+describe("readJson", () => {
+  it("parses a JSON body", async () => {
+    expect(await readJson(new Response('{"results":[]}'))).toEqual({ results: [] });
+  });
+
+  it("fails on a captcha or block page instead of reading it as no results", async () => {
+    const page = new Response("<!DOCTYPE html><html><title>Just a moment...</title></html>");
+    await expect(readJson(page)).rejects.toThrow("sent a web page instead of data");
+  });
+
+  it("fails on a body that is neither JSON nor a page", async () => {
+    await expect(readJson(new Response("Service Unavailable"))).rejects.toThrow("could not be read");
+  });
+});
 
 describe("source deadlines", () => {
   it("aborts a request that is still running when the source's signal aborts", async () => {
