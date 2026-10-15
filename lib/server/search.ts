@@ -1,5 +1,5 @@
 import type { Paper, SearchResult } from "@/lib/types";
-import { dedupePapers, scoreRelevance } from "@/lib/server/dedupe";
+import { rankResults } from "@/lib/search/rank";
 import { ADAPTERS } from "@/lib/sources/registry";
 import { normalizePaper } from "@/lib/sources/normalize";
 import type { AdapterOptions } from "@/lib/sources/types";
@@ -84,18 +84,8 @@ export async function metaSearch(
     all = all.concat(papers);
   }
 
-  let deduped = dedupePapers(all);
-
   // Many databases can't filter by year or by free full text themselves, so
   // both filters are applied again to the merged list.
-  if (opts.fromYear && opts.fromYear > 0) {
-    deduped = deduped.filter((p) => !p.year || p.year >= opts.fromYear!);
-  }
-  if (opts.openAccessOnly) {
-    deduped = deduped.filter((p) => p.isOpenAccess);
-  }
-
-  // Score relevance against the *original* user query (not the country-injected one)
-  const papers = scoreRelevance(deduped, query);
+  const papers = rankResults(all, query, opts);
   return { papers, sources: status, errors, tookMs: Date.now() - start };
 }

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { dedupePapers } from "@/lib/server/dedupe";
+import { dedupePapers, rankResults } from "@/lib/search/rank";
 import type { Paper } from "@/lib/types";
 
 const p = (over: Partial<Paper>): Paper => ({
@@ -47,5 +47,26 @@ describe("dedupePapers", () => {
       p({ id: "tit:x", title: "Same", year: 2026, doi: null, abstract: "different record, same key" }),
     ]);
     expect(new Set(out.map((x) => x.id)).size).toBe(out.length);
+  });
+});
+
+describe("rankResults", () => {
+  const records = () => [
+    p({ id: "doi:10.1/a", doi: "10.1/a", title: "Teacher burnout in schools", sources: ["one"], year: 2024 }),
+    p({ id: "doi:10.1/a", doi: "10.1/a", title: "Teacher burnout in schools", sources: ["two"], year: 2024, isOpenAccess: true, openAccessUrl: "https://x.org/a.pdf" }),
+    p({ id: "doi:10.1/b", doi: "10.1/b", title: "Teacher burnout and pay", sources: ["one"], year: 2015 }),
+  ];
+
+  it("merges, filters and ranks without changing the records it was given", () => {
+    const input = records();
+    const before = JSON.stringify(input);
+    const out = rankResults(input, "teacher burnout", { fromYear: 2020 });
+    expect(out.map((x) => x.id)).toEqual(["doi:10.1/a"]);
+    expect(out[0].sources).toEqual(["one", "two"]);
+    expect(JSON.stringify(input)).toBe(before);
+  });
+
+  it("keeps only free full text when asked", () => {
+    expect(rankResults(records(), "teacher burnout", { openAccessOnly: true }).map((x) => x.id)).toEqual(["doi:10.1/a"]);
   });
 });

@@ -2,6 +2,36 @@ import type { Paper } from "@/lib/types";
 import { normalizeTitle } from "@/lib/utils";
 
 /**
+ * Merging and ranking search results. Pure functions, used by the server for a
+ * whole search and by the search page for results that stream in database by
+ * database (lib/search/stream.ts), so both rank alike.
+ */
+
+/** Filters the databases can't always apply themselves, so they are applied again to every result. */
+export interface ResultFilters {
+  /** Earliest year; 0 or undefined = any year. */
+  fromYear?: number;
+  openAccessOnly?: boolean;
+}
+
+/** True if a paper passes the year and free-full-text filters (a paper with no year is kept). */
+export function passesFilters(p: Paper, f: ResultFilters): boolean {
+  if (f.fromYear && f.fromYear > 0 && p.year && p.year < f.fromYear) return false;
+  return !f.openAccessOnly || p.isOpenAccess === true;
+}
+
+/**
+ * One ranked list from the records of every database: duplicates merged,
+ * filters applied, scored against the student's own words (not the
+ * country-scoped query). The input is left untouched.
+ */
+export function rankResults(papers: Paper[], query: string, filters: ResultFilters = {}): Paper[] {
+  // Merging writes into records, so work on copies.
+  const merged = dedupePapers(papers.map((p) => ({ ...p }))).filter((p) => passesFilters(p, filters));
+  return scoreRelevance(merged, query);
+}
+
+/**
  * Merge papers from multiple sources.
  * - Match by DOI first (exact), then by normalized-title + year similarity.
  * - When two records describe the same work, union their fields — prefer the

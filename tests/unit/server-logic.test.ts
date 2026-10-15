@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { NextRequest } from "next/server";
-import { dedupePapers, scoreRelevance } from "@/lib/server/dedupe";
+import { dedupePapers, scoreRelevance } from "@/lib/search/rank";
 import { extractDoi } from "@/lib/text";
 import { rateLimit } from "@/lib/server/rate-limit";
 import type { Paper } from "@/lib/types";

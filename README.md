@@ -61,7 +61,7 @@ All free, no key needed. The in-app [Databases page](app/databases/page.tsx) (`/
 
 **Trust signals:** results come straight from these databases; nothing is generated. Preprints carry a *Preprint · not peer-reviewed* badge. After results load, every DOI is checked against Crossref (which includes Retraction Watch) for retractions and expressions of concern. Semantic Scholar's one-line summaries are labelled *AI summary*.
 
-**Ranking:** duplicates (same DOI, or title+year) are merged; each paper is scored on word overlap with your query (title, abstract, phrase order, recency, citations — see [`lib/server/dedupe.ts`](lib/server/dedupe.ts)). It measures word match, not quality — read the abstract.
+**Ranking:** duplicates (same DOI, or title+year) are merged; each paper is scored on word overlap with your query (title, abstract, phrase order, recency, citations — see [`lib/search/rank.ts`](lib/search/rank.ts)). It measures word match, not quality — read the abstract.
 
 ---
 
@@ -111,9 +111,9 @@ components/          shared UI: SearchPanel, PaperCard, SaveButton, CountryCombo
 components/layout/   app shell: Header, Footer, Providers, ThemeToggle, analytics,
                      ServiceWorker (registers public/sw.js for offline use)
 lib/server/          server only (API routes; may read secret keys): search.ts
-                     (fan-out), dedupe.ts (merge + rank), http.ts (fetch with timeouts
-                     that stop when a source's deadline passes), retractions.ts,
-                     summarize.ts, rate-limit.ts, unpaywall.ts, config.ts
+                     (fan-out), http.ts (fetch with timeouts that stop when a
+                     source's deadline passes), retractions.ts, summarize.ts,
+                     rate-limit.ts, unpaywall.ts, config.ts
 lib/sources/         the databases (server, except meta.ts)
   meta.ts            display data for every source (client-safe): label, region,
                      fields, record type, homepage
@@ -126,8 +126,9 @@ lib/sources/         the databases (server, except meta.ts)
                      SEAFDEC/AQD, SSOAR, WVSU), vufind (LA Referencia, BDTD),
                      ncbi (PubMed, PMC), ojs (Acta Medica Philippina, PNU)
 lib/search/          search page (browser): params.ts (URL <-> form, shared with
-                     the API), history.ts, saved.ts (saved searches, "New"),
-                     recent-papers.ts, result-view.ts (sort, refine),
+                     the API), rank.ts (merge + rank, shared with the API),
+                     history.ts, saved.ts (saved searches, "New"),
+                     recent-papers.ts, last-search.ts, result-view.ts (sort, refine),
                      related-terms.ts, integrity.ts (asks the retraction route)
 lib/library/         saved papers (browser): store.ts (IndexedDB or Firestore),
                      firestore.ts, saved-ids.ts (Save buttons' state, looked up
