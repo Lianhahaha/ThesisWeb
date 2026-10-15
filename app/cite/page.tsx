@@ -17,19 +17,11 @@ import {
 import { mergeRecentPapers } from "@/lib/search/recent-papers";
 import { extractDoi } from "@/lib/text";
 import { getPreferences } from "@/lib/preferences";
+import { downloadFile } from "@/lib/download";
 import type { Paper } from "@/lib/types";
 import type { CiteResult } from "@/app/api/cite/route";
 
 const EXAMPLE = "10.1038/nature12373\nhttps://doi.org/10.1016/j.compedu.2019.103778";
-
-function download(content: string, filename: string, mime: string) {
-  const url = URL.createObjectURL(new Blob([content], { type: mime }));
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = filename;
-  a.click();
-  URL.revokeObjectURL(url);
-}
 
 function copy(text: string, label: string) {
   navigator.clipboard
@@ -153,14 +145,14 @@ export default function CitePage() {
                   Copy all
                 </button>
                 <button
-                  onClick={() => download(toBibtexList(papers), "references.bib", "text/plain")}
+                  onClick={() => downloadFile(toBibtexList(papers), "references.bib", "text/plain")}
                   className="btn-ghost btn-sm"
                 >
                   <Download className="h-3.5 w-3.5" aria-hidden /> .bib
                 </button>
                 <button
                   onClick={() =>
-                    download(papers.map(toRis).join("\n\n"), "references.ris", "application/x-research-info-systems")
+                    downloadFile(papers.map(toRis).join("\n\n"), "references.ris", "application/x-research-info-systems")
                   }
                   className="btn-ghost btn-sm"
                 >

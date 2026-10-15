@@ -6,6 +6,7 @@ import { MATRIX_CELL_MAX, type MatrixKey, type SavedPaper } from "@/lib/types";
 import { matrixCsv, matrixRows, matrixRtf } from "@/lib/library/matrix-export";
 import type { Scope } from "@/lib/library/scope";
 import { updatePaper } from "@/lib/library/store";
+import { downloadFile } from "@/lib/download";
 import { toast } from "@/components/Toaster";
 
 /**
@@ -23,15 +24,6 @@ const FIELDS: { key: MatrixKey; label: string; placeholder: string }[] = [
   { key: "limitations", label: "Limitations", placeholder: "Small sample, single school…" },
   { key: "relevanceToTopic", label: "Relevance to my topic", placeholder: "Supports my hypothesis that…" },
 ];
-
-function download(content: string, filename: string, mime: string) {
-  const url = URL.createObjectURL(new Blob([content], { type: mime }));
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = filename;
-  a.click();
-  URL.revokeObjectURL(url);
-}
 
 export function SynthesisMatrix({
   papers,
@@ -59,7 +51,7 @@ export function SynthesisMatrix({
         <div className="flex flex-wrap gap-2">
           <button
             type="button"
-            onClick={() => download(matrixCsv(matrixRows(papers, scopeOf)), "synthesis-matrix.csv", "text/csv;charset=utf-8")}
+            onClick={() => downloadFile(matrixCsv(matrixRows(papers, scopeOf)), "synthesis-matrix.csv", "text/csv;charset=utf-8")}
             className="btn-secondary btn-sm"
             title="Opens in Excel and Google Sheets"
           >
@@ -68,7 +60,7 @@ export function SynthesisMatrix({
           </button>
           <button
             type="button"
-            onClick={() => download(matrixRtf(matrixRows(papers, scopeOf)), "synthesis-matrix.rtf", "application/rtf")}
+            onClick={() => downloadFile(matrixRtf(matrixRows(papers, scopeOf)), "synthesis-matrix.rtf", "application/rtf")}
             className="btn-secondary btn-sm"
             title="A landscape table for Word and Google Docs"
           >

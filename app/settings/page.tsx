@@ -31,6 +31,7 @@ import { applyTheme, savedThemeChoice, type ThemeChoice } from "@/lib/theme";
 import { CITATION_STYLES, type CitationStyle } from "@/lib/citations";
 import type { SavedPaper } from "@/lib/types";
 import { parseBackup } from "@/lib/library/backup";
+import { downloadFile } from "@/lib/download";
 
 // Offsets are one less than the span because the year filter is inclusive.
 const YEAR_OPTIONS = [
@@ -96,15 +97,6 @@ function PasswordField({
       </div>
     </div>
   );
-}
-
-function downloadJson(data: unknown, filename: string) {
-  const url = URL.createObjectURL(new Blob([JSON.stringify(data, null, 2)], { type: "application/json" }));
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = filename;
-  a.click();
-  URL.revokeObjectURL(url);
 }
 
 export default function SettingsPage() {
@@ -380,9 +372,10 @@ export default function SettingsPage() {
   async function downloadBackup() {
     try {
       const papers = await allPapers();
-      downloadJson(
-        { app: "Thesisweb", exportedAt: new Date().toISOString(), papers },
-        `thesisweb-library-${new Date().toISOString().slice(0, 10)}.json`
+      downloadFile(
+        JSON.stringify({ app: "Thesisweb", exportedAt: new Date().toISOString(), papers }, null, 2),
+        `thesisweb-library-${new Date().toISOString().slice(0, 10)}.json`,
+        "application/json"
       );
       toast(`Backup of ${papers.length} papers downloaded`, "success");
     } catch {

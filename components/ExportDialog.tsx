@@ -16,6 +16,7 @@ import {
   type CitationStyle,
 } from "@/lib/citations";
 import { getPreferences } from "@/lib/preferences";
+import { downloadFile } from "@/lib/download";
 import { toast } from "@/components/Toaster";
 
 export function ExportDialog({
@@ -59,7 +60,7 @@ export function ExportDialog({
   // Word and Google Docs lose hanging indents and italics on paste; an .rtf keeps them.
   function downloadForWord() {
     const rtf = referenceListRtf(formatted, { single: style === "ieee" });
-    download(rtf, `references-${style}.rtf`, "application/rtf");
+    downloadFile(rtf, `references-${style}.rtf`, "application/rtf");
   }
 
   const inTextList = sorted
@@ -70,16 +71,6 @@ export function ExportDialog({
         }`
     )
     .join("\n");
-
-  function download(content: string, filename: string, mime: string) {
-    const blob = new Blob([content], { type: mime });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = filename;
-    a.click();
-    URL.revokeObjectURL(url);
-  }
 
   function copy(text: string, field: string) {
     // Only say "Copied" once it really was: the clipboard can be blocked
@@ -175,7 +166,7 @@ export function ExportDialog({
           <div className="mt-2 flex flex-wrap gap-2">
             <button
               onClick={() =>
-                download(toBibtexList(sorted), "references.bib", "text/plain")
+                downloadFile(toBibtexList(sorted), "references.bib", "text/plain")
               }
               className="btn-secondary btn-sm"
             >
@@ -184,7 +175,7 @@ export function ExportDialog({
             </button>
             <button
               onClick={() =>
-                download(
+                downloadFile(
                   sorted.map(toRis).join("\n\n"),
                   "references.ris",
                   "application/x-research-info-systems"
