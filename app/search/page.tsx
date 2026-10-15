@@ -13,7 +13,8 @@ import type { SearchResult } from "@/lib/types";
 import { SOURCE_COUNT, sourceLabel, SOURCE_META } from "@/lib/sources/meta";
 import { suggestTerms } from "@/lib/search/related-terms";
 import { addSearchHistory } from "@/lib/search/history";
-import { checkSavedSearch, removeSavedSearch, saveSearch, savedSearchKey } from "@/lib/search/saved";
+import { checkSavedSearch, isSearchSaved, removeSavedSearch, saveSearch, savedSearchKey } from "@/lib/search/saved";
+import { recallSearch, rememberSearch } from "@/lib/search/last-search";
 import { buildSearchParams, parseSearchParams, type SearchInput } from "@/lib/search/params";
 import { fromYearFor, getPreferences } from "@/lib/preferences";
 import {
@@ -152,6 +153,8 @@ export default function SearchPage() {
       setIsSaved(!!check);
       setFreshIds(new Set(check?.fresh ?? []));
       setFreshSince(check?.since ?? null);
+      // Coming back from a paper shows these again without searching.
+      rememberSearch(buildSearchParams(input).toString(), data, check?.fresh ?? [], check?.since ?? null);
       setOnlyNew(false);
       setRefinement(NO_REFINEMENT);
       const ok = Object.values(data.sources).filter((s) => s === "ok").length;
@@ -181,6 +184,17 @@ export default function SearchPage() {
     if (!input) {
       // Fresh visit: start from the saved defaults.
       setForm((f) => ({ ...f, fromYear: fromYearFor(prefs), country: prefs.country, openAccessOnly: prefs.openAccessOnly }));
+      return;
+    }
+    // Back from a paper (or a refresh) within half an hour: the same results, at once.
+    const recalled = recallSearch(buildSearchParams(input).toString());
+    if (recalled) {
+      setForm(input);
+      setResult(recalled.result);
+      setSearched(input);
+      setIsSaved(isSearchSaved(input));
+      setFreshIds(new Set(recalled.fresh));
+      setFreshSince(recalled.since);
       return;
     }
     run(input);

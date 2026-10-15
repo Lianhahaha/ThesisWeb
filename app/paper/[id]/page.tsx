@@ -7,6 +7,7 @@ import { useLiveQuery } from "dexie-react-hooks";
 import { ArrowLeft, Check, ExternalLink, FileText } from "lucide-react";
 import { getDb, savePaper, unsavePaper, updatePaper, getPaper } from "@/lib/library/store";
 import { getRecentPaper, mergeRecentPapers } from "@/lib/search/recent-papers";
+import { lastSearchHref } from "@/lib/search/last-search";
 import { fetchIntegrity } from "@/lib/search/integrity";
 import type { IntegrityStatus } from "@/lib/types";
 import { formatCitation, citationToText, inTextCitation, toBibtex, CITATION_STYLES, type CitationStyle } from "@/lib/citations";
@@ -72,6 +73,9 @@ export default function PaperDetailPage({ params }: { params: Promise<{ id: stri
 
   const [style, setStyle] = useState<CitationStyle>("apa");
   useEffect(() => setStyle(getPreferences().citationStyle), []);
+  // Back to the results this paper came from, not an empty search page.
+  const [backHref, setBackHref] = useState("/search");
+  useEffect(() => setBackHref(lastSearchHref()), []);
   const [notes, setNotes] = useState("");
 
   // Mirror the stored notes, including "none" — a truthy check used to leave the
@@ -225,7 +229,7 @@ export default function PaperDetailPage({ params }: { params: Promise<{ id: stri
 
   return (
     <article className="mx-auto max-w-3xl">
-      <Link href="/search" className="btn-ghost btn-sm -ml-2.5 mb-4">
+      <Link href={backHref} className="btn-ghost btn-sm -ml-2.5 mb-4">
         <ArrowLeft className="h-4 w-4" aria-hidden />
         Back to search
       </Link>
