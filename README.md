@@ -72,7 +72,7 @@ npm install
 cp .env.example .env.local   # fill in values, see below
 npm run dev                  # http://localhost:3000
 npm run build && npm run lint && npx tsc --noEmit
-npm test                     # unit tests, no network
+npm test                     # unit and component tests, no network
 npm run test:live            # calls every real database once
 ```
 
@@ -142,7 +142,8 @@ lib/                 shared: types.ts, text.ts, utils.ts, citations.ts, countrie
                      (names, demonyms, "is this local"), preferences.ts, theme.ts,
                      firebase.ts, legal.ts
 public/              sw.js (service worker), icons/
-tests/unit/          vitest, no network      tests/live/  real databases
+tests/unit/          vitest, no network      tests/components/  pages' parts in jsdom
+tests/live/          every real database once
 firestore.rules      publish in the Firebase console after every change
 ```
 
