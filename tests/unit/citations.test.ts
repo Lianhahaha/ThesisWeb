@@ -63,10 +63,10 @@ describe("formatCitation by record type", () => {
       "Cruz, A., &amp; Reyes, J. (2023). Reading comprehension strategies. <i>Philippine Journal of Education</i>, <i>12</i>(3), 45–67. https://doi.org/10.1234/pje"
     );
     expect(text(article, "mla")).toBe(
-      'Cruz, Ana, and Jose Reyes. "Reading comprehension strategies." Philippine Journal of Education, vol. 12, no. 3, 2023, pp. 45–67. https://doi.org/10.1234/pje.'
+      'Cruz, Ana, and Jose Reyes. "Reading Comprehension Strategies." Philippine Journal of Education, vol. 12, no. 3, 2023, pp. 45–67. https://doi.org/10.1234/pje.'
     );
     expect(text(article, "chicago")).toBe(
-      'Cruz, Ana, and Jose Reyes. "Reading comprehension strategies." Philippine Journal of Education 12, no. 3 (2023): 45–67. https://doi.org/10.1234/pje.'
+      'Cruz, Ana, and Jose Reyes. "Reading Comprehension Strategies." Philippine Journal of Education 12, no. 3 (2023): 45–67. https://doi.org/10.1234/pje.'
     );
     expect(text(article, "ieee")).toBe(
       '[1] A. Cruz and J. Reyes, "Reading comprehension strategies," Philippine Journal of Education, vol. 12, no. 3, pp. 45–67, 2023, doi: 10.1234/pje.'
@@ -93,8 +93,8 @@ describe("formatCitation by record type", () => {
     expect(formatCitation(thesis, "apa")).toBe(
       "Mendoza, L. (2022). <i>Online learning readiness</i> [Master's thesis, West Visayas State University]. https://repository.wvsu.edu.ph/handle/1/2"
     );
-    expect(text(thesis, "mla")).toContain("Online learning readiness. 2022. West Visayas State University, MA thesis.");
-    expect(text(thesis, "chicago")).toContain('"Online learning readiness." Master\'s thesis, West Visayas State University, 2022.');
+    expect(text(thesis, "mla")).toContain("Online Learning Readiness. 2022. West Visayas State University, MA thesis.");
+    expect(text(thesis, "chicago")).toContain('"Online Learning Readiness." Master\'s thesis, West Visayas State University, 2022.');
     expect(text(thesis, "ieee")).toContain('"Online learning readiness," M.S. thesis, West Visayas State University, 2022. [Online]. Available:');
   });
 
@@ -108,7 +108,7 @@ describe("formatCitation by record type", () => {
     expect(text(report, "apa")).toBe("Reyes, C. (2023). Poverty and education (PIDS DP 2021-08). PIDS. https://serp-p.pids.gov.ph/x");
     const who = paper({ title: "Dengue update", authors: ["World Health Organization"], type: "report", venue: "World Health Organization", publisher: "World Health Organization", doi: null, url: "https://iris.who.int/1" });
     expect(text(who, "apa")).toBe("World Health Organization. (2023). Dengue update. https://iris.who.int/1");
-    expect(text(who, "mla")).toBe("Dengue update. World Health Organization, 2023. https://iris.who.int/1.");
+    expect(text(who, "mla")).toBe("Dengue Update. World Health Organization, 2023. https://iris.who.int/1.");
   });
 
   it("puts a chapter or proceedings paper in its book, with pages", () => {
@@ -145,6 +145,16 @@ describe("formatCitation by record type", () => {
   it("leaves out the database link of an article without a DOI, but links other works", () => {
     expect(text(paper({ type: "article", doi: null, url: "https://db.example/1" }), "apa")).not.toContain("https://");
     expect(text(paper({ type: "book", doi: null, url: "https://db.example/1", publisher: "Rex" }), "apa")).toContain("https://db.example/1");
+  });
+});
+
+describe("formatCitation title capitals", () => {
+  const p = paper({ title: "Teacher Burnout in Public Schools of the Philippines", venue: "Frontiers in psychology", type: "article" });
+
+  it("uses sentence case in APA and title case in MLA and Chicago, and fixes a lowercased journal", () => {
+    expect(text(p, "apa")).toContain("Teacher burnout in public schools of the Philippines. Frontiers in Psychology.");
+    expect(text(p, "mla")).toContain('"Teacher Burnout in Public Schools of the Philippines." Frontiers in Psychology');
+    expect(text(p, "chicago")).toContain('"Teacher Burnout in Public Schools of the Philippines." Frontiers in Psychology');
   });
 });
 

@@ -1,5 +1,6 @@
 import type { Paper, WorkType } from "@/lib/types";
 import { SOURCE_META } from "@/lib/sources/meta";
+import { containerCase, sentenceCase, titleCase } from "@/lib/title-case";
 
 /** Escape HTML special characters to prevent XSS in citation rendering. */
 function esc(s: string): string {
@@ -165,10 +166,13 @@ function withMark(title: string, mark: string): string {
 const KIND_LABEL =
   /^(?:(?:master'?s?|doctoral|bachelor'?s?|habilitation|undergraduate)\s+)?(?:thesis|dissertation)$|^(?:thesis|report|book|book chapter|conference paper|preprint|journal article|publications?)$/i;
 
-/** The journal, book or series a work appeared in; empty when the venue is only a kind label. */
+/**
+ * The journal, book or series a work appeared in, in title case if the
+ * source sent it lowercased; empty when the venue is only a kind label.
+ */
 function container(p: Paper): string {
   const v = (p.venue ?? "").trim();
-  return KIND_LABEL.test(v) || /\(thesis\)$/i.test(v) ? "" : v;
+  return KIND_LABEL.test(v) || /\(thesis\)$/i.test(v) ? "" : containerCase(v);
 }
 
 /**
@@ -243,7 +247,7 @@ function linkOf(p: Paper, allowUrl: boolean): string {
 
 function apa(p: Paper): string {
   const type = workType(p);
-  const title = esc(p.title || "Untitled");
+  const title = esc(sentenceCase(p.title || "Untitled"));
   const venue = esc(container(p));
   const pub = esc(publisherOf(p));
   const pages = p.pages ? esc(dash(p.pages)) : "";
@@ -294,7 +298,7 @@ function apa(p: Paper): string {
 
 function mla(p: Paper): string {
   const type = workType(p);
-  const title = esc(p.title || "Untitled");
+  const title = esc(titleCase(p.title || "Untitled"));
   const venue = esc(container(p));
   const pub = esc(p.publisher ?? "");
   const year = yr(p, "");
@@ -329,7 +333,7 @@ function mla(p: Paper): string {
 
 function chicago(p: Paper): string {
   const type = workType(p);
-  const title = esc(p.title || "Untitled");
+  const title = esc(titleCase(p.title || "Untitled"));
   const venue = esc(container(p));
   const pub = esc(publisherOf(p));
   const year = yr(p, "");
