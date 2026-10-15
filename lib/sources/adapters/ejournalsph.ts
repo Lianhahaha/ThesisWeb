@@ -42,10 +42,14 @@ export function parseEjournalsList(html: string): { id: string; title: string; a
   return hits;
 }
 
-/** The values of one Highwire <meta name="citation_..."> tag. */
+/**
+ * The values of one Highwire <meta name="citation_..."> tag. The site encodes
+ * them twice ("Teachers&amp;rsquo;"), so they are decoded twice; one pass
+ * left "Teachers&rsquo;" on screen.
+ */
 function metas(html: string, name: string): string[] {
   return [...html.matchAll(new RegExp(`<meta name="${name}" content="([^"]*)"`, "g"))]
-    .map((m) => stripHtml(m[1]).replace(/,\s*$/, ""))
+    .map((m) => stripHtml(decodeEntities(m[1])).replace(/,\s*$/, ""))
     .filter(Boolean);
 }
 

@@ -43,6 +43,11 @@ describe("parseEjournalsArticle citation details", () => {
     expect(parseEjournalsArticle(page("12", "30"), "1")).toMatchObject({ type: "article", volume: "4", issue: "7", pages: "12-30" });
   });
 
+  it("decodes the site's double-encoded entities", () => {
+    const html = `<meta name="citation_title" content="Principals&amp;rsquo; Leadership &amp;ndash; A Study">`;
+    expect(parseEjournalsArticle(html, "1")?.title).toBe("Principals’ Leadership – A Study");
+  });
+
   it("drops the 1-to-1 placeholder page range", () => {
     expect(parseEjournalsArticle(page("1", "1"), "1")?.pages).toBeNull();
   });
