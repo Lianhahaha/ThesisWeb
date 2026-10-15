@@ -26,7 +26,9 @@ interface CrossrefItem {
   "container-title"?: string[];
   "published-print"?: { "date-parts": number[][] };
   "published-online"?: { "date-parts": number[][] };
-  issued?: { "date-parts": number[][] };
+  issued?: { "date-parts": (number | null)[][] };
+  /** When a dissertation was approved; its "issued" date is often empty. */
+  approved?: { "date-parts": (number | null)[][] };
   abstract?: string;
   volume?: string;
   issue?: string;
@@ -81,13 +83,17 @@ const WORK_TYPE: Record<string, WorkType> = {
   dataset: "other",
 };
 
+/**
+ * The first date that has a year. An empty date comes as [[null]], which
+ * used to stop the search there, so a dissertation (empty "issued", dated
+ * by "approved") was cited "n.d.".
+ */
 function yearFromItem(it: CrossrefItem): number | null {
-  const parts =
-    it["published-print"]?.["date-parts"]?.[0] ||
-    it["published-online"]?.["date-parts"]?.[0] ||
-    it.issued?.["date-parts"]?.[0];
-  if (!parts || parts.length === 0) return null;
-  return parts[0];
+  for (const date of [it["published-print"], it["published-online"], it.issued, it.approved]) {
+    const year = date?.["date-parts"]?.[0]?.[0];
+    if (typeof year === "number") return year;
+  }
+  return null;
 }
 
 export async function searchCrossref(
