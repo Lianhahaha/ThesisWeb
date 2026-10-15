@@ -1,4 +1,4 @@
-import type { Paper } from "@/lib/types";
+import type { Paper, WorkType } from "@/lib/types";
 import { SOURCE_META } from "@/lib/sources/meta";
 import { looksLocal } from "@/lib/countries";
 
@@ -58,6 +58,16 @@ export const RECORD_TYPES: { key: RecordType; label: string }[] = [
   { key: "preprint", label: "Preprints" },
 ];
 
+/** A record's stated type, as the filter's types; conference papers and "other" match none. */
+const FROM_WORK_TYPE: Partial<Record<WorkType, RecordType>> = {
+  article: "journal",
+  thesis: "thesis",
+  report: "report",
+  book: "book",
+  chapter: "book",
+  preprint: "preprint",
+};
+
 /** Citation floors offered in the filter. */
 export const MIN_CITATIONS = [0, 1, 10, 50, 100];
 
@@ -71,6 +81,9 @@ export function recordTypes(p: Paper): Set<RecordType> {
   const kinds = new Set(p.sources.map((s) => SOURCE_META[s]?.kind));
   const venue = p.venue ?? "";
   const out = new Set<RecordType>();
+  // What the source itself says the record is.
+  const stated = p.type ? FROM_WORK_TYPE[p.type] : undefined;
+  if (stated) out.add(stated);
   if (p.preprint === true || kinds.has("preprints")) out.add("preprint");
   if (p.preprint === false || kinds.has("journals")) out.add("journal");
   if (kinds.has("theses") || /thesis|dissertation/i.test(venue)) out.add("thesis");

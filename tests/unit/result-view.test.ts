@@ -13,6 +13,13 @@ describe("recordTypes", () => {
     expect([...recordTypes(paper({ venue: "Doctoral thesis" }))]).toEqual(["thesis"]);
     expect(recordTypes(paper({})).size).toBe(0);
   });
+
+  it("uses the type the source states", () => {
+    expect([...recordTypes(paper({ type: "thesis" }))]).toEqual(["thesis"]);
+    expect([...recordTypes(paper({ type: "chapter" }))]).toEqual(["book"]);
+    expect([...recordTypes(paper({ sources: ["zenodo"], type: "report" }))]).toEqual(["report"]);
+    expect(recordTypes(paper({ type: "conference" })).size).toBe(0);
+  });
 });
 
 describe("refine", () => {
