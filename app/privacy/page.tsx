@@ -1,6 +1,13 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { CONTACT_EMAIL, LEGAL_UPDATED } from "@/lib/legal";
+import { SOURCE_COUNT, SOURCE_META } from "@/lib/sources/meta";
+
+/** Every database a search goes to, from the same list the search uses, so this page can't fall behind it. */
+const DATABASE_NAMES = Object.values(SOURCE_META)
+  .map((s) => s.label)
+  .sort((a, b) => a.localeCompare(b))
+  .join(", ");
 
 export const metadata: Metadata = {
   title: "Privacy Policy · Thesisweb",
@@ -72,12 +79,10 @@ export default function PrivacyPage() {
 
       <h2 className="mt-8 text-xl">What your searches are sent to</h2>
       <p className="mt-2">
-        A search sends your topic words to the free academic databases the app queries — among them
-        OpenAlex, Crossref, Semantic Scholar, PubMed, PubMed Central, Europe PMC, DOAJ, arXiv, ERIC,
-        Zenodo, HAL, OpenAIRE, INSPIRE-HEP, PLOS, DataCite, OSTI.GOV, NASA NTRS, USGS, CiNii
-        Research, J-STAGE, Figshare, World Bank, CGSpace, IDRC, EconBiz, GBIF, LA Referencia, BDTD,
-        theses.fr and OSF (the full list is on the <Link href="/databases" className="underline">Databases</Link> page),
-        plus Crossref again to check DOIs for retractions. Those requests are
+        A search sends your topic words to all {SOURCE_COUNT} free academic databases the app
+        queries: {DATABASE_NAMES} (what each one is, and who runs it, is on
+        the <Link href="/databases" className="underline">Databases</Link> page). Crossref is also
+        asked about the DOIs in your results, to check for retractions. Those requests are
         made by the Thesisweb server, so the databases do not receive your IP address. Each
         database has its own privacy policy, and this app has no control over it.
       </p>
