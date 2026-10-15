@@ -1,4 +1,4 @@
-import { fetchWithTimeout, safeJson, upstreamError } from "@/lib/utils";
+import { fetchWithTimeout, safeJson, upstreamError } from "@/lib/server/http";
 
 /**
  * Unpaywall adapter — find a legal, open-access PDF for a given DOI.

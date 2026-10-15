@@ -1,4 +1,5 @@
-import { fetchWithTimeout, safeJson, paperId } from "@/lib/utils";
+import { paperId } from "@/lib/utils";
+import { fetchWithTimeout, safeJson } from "@/lib/server/http";
 import { extractDoi } from "@/lib/text";
 import type { Paper } from "@/lib/types";
 import type { AdapterOptions } from "@/lib/sources/types";

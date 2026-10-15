@@ -1,4 +1,5 @@
-import { fetchWithTimeout, safeJson, paperId, upstreamError } from "@/lib/utils";
+import { paperId } from "@/lib/utils";
+import { fetchWithTimeout, safeJson, upstreamError } from "@/lib/server/http";
 import type { Paper } from "@/lib/types";
 import type { AdapterOptions } from "@/lib/sources/types";
 import { CONTACT_EMAIL } from "@/lib/server/config";

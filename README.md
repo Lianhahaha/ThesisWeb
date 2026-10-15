@@ -111,8 +111,9 @@ components/          shared UI: SearchPanel, PaperCard, SaveButton, CountryCombo
 components/layout/   app shell: Header, Footer, Providers, ThemeToggle, analytics,
                      ServiceWorker (registers public/sw.js for offline use)
 lib/server/          server only (API routes; may read secret keys): search.ts
-                     (fan-out), dedupe.ts (merge + rank), retractions.ts, summarize.ts,
-                     rate-limit.ts, unpaywall.ts, config.ts
+                     (fan-out), dedupe.ts (merge + rank), http.ts (fetch with timeouts
+                     that stop when a source's deadline passes), retractions.ts,
+                     summarize.ts, rate-limit.ts, unpaywall.ts, config.ts
 lib/sources/         the databases (server, except meta.ts)
   meta.ts            display data for every source (client-safe): label, region,
                      fields, record type, homepage

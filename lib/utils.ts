@@ -6,43 +6,6 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-/** Promise that resolves after `ms` milliseconds. */
-export const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
-
-/**
- * Fetch with a timeout — external academic APIs can hang.
- * Aborts and throws after `ms`, so the meta-search can fall back to other
- * sources. The limit covers reading the body as well as the headers: a
- * server that sends headers quickly and then trickles the body is cut off too.
- */
-export async function fetchWithTimeout(
-  url: string,
-  options: RequestInit = {},
-  ms = 8000
-): Promise<Response> {
-  const timeout = AbortSignal.timeout(ms);
-  const signal = options.signal ? AbortSignal.any([options.signal, timeout]) : timeout;
-  return fetch(url, { ...options, signal });
-}
-
-/** Error for a failed call to an outside service, worded for the person using the app. */
-export function upstreamError(service: string, status: number): Error {
-  return new Error(
-    status === 429 || status === 503
-      ? `${service} is busy right now. Try again in a minute.`
-      : `${service} answered with an error (HTTP ${status}). Try again later.`
-  );
-}
-
-/** Try to parse JSON, return null on failure (instead of throwing). */
-export async function safeJson<T = unknown>(res: Response): Promise<T | null> {
-  try {
-    return (await res.json()) as T;
-  } catch {
-    return null;
-  }
-}
-
 /** Title-case-ish normalization for dedupe comparisons. */
 export function normalizeTitle(s: string): string {
   return s
@@ -52,7 +15,6 @@ export function normalizeTitle(s: string): string {
     .trim();
 }
 
-/** Format an ISO date string to a short "Mon YYYY" label. */
 /** Build a stable id for a paper from its DOI or title hash. */
 export function paperId(doi?: string | null, title?: string | null): string {
   if (doi) return "doi:" + doi.toLowerCase();

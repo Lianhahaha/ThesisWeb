@@ -4,6 +4,7 @@ import { ADAPTERS } from "@/lib/sources/registry";
 import { normalizePaper } from "@/lib/sources/normalize";
 import type { AdapterOptions } from "@/lib/sources/types";
 import { countryTerms } from "@/lib/countries";
+import { withAbortSignal } from "@/lib/server/http";
 
 export interface SearchOpts extends AdapterOptions {
   /** ISO 3166-1 country name or demonym to inject into the query. e.g. "Philippines" */
@@ -27,12 +28,19 @@ function buildCountryQuery(baseQuery: string, country: string): string {
 /** Hard cap per source, so one slow or retrying API can't stall the whole search. */
 const DEFAULT_DEADLINE_MS = 12000;
 
-function withDeadline<T>(p: Promise<T>, ms: number): Promise<T> {
-  let timer: ReturnType<typeof setTimeout>;
-  const timeout = new Promise<never>((_, reject) => {
-    timer = setTimeout(() => reject(new Error("source timed out")), ms);
+/**
+ * Run one source, giving up after `ms`. Giving up also aborts the source's
+ * requests and retry waits (withAbortSignal), so a source past its deadline
+ * stops working instead of carrying on unseen. The race makes sure the search
+ * moves on at the deadline even if an adapter is slow to notice.
+ */
+function withDeadline<T>(fn: () => Promise<T>, ms: number): Promise<T> {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(new Error("source timed out")), ms);
+  const timedOut = new Promise<never>((_, reject) => {
+    controller.signal.addEventListener("abort", () => reject(controller.signal.reason), { once: true });
   });
-  return Promise.race([p, timeout]).finally(() => clearTimeout(timer));
+  return Promise.race([withAbortSignal(controller.signal, fn), timedOut]).finally(() => clearTimeout(timer));
 }
 
 /**
@@ -53,7 +61,7 @@ export async function metaSearch(
     Object.entries(ADAPTERS).map(async ([id, { run, boolean, deadlineMs, country }]) => {
       try {
         const q = country && country === opts.country ? query : boolean ? booleanQuery : plainQuery;
-        const raw = await withDeadline(run(q, opts), deadlineMs ?? DEFAULT_DEADLINE_MS);
+        const raw = await withDeadline(() => run(q, opts), deadlineMs ?? DEFAULT_DEADLINE_MS);
         if (!Array.isArray(raw)) throw new Error("adapter returned no list");
         const papers = raw.map((p) => normalizePaper(p, id)).filter((p): p is Paper => p !== null);
         return [id, { ok: papers.length > 0 ? ("ok" as const) : ("empty" as const), papers, error: "" }] as const;

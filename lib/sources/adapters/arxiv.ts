@@ -1,4 +1,5 @@
-import { fetchWithTimeout, paperId } from "@/lib/utils";
+import { paperId } from "@/lib/utils";
+import { fetchWithTimeout } from "@/lib/server/http";
 import type { Paper } from "@/lib/types";
 import type { AdapterOptions } from "@/lib/sources/types";
 

@@ -1,4 +1,4 @@
-import { fetchWithTimeout, safeJson } from "@/lib/utils";
+import { fetchWithTimeout, safeJson } from "@/lib/server/http";
 import { CONTACT_EMAIL } from "@/lib/server/config";
 import type { IntegrityStatus } from "@/lib/types";
 
