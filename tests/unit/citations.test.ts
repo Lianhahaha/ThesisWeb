@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { citationToText, formatCitation, inTextCitation, toBibtexList } from "@/lib/citations";
+import { citationToText, formatCitation, inTextCitation, toBibtex, toBibtexList, toRis } from "@/lib/citations";
 import type { Paper } from "@/lib/types";
 
 const paper = (over: Partial<Paper> = {}): Paper => ({
@@ -163,6 +163,42 @@ describe("inTextCitation", () => {
     expect(inTextCitation(paper(), "apa")).toBe("(Smith & Doe, 2023)");
     expect(inTextCitation(paper(), "mla")).toBe("(Smith and Doe)");
     expect(inTextCitation(paper({ year: null }), "chicago")).toBe("(Smith and Doe n.d.)");
+  });
+});
+
+describe("toBibtex and toRis by record type", () => {
+  it("writes a journal article with volume, number and a double-hyphen page range", () => {
+    const b = toBibtex(paper({ type: "article", volume: "12", issue: "3", pages: "45-67" }));
+    expect(b).toMatch(/^@article\{/);
+    expect(b).toContain("journal = {Computers \\& Education}");
+    expect(b).toContain("volume = {12}");
+    expect(b).toContain("number = {3}");
+    expect(b).toContain("pages = {45--67}");
+  });
+
+  it("uses the thesis, report, chapter and preprint entry types with their own fields", () => {
+    const thesis = toBibtex(paper({ type: "thesis", venue: "Doctoral thesis", publisher: "UP Diliman" }));
+    expect(thesis).toMatch(/^@phdthesis\{/);
+    expect(thesis).toContain("school = {UP Diliman}");
+    expect(toBibtex(paper({ type: "thesis", venue: "WVSU", publisher: "WVSU" }))).toContain("type = {Thesis}");
+    expect(toBibtex(paper({ type: "report", publisher: "PIDS" }))).toMatch(/^@techreport\{[\s\S]*institution = \{PIDS\}/);
+    expect(toBibtex(paper({ type: "chapter", venue: "MICCAI 2015" }))).toMatch(/^@incollection\{[\s\S]*booktitle = \{MICCAI 2015\}/);
+    expect(toBibtex(paper({ type: "preprint", venue: "arXiv" }))).toMatch(/^@misc\{[\s\S]*note = \{Preprint\}/);
+  });
+
+  it("keeps an organisation author whole in BibTeX", () => {
+    expect(toBibtex(paper({ authors: ["World Health Organization"] }))).toContain("author = {{World Health Organization}}");
+  });
+
+  it("gives RIS the right reference type, start and end pages, and the thesis university", () => {
+    const article = toRis(paper({ type: "article", volume: "12", issue: "3", pages: "45-67" }));
+    expect(article).toContain("TY  - JOUR\n");
+    expect(article).toContain("VL  - 12\nIS  - 3\nSP  - 45\nEP  - 67");
+    const thesis = toRis(paper({ type: "thesis", venue: "Master's thesis", publisher: "WVSU" }));
+    expect(thesis).toContain("TY  - THES");
+    expect(thesis).toContain("PB  - WVSU");
+    expect(thesis).toContain("M3  - Master's thesis");
+    expect(toRis(paper({ type: "chapter", venue: "MICCAI" }))).toContain("TY  - CHAP\nTI  - Does homework work?\nAU  - John Smith\nAU  - Jane Doe\nPY  - 2023\nT2  - MICCAI");
   });
 });
 

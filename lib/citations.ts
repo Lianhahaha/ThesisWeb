@@ -491,35 +491,86 @@ export function toBibtex(p: Paper): string {
     (keyPart(p.authors[0]?.trim().split(/\s+/).pop() || "") || "anon") +
     (p.year || "nd") +
     keyPart(p.title.trim().split(/\s+/)[0] || "");
+  const type = workType(p);
+  const venue = container(p);
+  const d = degree(p);
+  // Entry type and the field that names where the work appeared, per kind of work.
+  const [entry, venueField] = BIBTEX_TYPES[type === "thesis" && d === "doctoral" ? "phdthesis" : type];
+  const field = (name: string, value: string | number | null | undefined) =>
+    value ? `  ${name} = {${bibtexEscape(String(value))}}` : null;
   const fields = [
-    `  author = {${bibtexEscape(p.authors.join(" and ") || "Anonymous")}}`,
-    `  title = {${bibtexEscape(p.title)}}`,
-    p.year ? `  year = {${p.year}}` : null,
-    p.venue ? `  journal = {${bibtexEscape(p.venue)}}` : null,
+    // Organisations in double braces, so BibTeX doesn't read "World Health Organization" as a person.
+    `  author = {${p.authors.map((a) => (isGroupAuthor(a) ? `{${bibtexEscape(a)}}` : bibtexEscape(a))).join(" and ") || "Anonymous"}}`,
+    field("title", p.title),
+    field("year", p.year),
+    venueField ? field(venueField, venue) : null,
+    field("volume", p.volume),
+    field("number", p.issue),
+    // BibTeX writes a page range with a double hyphen.
+    p.pages ? `  pages = {${bibtexEscape(p.pages.replace(/\s*[-–—]+\s*/g, "--"))}}` : null,
+    type === "thesis" ? field("school", institution(p)) : type === "report" ? field("institution", publisherOf(p) || p.publisher) : field("publisher", type === "article" ? null : p.publisher),
+    type === "thesis" && d !== "doctoral" && d !== "masters" ? field("type", DEGREE_LABELS.apa[d]) : null,
+    type === "preprint" ? field("note", "Preprint") : null,
     // DOIs and URLs carry _, &, % and # constantly; unescaped they break the
     // .bib for LaTeX just as a title would.
-    p.doi ? `  doi = {${bibtexEscape(p.doi)}}` : null,
-    p.openAccessUrl ? `  url = {${bibtexEscape(p.openAccessUrl)}}` : null,
+    field("doi", p.doi),
+    field("url", p.openAccessUrl || (p.doi ? null : p.url)),
   ]
     .filter(Boolean)
     .join(",\n");
-  return `@article{${key},\n${fields}\n}`;
+  return `@${entry}{${key},\n${fields}\n}`;
 }
+
+/** BibTeX entry type, and the field for the journal, book or server, per kind of work. */
+const BIBTEX_TYPES: Record<WorkType | "phdthesis", [string, string | null]> = {
+  article: ["article", "journal"],
+  conference: ["inproceedings", "booktitle"],
+  chapter: ["incollection", "booktitle"],
+  book: ["book", null],
+  thesis: ["mastersthesis", null],
+  phdthesis: ["phdthesis", null],
+  report: ["techreport", null],
+  preprint: ["misc", "howpublished"],
+  other: ["misc", "howpublished"],
+};
+
+/** RIS reference type per kind of work, as Zotero, Mendeley and EndNote read them. */
+const RIS_TYPES: Record<WorkType, string> = {
+  article: "JOUR",
+  conference: "CPAPER",
+  chapter: "CHAP",
+  book: "BOOK",
+  thesis: "THES",
+  report: "RPRT",
+  preprint: "UNPB",
+  other: "GEN",
+};
 
 /** Make an RIS entry for import into Zotero/Mendeley/EndNote. */
 export function toRis(p: Paper): string {
   // A RIS field ends at the newline, so an abstract containing one would have
   // its remainder parsed as a tag and dropped by Zotero/Mendeley.
   const oneLine = (s: string) => s.replace(/\s*\n+\s*/g, " ").trim();
+  const tag = (name: string, value: string | number | null | undefined) => (value ? `${name}  - ${oneLine(String(value))}` : null);
+  const type = workType(p);
+  const venue = container(p);
+  const [start, end] = (p.pages ?? "").split(/\s*[-–—]+\s*/);
   const lines = [
-    "TY  - JOUR",
-    `TI  - ${oneLine(p.title)}`,
-    ...p.authors.map((a) => `AU  - ${oneLine(a)}`),
-    p.year ? `PY  - ${p.year}` : null,
-    p.venue ? `JO  - ${oneLine(p.venue)}` : null,
-    p.doi ? `DO  - ${oneLine(p.doi)}` : null,
-    p.abstract ? `AB  - ${oneLine(p.abstract)}` : null,
-    p.openAccessUrl ? `UR  - ${oneLine(p.openAccessUrl)}` : null,
+    `TY  - ${RIS_TYPES[type]}`,
+    tag("TI", p.title),
+    ...p.authors.map((a) => tag("AU", a)),
+    tag("PY", p.year),
+    // The journal for an article; the book or proceedings for a chapter or paper.
+    type === "article" ? tag("JO", venue) : type === "chapter" || type === "conference" || type === "preprint" ? tag("T2", venue) : null,
+    tag("VL", p.volume),
+    tag("IS", p.issue),
+    tag("SP", start),
+    tag("EP", end),
+    tag("PB", type === "thesis" ? institution(p) : type === "article" ? null : p.publisher),
+    type === "thesis" ? tag("M3", DEGREE_LABELS.apa[degree(p)]) : null,
+    tag("DO", p.doi),
+    tag("AB", p.abstract),
+    tag("UR", p.openAccessUrl || (p.doi ? null : p.url)),
     "ER  -",
   ].filter(Boolean);
   return lines.join("\n");
