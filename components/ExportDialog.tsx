@@ -157,8 +157,9 @@ export function ExportDialog({
         </button>
       </div>
       <p className="field-hint">
-        These formatters are simplified. For a graded bibliography, import the .bib or .ris into
-        Zotero or Mendeley and apply the exact style your school requires.
+        Records can lack details (editors, report numbers) or carry odd capitals, so check each
+        reference before you submit. To manage a long bibliography, import the .bib or .ris into
+        Zotero or Mendeley.
       </p>
     </Dialog>
   );
