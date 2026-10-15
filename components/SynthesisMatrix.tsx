@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { FileSpreadsheet, FileText } from "lucide-react";
-import { MATRIX_CELL_MAX, type MatrixKey, type SavedPaper } from "@/lib/types";
+import { MATRIX_CELL_MAX, MATRIX_KEYS, MATRIX_LABELS, type MatrixKey, type SavedPaper } from "@/lib/types";
 import { matrixCsv, matrixRows, matrixRtf } from "@/lib/library/matrix-export";
 import type { Scope } from "@/lib/library/scope";
 import { updatePaper } from "@/lib/library/store";
@@ -18,12 +18,15 @@ import { toast } from "@/components/Toaster";
  * at 390px is unusable.
  */
 
-const FIELDS: { key: MatrixKey; label: string; placeholder: string }[] = [
-  { key: "method", label: "Method", placeholder: "Quantitative, survey of 200 students…" },
-  { key: "findings", label: "Findings", placeholder: "X significantly predicts Y…" },
-  { key: "limitations", label: "Limitations", placeholder: "Small sample, single school…" },
-  { key: "relevanceToTopic", label: "Relevance to my topic", placeholder: "Supports my hypothesis that…" },
-];
+/** An example in each empty cell, showing the kind of note it takes. */
+const PLACEHOLDERS: Record<MatrixKey, string> = {
+  method: "Quantitative, survey of 200 students…",
+  findings: "X significantly predicts Y…",
+  limitations: "Small sample, single school…",
+  relevanceToTopic: "Supports my hypothesis that…",
+};
+
+const FIELDS = MATRIX_KEYS.map((key) => ({ key, label: MATRIX_LABELS[key], placeholder: PLACEHOLDERS[key] }));
 
 export function SynthesisMatrix({
   papers,

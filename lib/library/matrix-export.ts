@@ -1,4 +1,4 @@
-import { MATRIX_KEYS, type MatrixKey, type SavedPaper } from "@/lib/types";
+import { MATRIX_KEYS, MATRIX_LABELS, type SavedPaper } from "@/lib/types";
 import { SCOPE_LABELS, type Scope } from "@/lib/library/scope";
 import { rtfDocument, rtfText, tableRtf } from "@/lib/library/rtf";
 
@@ -6,13 +6,6 @@ import { rtfDocument, rtfText, tableRtf } from "@/lib/library/rtf";
  * The synthesis matrix as a table advisers can open: CSV for Excel and
  * Google Sheets, RTF for Word and Google Docs (landscape, bordered).
  */
-
-export const MATRIX_COLUMN_LABELS: Record<MatrixKey, string> = {
-  method: "Method",
-  findings: "Findings",
-  limitations: "Limitations",
-  relevanceToTopic: "Relevance to my topic",
-};
 
 /** "Cruz (2023)", "Cruz & Reyes (2023)", "Cruz et al. (2023)": how a matrix row names its paper. */
 export function shortCitation(p: SavedPaper): string {
@@ -24,7 +17,7 @@ export function shortCitation(p: SavedPaper): string {
 
 /** Header row, then one row per paper. A Local/Foreign column is added when `scopeOf` is given. */
 export function matrixRows(papers: SavedPaper[], scopeOf?: (p: SavedPaper) => Scope): string[][] {
-  const header = ["No.", "Author and year", "Title", ...(scopeOf ? ["Local / foreign"] : []), ...MATRIX_KEYS.map((k) => MATRIX_COLUMN_LABELS[k])];
+  const header = ["No.", "Author and year", "Title", ...(scopeOf ? ["Local / foreign"] : []), ...MATRIX_KEYS.map((k) => MATRIX_LABELS[k])];
   const rows = papers.map((p, i) => [
     String(i + 1),
     shortCitation(p),

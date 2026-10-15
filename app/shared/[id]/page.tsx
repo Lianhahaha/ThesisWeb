@@ -11,14 +11,7 @@ import { fromShared, type SharedLibrary } from "@/lib/library/shared-copy";
 import { savePapers } from "@/lib/library/store";
 import { mergeRecentPapers } from "@/lib/search/recent-papers";
 import { useAuth } from "@/lib/auth/store";
-import { MATRIX_KEYS } from "@/lib/types";
-
-const MATRIX_LABELS: Record<(typeof MATRIX_KEYS)[number], string> = {
-  method: "Method",
-  findings: "Findings",
-  limitations: "Limitations",
-  relevanceToTopic: "Relevance",
-};
+import { MATRIX_KEYS, MATRIX_LABELS } from "@/lib/types";
 
 /** A group library opened from a share link. Anyone with the link can read it. */
 export default function SharedLibraryPage({ params }: { params: Promise<{ id: string }> }) {

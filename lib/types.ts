@@ -74,6 +74,13 @@ export interface SavedPaper extends Paper {
 /** The synthesis matrix columns, in display order. */
 export const MATRIX_KEYS = ["method", "findings", "limitations", "relevanceToTopic"] as const;
 export type MatrixKey = (typeof MATRIX_KEYS)[number];
+/** The columns' names, wherever the matrix is shown, shared or downloaded. */
+export const MATRIX_LABELS: Record<MatrixKey, string> = {
+  method: "Method",
+  findings: "Findings",
+  limitations: "Limitations",
+  relevanceToTopic: "Relevance to my topic",
+};
 /** Longest text kept in one matrix cell; a Firestore document is capped at 1 MiB. */
 export const MATRIX_CELL_MAX = 5000;
 
