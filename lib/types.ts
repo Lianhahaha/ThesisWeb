@@ -1,3 +1,7 @@
+/** Kinds of work, each cited differently (lib/citations.ts). */
+export const WORK_TYPES = ["article", "preprint", "thesis", "report", "book", "chapter", "conference", "other"] as const;
+export type WorkType = (typeof WORK_TYPES)[number];
+
 /**
  * Canonical paper shape used across the app.
  * All data-source adapters normalize their results into this shape.
@@ -10,6 +14,17 @@ export interface Paper {
   /** ISO date string if available */
   publishedDate?: string | null;
   venue?: string | null;
+  /**
+   * What kind of work this is, when the source says. Unset means unknown;
+   * citations then guess from the source and venue (workType in lib/citations.ts).
+   */
+  type?: WorkType;
+  /** Journal volume, issue and page range ("45-67"), when the source gives them. */
+  volume?: string | null;
+  issue?: string | null;
+  pages?: string | null;
+  /** Publisher of a book or report, or the university that awarded a thesis. */
+  publisher?: string | null;
   doi?: string | null;
   abstract?: string | null;
   /** Short AI-generated TLDR (Semantic Scholar provides these) */

@@ -67,6 +67,12 @@ describe("parseBackup", () => {
     expect(p).toMatchObject({ preprint: true, concern: true });
   });
 
+  it("keeps citation details and drops an unknown record type", () => {
+    const [p] = parseBackup([{ id: "x", title: "T", type: "thesis", volume: "4", issue: "2", pages: "1-9", publisher: "WVSU" }]);
+    expect(p).toMatchObject({ type: "thesis", volume: "4", issue: "2", pages: "1-9", publisher: "WVSU" });
+    expect(parseBackup([{ id: "x", title: "T", type: "<script>" }])[0].type).toBeUndefined();
+  });
+
   it("keeps only the four matrix cells, as capped text", () => {
     const [p] = parseBackup([
       { id: "x", title: "T", matrix: { method: "Survey", findings: { nested: 1 }, other: "x", limitations: "y".repeat(9000) } },

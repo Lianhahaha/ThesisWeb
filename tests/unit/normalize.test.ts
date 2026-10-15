@@ -36,6 +36,12 @@ describe("normalizePaper", () => {
     expect(n?.authors).toEqual(["A B"]);
   });
 
+  it("keeps citation details, as text, and drops an unknown record type", () => {
+    const n = normalizePaper(raw({ type: "thesis", volume: 12, issue: "3", pages: " 45-67 ", publisher: "UP Diliman" }), "src");
+    expect(n).toMatchObject({ type: "thesis", volume: "12", issue: "3", pages: "45-67", publisher: "UP Diliman" });
+    expect(normalizePaper(raw({ type: "podcast", volume: {} }), "src")).toMatchObject({ type: undefined, volume: null });
+  });
+
   it("always names its source", () => {
     expect(normalizePaper(raw({ sources: undefined }), "src")?.sources).toEqual(["src"]);
   });

@@ -29,6 +29,12 @@ describe("toSharedPaper", () => {
     expect(s).not.toHaveProperty("collection");
   });
 
+  it("keeps the details needed to cite the paper", () => {
+    const s = toSharedPaper(paper({ type: "article", volume: "12", issue: "3", pages: "45-67", publisher: "PNU" }), false);
+    expect(s).toMatchObject({ type: "article", volume: "12", issue: "3", pages: "45-67", publisher: "PNU" });
+    expect(fromShared({ name: "x", papers: [s] })[0]).toMatchObject({ type: "article", volume: "12", pages: "45-67" });
+  });
+
   it("leaves out notes and matrix when asked", () => {
     const s = toSharedPaper(paper(), false);
     expect(s).not.toHaveProperty("notes");

@@ -80,6 +80,12 @@ function mergeInto(dest: Paper, src: Paper): void {
   else if (src.preprint) dest.preprint = true;
   if ((src.citedByCount ?? 0) > (dest.citedByCount ?? 0)) dest.citedByCount = src.citedByCount;
   if (!dest.venue && src.venue) dest.venue = src.venue;
+  // Citation details: the first source that has each one supplies it.
+  if (!dest.type && src.type) dest.type = src.type;
+  if (!dest.volume && src.volume) dest.volume = src.volume;
+  if (!dest.issue && src.issue) dest.issue = src.issue;
+  if (!dest.pages && src.pages) dest.pages = src.pages;
+  if (!dest.publisher && src.publisher) dest.publisher = src.publisher;
   if (!dest.doi && src.doi) {
     dest.doi = src.doi;
     // Keep the id in sync with paperId(): a DOI'd paper must use its "doi:" id,

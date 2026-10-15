@@ -1,4 +1,4 @@
-import { MATRIX_CELL_MAX, MATRIX_KEYS, type SavedPaper } from "@/lib/types";
+import { MATRIX_CELL_MAX, MATRIX_KEYS, WORK_TYPES, type SavedPaper, type WorkType } from "@/lib/types";
 
 /**
  * Reading a library backup (the JSON that Settings exports) back in. The file
@@ -35,6 +35,11 @@ export function parseBackup(raw: unknown): SavedPaper[] {
       year: typeof p.year === "number" ? p.year : null,
       publishedDate: str(p.publishedDate, 40),
       venue: str(p.venue, 500),
+      type: WORK_TYPES.includes(p.type as WorkType) ? p.type : undefined,
+      volume: str(p.volume, 40),
+      issue: str(p.issue, 40),
+      pages: str(p.pages, 40),
+      publisher: str(p.publisher, 300),
       doi: str(p.doi, 300),
       abstract: str(p.abstract, 40000),
       tldr: str(p.tldr, 2000),

@@ -32,6 +32,14 @@ describe("dedupePapers", () => {
     expect(dedupePapers([p({ preprint: true }), p({})])[0].preprint).toBe(true);
   });
 
+  it("fills citation details from whichever source has them", () => {
+    const out = dedupePapers([
+      p({ doi: "10.1/a", type: "article", volume: "12" }),
+      p({ doi: "10.1/a", type: "preprint", issue: "3", pages: "45-67", publisher: "Elsevier" }),
+    ]);
+    expect(out[0]).toMatchObject({ type: "article", volume: "12", issue: "3", pages: "45-67", publisher: "Elsevier" });
+  });
+
   it("never returns two papers with the same id", () => {
     const out = dedupePapers([
       p({ id: "tit:x", title: "Same", year: 2025 }),

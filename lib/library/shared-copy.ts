@@ -26,6 +26,7 @@ export interface SharedLibrary {
 export type SharedPaper = Pick<
   SavedPaper,
   | "id" | "title" | "authors" | "year" | "venue" | "doi" | "url" | "openAccessUrl" | "isOpenAccess"
+  | "type" | "volume" | "issue" | "pages" | "publisher"
   | "abstract" | "keywords" | "sources" | "preprint" | "retracted" | "concern" | "notes" | "matrix" | "scope"
 >;
 
@@ -53,6 +54,12 @@ export function toSharedPaper(p: SavedPaper, includeNotes: boolean): SharedPaper
     authors: p.authors.slice(0, 10),
     year: p.year ?? null,
     venue: p.venue ?? null,
+    // What a group mate needs to cite the paper from the shared copy.
+    type: p.type,
+    volume: p.volume ?? undefined,
+    issue: p.issue ?? undefined,
+    pages: p.pages ?? undefined,
+    publisher: p.publisher ?? undefined,
     doi: p.doi ?? null,
     url: p.url ?? null,
     openAccessUrl: p.openAccessUrl ?? null,

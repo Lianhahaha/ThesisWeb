@@ -1,4 +1,4 @@
-import type { Paper } from "@/lib/types";
+import { WORK_TYPES, type Paper, type WorkType } from "@/lib/types";
 import { paperId } from "@/lib/utils";
 import { extractDoi } from "@/lib/text";
 
@@ -11,6 +11,10 @@ import { extractDoi } from "@/lib/text";
 
 const str = (v: unknown, max: number): string | null =>
   typeof v === "string" && v.trim() ? v.trim().slice(0, max) : null;
+
+/** Like str(), but also takes a number: APIs give volumes and issues either way. */
+const label = (v: unknown, max: number): string | null =>
+  typeof v === "number" && Number.isFinite(v) ? String(v) : str(v, max);
 
 const strings = (v: unknown, max: number, each = 300): string[] =>
   Array.isArray(v)
@@ -66,6 +70,11 @@ export function normalizePaper(p: Paper, sourceId: string): Paper | null {
     year: safeYear(p.year),
     publishedDate: str(p.publishedDate, 40),
     venue: str(p.venue, 500),
+    type: WORK_TYPES.includes(p.type as WorkType) ? p.type : undefined,
+    volume: label(p.volume, 40),
+    issue: label(p.issue, 40),
+    pages: label(p.pages, 40),
+    publisher: str(p.publisher, 300),
     doi,
     abstract: str(p.abstract, 40000),
     tldr: str(p.tldr, 2000),
