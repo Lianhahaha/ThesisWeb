@@ -1,6 +1,6 @@
 import { paperId } from "@/lib/utils";
 import { fetchWithTimeout, readJson } from "@/lib/server/http";
-import { extractDoi } from "@/lib/text";
+import { extractDoi, pageRange } from "@/lib/text";
 import type { Paper } from "@/lib/types";
 import type { AdapterOptions } from "@/lib/sources/types";
 
@@ -55,6 +55,11 @@ export async function searchDoaj(
       year,
       publishedDate: bib.month && year ? `${year}-${bib.month.padStart(2, "0")}-01` : null,
       venue,
+      type: "article",
+      volume: bib.journal?.volume ?? null,
+      issue: bib.journal?.number ?? null,
+      pages: pageRange(bib.start_page, bib.end_page),
+      publisher: bib.journal?.publisher ?? null,
       doi,
       abstract,
       openAccessUrl,

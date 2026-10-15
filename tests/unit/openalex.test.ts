@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { pageRange, workToPaper } from "@/lib/sources/adapters/openalex";
+import { workToPaper } from "@/lib/sources/adapters/openalex";
+import { pageRange } from "@/lib/text";
 
 const work = (over: Record<string, unknown>) =>
   workToPaper({ id: "https://openalex.org/W1", title: "A study", ...over } as Parameters<typeof workToPaper>[0]);

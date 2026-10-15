@@ -23,7 +23,12 @@ interface EPMCResult {
   doi?: string;
   title?: string;
   authorString?: string;
-  journalTitle?: string;
+  /** The "core" result type nests the journal here; there is no flat journalTitle. */
+  journalInfo?: { volume?: string; issue?: string; journal?: { title?: string } };
+  /** Preprints and books: the server or publisher. */
+  bookOrReportDetails?: { publisher?: string };
+  pageInfo?: string;
+  pubTypeList?: { pubType?: string[] };
   pubYear?: string;
   abstractText?: string;
   isOpenAccess?: string;
@@ -95,6 +100,8 @@ export async function searchEuropePMC(
       : null;
     const isOA = r.isOpenAccess === "Y" || r.hasPDF === "Y";
     const keywords = r.keywordList?.keyword?.slice(0, 5) ?? [];
+    const preprint = r.source === "PPR";
+    const types = r.pubTypeList?.pubType ?? [];
 
     return {
       id: paperId(doi, title),
@@ -102,7 +109,12 @@ export async function searchEuropePMC(
       authors,
       year,
       publishedDate: year ? `${year}-01-01` : null,
-      venue: r.journalTitle || null,
+      venue: r.journalInfo?.journal?.title || r.bookOrReportDetails?.publisher || null,
+      type: preprint ? "preprint" : types.some((t) => /journal article|research-article|review/i.test(t)) ? "article" : undefined,
+      volume: r.journalInfo?.volume ?? null,
+      issue: r.journalInfo?.issue ?? null,
+      pages: r.pageInfo ?? null,
+      publisher: r.bookOrReportDetails?.publisher ?? null,
       doi,
       abstract: r.abstractText || null,
       openAccessUrl: isOA ? openAccessUrl : null,
@@ -110,7 +122,7 @@ export async function searchEuropePMC(
       url: r.source && r.id ? `https://europepmc.org/article/${r.source}/${r.id}` : null,
       citedByCount: r.citedByCount ?? 0,
       keywords,
-      preprint: r.source === "PPR" ? true : r.source === "MED" ? false : undefined,
+      preprint: preprint ? true : r.source === "MED" ? false : undefined,
       sources: ["europepmc"],
     };
   });

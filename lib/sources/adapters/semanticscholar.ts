@@ -1,7 +1,8 @@
 import { paperId } from "@/lib/utils";
 import { fetchWithTimeout, readJson, sleep } from "@/lib/server/http";
-import type { Paper } from "@/lib/types";
+import type { Paper, WorkType } from "@/lib/types";
 import type { AdapterOptions } from "@/lib/sources/types";
+import { decodeEntities } from "@/lib/text";
 
 /**
  * Semantic Scholar adapter — TLDRs, citation graphs, influential citations.
@@ -75,6 +76,19 @@ interface S2Paper {
   fieldsOfStudy?: string[];
   tldr?: { text: string } | null;
   authors?: { name: string }[];
+  journal?: { name?: string; volume?: string; pages?: string } | null;
+  /** "JournalArticle", "Conference", "Book", "BookSection", "Review", ... */
+  publicationTypes?: string[] | null;
+}
+
+/** Semantic Scholar publication types as the app's record types, most specific first. */
+function s2Type(types: string[] | null | undefined): WorkType | undefined {
+  const t = types ?? [];
+  if (t.includes("BookSection")) return "chapter";
+  if (t.includes("Book")) return "book";
+  if (t.includes("Conference")) return "conference";
+  if (t.some((x) => x === "JournalArticle" || x === "Review" || x === "MetaAnalysis")) return "article";
+  return undefined;
 }
 
 export async function searchSemanticScholar(
@@ -85,7 +99,8 @@ export async function searchSemanticScholar(
   const params = new URLSearchParams({
     query,
     limit: String(perSource),
-    fields: "title,abstract,year,publicationDate,venue,citationCount,openAccessPdf,fieldsOfStudy,tldr,authors,externalIds",
+    fields:
+      "title,abstract,year,publicationDate,venue,citationCount,openAccessPdf,fieldsOfStudy,tldr,authors,externalIds,journal,publicationTypes",
   });
   if (fromYear) params.set("year", `${fromYear}-`);
 
@@ -101,13 +116,18 @@ export async function searchSemanticScholar(
     .map<Paper>((p) => {
       const doi = p.externalIds?.DOI || null;
       const title = p.title || "Untitled";
+      const venue = p.venue || p.journal?.name;
       return {
         id: paperId(doi, title),
         title,
         authors: (p.authors || []).map((a) => a.name).slice(0, 10),
         year: p.year ?? null,
         publishedDate: p.publicationDate ?? null,
-        venue: p.venue ?? null,
+        // Venue names arrive with HTML entities ("Administration &amp; Leadership").
+        venue: venue ? decodeEntities(venue) : null,
+        type: s2Type(p.publicationTypes),
+        volume: p.journal?.volume ?? null,
+        pages: p.journal?.pages?.replace(/\s+/g, "") ?? null,
         doi,
         abstract: p.abstract ?? null,
         tldr: p.tldr?.text ?? null,

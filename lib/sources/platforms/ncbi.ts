@@ -76,6 +76,12 @@ export function articleId(item: any, type: string): string | null {
   return hit?.value ? String(hit.value) : null;
 }
 
+/** Volume, issue and pages of an esummary record (blank fields come back as ""). */
+export function ncbiCitation(item: any): { volume: string | null; issue: string | null; pages: string | null } {
+  const text = (v: unknown) => (typeof v === "string" && v.trim() ? v.trim() : null);
+  return { volume: text(item?.volume), issue: text(item?.issue), pages: text(item?.pages) };
+}
+
 /** Year from "2021 Mar 4" / "2021/03/04", or null. */
 export function ncbiYear(date: unknown): number | null {
   const y = typeof date === "string" ? parseInt(date.slice(0, 4), 10) : NaN;

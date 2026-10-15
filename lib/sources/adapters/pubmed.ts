@@ -1,7 +1,7 @@
 import { paperId } from "@/lib/utils";
 import type { Paper } from "@/lib/types";
 import type { AdapterOptions } from "@/lib/sources/types";
-import { articleId, eSearch, eSummary, ncbiAuthors, ncbiYear } from "@/lib/sources/platforms/ncbi";
+import { articleId, eSearch, eSummary, ncbiAuthors, ncbiCitation, ncbiYear } from "@/lib/sources/platforms/ncbi";
 
 /**
  * PubMed / NCBI E-utilities adapter.
@@ -25,6 +25,8 @@ export async function searchPubMed(query: string, opts: AdapterOptions = {}): Pr
     const year = ncbiYear(item.pubdate);
     const doi = articleId(item, "doi");
     const pmcId = articleId(item, "pmc");
+    // PubMed also lists NIH-funded preprints, marked by their publication type.
+    const preprint = ((item.pubtype ?? []) as string[]).includes("Preprint");
 
     papers.push({
       id: paperId(doi, title),
@@ -33,6 +35,8 @@ export async function searchPubMed(query: string, opts: AdapterOptions = {}): Pr
       year,
       publishedDate: year ? `${year}-01-01` : null,
       venue: item.fulljournalname || item.source || null,
+      type: preprint ? "preprint" : "article",
+      ...ncbiCitation(item),
       doi,
       abstract: null, // esummary doesn't include abstracts; detail page fetches via efetch
       // A PMC copy is the free full text.
@@ -41,7 +45,7 @@ export async function searchPubMed(query: string, opts: AdapterOptions = {}): Pr
       url: `https://pubmed.ncbi.nlm.nih.gov/${pmid}/`,
       citedByCount: 0,
       keywords: [],
-      preprint: false,
+      preprint,
       sources: ["pubmed"],
     });
   }

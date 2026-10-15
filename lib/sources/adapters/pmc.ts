@@ -1,7 +1,7 @@
 import { paperId } from "@/lib/utils";
 import type { Paper } from "@/lib/types";
 import type { AdapterOptions } from "@/lib/sources/types";
-import { articleId, eSearch, eSummary, ncbiAuthors, ncbiYear } from "@/lib/sources/platforms/ncbi";
+import { articleId, eSearch, eSummary, ncbiAuthors, ncbiCitation, ncbiYear } from "@/lib/sources/platforms/ncbi";
 
 /**
  * PubMed Central (U.S. National Library of Medicine): 10M+ full-text
@@ -36,6 +36,8 @@ export async function searchPmc(query: string, opts: AdapterOptions = {}): Promi
       year,
       publishedDate: year ? `${year}-01-01` : null,
       venue: item.fulljournalname || item.source || null,
+      type: "article",
+      ...ncbiCitation(item),
       doi,
       abstract: null,
       openAccessUrl: `https://pmc.ncbi.nlm.nih.gov/articles/${pmcid}/`,

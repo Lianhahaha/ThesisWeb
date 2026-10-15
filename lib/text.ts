@@ -73,6 +73,14 @@ export function doiUrlPath(doi: string): string {
   return doi.split("/").map(encodeURIComponent).join("/");
 }
 
+/** "45-67", or "45" when a work starts and ends on one page; null without a first page. */
+export function pageRange(first?: string | number | null, last?: string | number | null): string | null {
+  const a = first == null ? "" : String(first).trim();
+  const b = last == null ? "" : String(last).trim();
+  if (!a) return null;
+  return b && b !== a ? `${a}-${b}` : a;
+}
+
 /** First 4-digit year (1500-2100) found in a string, or null. */
 export function extractYear(s: string | null | undefined): number | null {
   const m = s?.match(/\b(1[5-9]\d\d|20\d\d|2100)\b/);

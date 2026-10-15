@@ -3,7 +3,7 @@ import { fetchWithTimeout, readJson, upstreamError } from "@/lib/server/http";
 import type { Paper, WorkType } from "@/lib/types";
 import type { AdapterOptions } from "@/lib/sources/types";
 import { CONTACT_EMAIL } from "@/lib/server/config";
-import { doiUrlPath } from "@/lib/text";
+import { doiUrlPath, pageRange } from "@/lib/text";
 
 /**
  * OpenAlex adapter — the primary discovery source.
@@ -99,14 +99,6 @@ function workType(w: OpenAlexWork): WorkType | undefined {
     return source === "conference" ? "conference" : source === "journal" ? "article" : undefined;
   }
   return undefined;
-}
-
-/** "45-67", or "45" when the work starts and ends on one page. */
-export function pageRange(first?: string | null, last?: string | null): string | null {
-  const a = first?.trim();
-  const b = last?.trim();
-  if (!a) return null;
-  return b && b !== a ? `${a}-${b}` : a;
 }
 
 /** Normalize one OpenAlex work into the app's Paper shape. */
