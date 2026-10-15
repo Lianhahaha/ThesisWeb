@@ -26,6 +26,9 @@ export interface TermSuggestion {
 
 export function suggestTerms(papers: Paper[], query: string, max = 8): TermSuggestion[] {
   const queryWords = new Set(normalizeTitle(query).split(" ").filter(Boolean));
+  // "teachers" adds nothing to a search for "teacher" (nor "class" to "classes").
+  const inQuery = (w: string) =>
+    [w, w.replace(/s$/, ""), w.replace(/es$/, ""), `${w}s`, `${w}es`].some((form) => queryWords.has(form));
   const tally = new Map<string, { term: string; count: number }>();
 
   for (const p of papers) {
@@ -47,7 +50,7 @@ export function suggestTerms(papers: Paper[], query: string, max = 8): TermSugge
 
   return Array.from(tally.entries())
     // Drop terms already covered by the query (all their words are in it).
-    .filter(([key]) => !key.split(" ").every((w) => queryWords.has(w)))
+    .filter(([key]) => !key.split(" ").every(inQuery))
     .map(([, v]) => v)
     .filter((v) => v.count >= 2)
     .sort((a, b) => b.count - a.count || a.term.localeCompare(b.term))
