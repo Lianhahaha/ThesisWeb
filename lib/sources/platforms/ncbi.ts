@@ -1,4 +1,4 @@
-import { fetchWithTimeout, readJson, sleep } from "@/lib/server/http";
+import { fetchWithTimeout, readJson, sleep, waitTurn } from "@/lib/server/http";
 import { CONTACT_EMAIL } from "@/lib/server/config";
 
 /**
@@ -14,7 +14,6 @@ import { CONTACT_EMAIL } from "@/lib/server/config";
 const BASE = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils";
 const KEY = process.env.NCBI_API_KEY?.trim() || "";
 const GAP_MS = KEY ? 110 : 350;
-let lastSlot = 0;
 
 /**
  * Hosting platforms share outgoing addresses between many apps, and NCBI
@@ -28,11 +27,7 @@ async function eutils(path: string, params: Record<string, string>): Promise<Res
   if (KEY) q.set("api_key", KEY);
 
   for (let attempt = 1; ; attempt++) {
-    const now = Date.now();
-    const slot = Math.max(now, lastSlot + GAP_MS);
-    lastSlot = slot; // reserve synchronously, before awaiting
-    if (slot > now) await sleep(slot - now);
-
+    await waitTurn("ncbi", GAP_MS);
     const res = await fetchWithTimeout(`${BASE}/${path}?${q}`);
     if (res.status !== 429 || attempt >= MAX_ATTEMPTS) return res;
     await sleep(700 * attempt + Math.random() * 300);

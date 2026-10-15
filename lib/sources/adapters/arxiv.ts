@@ -1,5 +1,5 @@
 import { paperId } from "@/lib/utils";
-import { fetchWithTimeout } from "@/lib/server/http";
+import { fetchWithTimeout, waitTurn } from "@/lib/server/http";
 import type { Paper } from "@/lib/types";
 import type { AdapterOptions } from "@/lib/sources/types";
 
@@ -7,7 +7,8 @@ import type { AdapterOptions } from "@/lib/sources/types";
  * arXiv adapter.
  * - ~2.5M preprints mostly in physics, math, computer science, quantitative biology, quantitative finance, statistics, electrical engineering and systems science, and economics.
  * - Completely free, no API key needed, Atom XML format.
- * - Rate limit: max 3 requests per second.
+ * - Rate limit: one request every three seconds (arXiv API terms of use);
+ *   searches on one server queue for their turn (waitTurn).
  * Docs: https://info.arxiv.org/help/api/user-manual.html
  */
 
@@ -58,8 +59,10 @@ export async function searchArxiv(
   const formattedQuery = encodeURIComponent(arxivQuery(query));
   const url = `https://export.arxiv.org/api/query?search_query=${formattedQuery}&start=0&max_results=${fetchCount}&sortBy=relevance&sortOrder=descending`;
 
+  await waitTurn("arxiv", 3000);
   // arXiv's API often takes 5-10 s; the default 8 s cut it off mid-answer.
   const res = await fetchWithTimeout(url, {}, 11000);
+  if (res.status === 429) throw new Error("rate limited (429)");
   if (!res.ok) throw new Error(`arXiv search failed: ${res.status}`);
   
   const text = await res.text();

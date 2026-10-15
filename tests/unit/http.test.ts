@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { fetchWithTimeout, readJson, sleep, withAbortSignal } from "@/lib/server/http";
+import { fetchWithTimeout, readJson, sleep, waitTurn, withAbortSignal } from "@/lib/server/http";
 
 afterEach(() => vi.unstubAllGlobals());
 
@@ -53,5 +53,28 @@ describe("source deadlines", () => {
     const res = await fetchWithTimeout("https://example.org");
     expect(await res.text()).toBe("false");
     await expect(sleep(1)).resolves.toBeUndefined();
+  });
+});
+
+describe("waitTurn", () => {
+  it("spaces calls to one API by the gap, in the order they asked", async () => {
+    const started = Date.now();
+    const times: number[] = [];
+    await Promise.all([0, 1, 2].map(async () => {
+      await waitTurn("test-api", 60);
+      times.push(Date.now() - started);
+    }));
+    // The first goes at once; the next two wait one and two gaps (a few ms of timer slack allowed).
+    expect(times[0]).toBeLessThan(40);
+    expect(times[1]).toBeGreaterThanOrEqual(55);
+    expect(times[2]).toBeGreaterThanOrEqual(115);
+  });
+
+  it("stops waiting when the source's deadline passes", async () => {
+    await waitTurn("test-slow", 10_000);
+    const controller = new AbortController();
+    const waiting = withAbortSignal(controller.signal, () => waitTurn("test-slow", 10_000));
+    controller.abort(new Error("source timed out"));
+    await expect(waiting).rejects.toThrow("source timed out");
   });
 });

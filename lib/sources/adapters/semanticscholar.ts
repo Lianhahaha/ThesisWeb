@@ -1,5 +1,5 @@
 import { paperId } from "@/lib/utils";
-import { fetchWithTimeout, readJson, sleep } from "@/lib/server/http";
+import { fetchWithTimeout, readJson, sleep, waitTurn } from "@/lib/server/http";
 import type { Paper, WorkType } from "@/lib/types";
 import type { AdapterOptions } from "@/lib/sources/types";
 import { decodeEntities } from "@/lib/text";
@@ -32,7 +32,6 @@ function s2Headers(): HeadersInit {
  * serverless instances) the retries below are still the safety net.
  */
 const MIN_GAP_MS = 1100;
-let lastSlot = 0;
 
 /**
  * Without a key, requests share one public pool that answers most calls with
@@ -45,11 +44,7 @@ const MAX_ATTEMPTS = 4;
 /** GET, paced to the rate limit, retrying 429 and 5xx with backoff. */
 async function s2Fetch(url: string): Promise<Response> {
   for (let attempt = 1; ; attempt++) {
-    const now = Date.now();
-    const slot = Math.max(now, lastSlot + MIN_GAP_MS);
-    lastSlot = slot; // reserve synchronously, before awaiting
-    if (slot > now) await sleep(slot - now);
-
+    await waitTurn("semanticscholar", MIN_GAP_MS);
     const res = await fetchWithTimeout(url, { headers: s2Headers() }, 6000);
     const retryable = res.status === 429 || res.status >= 500;
     if (!retryable || attempt >= MAX_ATTEMPTS) return res;

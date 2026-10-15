@@ -56,6 +56,22 @@ export function sleep(ms: number): Promise<void> {
   });
 }
 
+/** When each paced API may next be called, by name. Per server instance. */
+const nextSlot = new Map<string, number>();
+
+/**
+ * Wait for `api`'s next free slot, `gapMs` after the previous call, so
+ * concurrent searches queue for a rate-limited API (NCBI, Semantic Scholar,
+ * arXiv) instead of being refused. The slot is taken before waiting, so
+ * callers line up in order; a source past its deadline stops waiting (sleep).
+ */
+export async function waitTurn(api: string, gapMs: number): Promise<void> {
+  const now = Date.now();
+  const slot = Math.max(now, (nextSlot.get(api) ?? 0) + gapMs);
+  nextSlot.set(api, slot);
+  if (slot > now) await sleep(slot - now);
+}
+
 /** Error for a failed call to an outside service, worded for the person using the app. */
 export function upstreamError(service: string, status: number): Error {
   return new Error(
