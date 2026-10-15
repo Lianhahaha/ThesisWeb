@@ -1,7 +1,7 @@
 import { normalizePaper } from "@/lib/sources/normalize";
 import { flipName } from "@/lib/text";
 import { paperId } from "@/lib/utils";
-import type { Paper, SavedPaper } from "@/lib/types";
+import type { Paper, SavedPaper, WorkType } from "@/lib/types";
 import { MAX_IMPORT } from "@/lib/library/backup";
 
 /**
@@ -17,7 +17,26 @@ export const IMPORT_SOURCE = "imported";
 /** Largest file read, so a wrong file can't freeze the tab. */
 export const MAX_IMPORT_BYTES = 5 * 1024 * 1024;
 
-type Draft = Pick<Paper, "title" | "authors" | "year" | "venue" | "doi" | "abstract" | "url" | "keywords">;
+type Draft = Pick<
+  Paper,
+  "title" | "authors" | "year" | "venue" | "doi" | "abstract" | "url" | "keywords" | "type" | "volume" | "issue" | "pages" | "publisher"
+>;
+
+/** BibTeX entry types -> record types. */
+const BIBTEX_TYPES: Record<string, WorkType> = {
+  article: "article", inproceedings: "conference", conference: "conference", incollection: "chapter", inbook: "chapter",
+  book: "book", booklet: "book", phdthesis: "thesis", mastersthesis: "thesis", thesis: "thesis", techreport: "report",
+  report: "report", unpublished: "preprint",
+};
+
+/** RIS reference types -> record types. */
+const RIS_TYPES: Record<string, WorkType> = {
+  JOUR: "article", JFULL: "article", EJOUR: "article", MGZN: "article", CONF: "conference", CPAPER: "conference",
+  CHAP: "chapter", BOOK: "book", EBOOK: "book", EDBOOK: "book", THES: "thesis", RPRT: "report", UNPB: "preprint",
+};
+
+/** "45--67" or "45 - 67" -> "45-67". */
+const pageText = (s: string | null | undefined) => (s ? s.replace(/\s*[-–—]+\s*/g, "-").trim() || null : null);
 
 // --- BibTeX ---------------------------------------------------------------
 
@@ -100,14 +119,25 @@ export function parseBibtex(text: string): Draft[] {
     const f = bibtexFields(body);
     const title = bibtexText(f.title ?? "");
     if (!title) continue;
+    const kind = BIBTEX_TYPES[type] ?? (/preprint|arxiv/i.test(`${f.note ?? ""} ${f.eprinttype ?? ""}`) ? "preprint" : undefined);
+    const school = bibtexText(f.school ?? f.institution ?? "") || null;
     drafts.push({
+      type: kind,
+      volume: bibtexText(f.volume ?? "") || null,
+      issue: bibtexText(f.number ?? f.issue ?? "") || null,
+      pages: pageText(bibtexText(f.pages ?? "")),
+      publisher: kind === "thesis" || kind === "report" ? school ?? (bibtexText(f.publisher ?? "") || null) : bibtexText(f.publisher ?? "") || null,
       title,
       authors: (f.author ?? "")
         .split(/\s+and\s+/i)
         .map((a) => flipName(bibtexText(a)))
         .filter(Boolean),
       year: Number(/\d{4}/.exec(f.year ?? f.date ?? "")?.[0]) || null,
-      venue: bibtexText(f.journal ?? f.journaltitle ?? f.booktitle ?? f.school ?? f.institution ?? f.publisher ?? "") || null,
+      // A thesis's venue names the degree, so citations can say it; its university is the publisher.
+      venue:
+        kind === "thesis"
+          ? bibtexText(f.type ?? "") || (type === "phdthesis" ? "Doctoral thesis" : type === "mastersthesis" ? "Master's thesis" : "Thesis")
+          : bibtexText(f.journal ?? f.journaltitle ?? f.booktitle ?? f.school ?? f.institution ?? f.publisher ?? "") || null,
       doi: bibtexText(f.doi ?? "") || null,
       abstract: bibtexText(f.abstract ?? "") || null,
       url: bibtexText(f.url ?? "") || null,
@@ -127,11 +157,20 @@ export function parseRis(text: string): Draft[] {
   const flush = () => {
     const title = first("TI", "T1", "CT", "BT");
     if (title) {
+      const kind = RIS_TYPES[first("TY") ?? ""];
+      const [start, end] = [first("SP"), first("EP")];
       drafts.push({
         title: title.trim(),
         authors: [...(tags.AU ?? []), ...(tags.A1 ?? [])].map((a) => flipName(a.trim())).filter(Boolean),
         year: Number(/\d{4}/.exec(first("PY", "Y1", "DA") ?? "")?.[0]) || null,
-        venue: first("T2", "JO", "JF", "JA", "J2", "PB"),
+        type: kind,
+        volume: first("VL"),
+        issue: first("IS"),
+        // SP sometimes holds the whole range ("45-67").
+        pages: pageText(start && end && end !== start ? `${start}-${end}` : start),
+        publisher: first("PB"),
+        // A thesis's venue names the degree (M3, e.g. "Master's thesis").
+        venue: kind === "thesis" ? first("M3") ?? "Thesis" : first("T2", "JO", "JF", "JA", "J2", "PB"),
         doi: first("DO"),
         abstract: first("AB", "N2"),
         url: first("UR", "L1"),
@@ -145,7 +184,8 @@ export function parseRis(text: string): Draft[] {
     if (!m) continue;
     const [, tag, value] = m;
     if (tag === "ER") flush();
-    else if (tag === "TY") tags = {};
+    // A new record starts; its type is kept (it used to be dropped here).
+    else if (tag === "TY") tags = { TY: [value.trim()] };
     else if (value.trim()) (tags[tag] ??= []).push(value.trim());
   }
   flush(); // a last record with no ER line

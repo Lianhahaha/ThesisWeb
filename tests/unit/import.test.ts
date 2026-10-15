@@ -67,9 +67,17 @@ describe("parseBibtex", () => {
       title: "Reading comprehension of Grade 7 learners",
       authors: ["Maria Santos"],
       year: 2019,
-      venue: "University of the Philippines Diliman",
+      type: "thesis",
+      venue: "Doctoral thesis",
+      publisher: "University of the Philippines Diliman",
       url: "https://digitalarchives.upd.edu.ph/item/1/7/home",
     });
+  });
+
+  it("reads the entry type, volume, number and pages", () => {
+    expect(a).toMatchObject({ type: "article", volume: "12" });
+    const [c] = parseBibtex("@inproceedings{k, title={T}, booktitle={Proc. X}, pages={45--67}, number={3}, publisher={IEEE}}");
+    expect(c).toMatchObject({ type: "conference", venue: "Proc. X", pages: "45-67", issue: "3", publisher: "IEEE" });
   });
 
   it("decodes common LaTeX", () => {
@@ -81,7 +89,13 @@ describe("parseRis", () => {
   it("reads Mendeley and EndNote tag variants", () => {
     const [a, b] = parseRis(MENDELEY_RIS);
     expect(a).toMatchObject({ title: "Teacher burnout in Philippine public schools", authors: ["Ana M. Cruz", "José Reyes"], year: 2023, doi: "10.1234/jed.2023.5", keywords: ["burnout", "teachers"] });
-    expect(b).toMatchObject({ title: "Reading comprehension of Grade 7 learners", authors: ["Maria Santos"], year: 2019, venue: "University of the Philippines Diliman" });
+    expect(b).toMatchObject({ title: "Reading comprehension of Grade 7 learners", authors: ["Maria Santos"], year: 2019, type: "thesis", publisher: "University of the Philippines Diliman" });
+  });
+
+  it("keeps the reference type and reads volume, issue and pages", () => {
+    const [a] = parseRis("TY  - JOUR\nTI  - T\nVL  - 12\nIS  - 3\nSP  - 45\nEP  - 67\nER  - ");
+    expect(a).toMatchObject({ type: "article", volume: "12", issue: "3", pages: "45-67" });
+    expect(parseRis("TY  - JOUR\nTI  - T\nSP  - 45-67\nER  - ")[0].pages).toBe("45-67");
   });
 });
 
@@ -103,6 +117,15 @@ describe("parseReferenceFile", () => {
     const paper = { id: "x", title: "A study", authors: ["Ana Cruz"], year: 2021, venue: "J", doi: "10.1234/x", sources: ["s"], abstract: "Line one." };
     expect(parseReferenceFile(toBibtex(paper))[0]).toMatchObject({ title: "A study", authors: ["Ana Cruz"], doi: "10.1234/x" });
     expect(parseReferenceFile(toRis(paper))[0]).toMatchObject({ title: "A study", abstract: "Line one." });
+  });
+
+  it("round-trips the record type and journal details through both formats", () => {
+    const article = { id: "x", title: "A study", authors: ["Ana Cruz"], year: 2021, venue: "J", type: "article" as const, volume: "12", issue: "3", pages: "45-67", sources: ["s"] };
+    const thesis = { id: "y", title: "A thesis", authors: ["Ana Cruz"], year: 2021, venue: "Master's thesis", type: "thesis" as const, publisher: "WVSU", sources: ["s"] };
+    for (const out of [toBibtex, toRis]) {
+      expect(parseReferenceFile(out(article))[0]).toMatchObject({ type: "article", venue: "J", volume: "12", issue: "3", pages: "45-67" });
+      expect(parseReferenceFile(out(thesis))[0]).toMatchObject({ type: "thesis", venue: "Master's thesis", publisher: "WVSU" });
+    }
   });
 
   it("says so when the file has no references", () => {
