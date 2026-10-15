@@ -5,6 +5,7 @@ import { useMutation } from "@tanstack/react-query";
 import { Download } from "lucide-react";
 import { SaveButton } from "@/components/SaveButton";
 import { toast } from "@/components/Toaster";
+import { copyText } from "@/components/clipboard";
 import {
   formatCitation,
   citationToText,
@@ -22,13 +23,6 @@ import type { Paper } from "@/lib/types";
 import type { CiteResult } from "@/app/api/cite/route";
 
 const EXAMPLE = "10.1038/nature12373\nhttps://doi.org/10.1016/j.compedu.2019.103778";
-
-function copy(text: string, label: string) {
-  navigator.clipboard
-    .writeText(text)
-    .then(() => toast(`${label} copied`, "success"))
-    .catch(() => toast("Could not copy. Select the text instead.", "error"));
-}
 
 export default function CitePage() {
   const [text, setText] = useState("");
@@ -141,7 +135,7 @@ export default function CitePage() {
             </h2>
             {papers.length > 0 && (
               <div className="flex flex-wrap gap-2">
-                <button onClick={() => copy(referenceList, "Reference list")} className="btn-secondary btn-sm">
+                <button onClick={() => copyText(referenceList, "Reference list")} className="btn-secondary btn-sm">
                   Copy all
                 </button>
                 <button
@@ -183,7 +177,7 @@ export default function CitePage() {
                   </p>
                   <div className="mt-3 flex flex-wrap gap-2 border-t border-border pt-3">
                     <button
-                      onClick={() => copy(citationToText(formatCitation(r.paper!, style, n)), "Citation")}
+                      onClick={() => copyText(citationToText(formatCitation(r.paper!, style, n)), "Citation")}
                       className="btn-secondary btn-sm"
                     >
                       Copy

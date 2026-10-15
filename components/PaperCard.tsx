@@ -6,7 +6,7 @@ import { FileText, ExternalLink, Quote, Check } from "lucide-react";
 import type { Paper } from "@/lib/types";
 import { truncate } from "@/lib/utils";
 import { SaveButton } from "@/components/SaveButton";
-import { toast } from "@/components/Toaster";
+import { copyText } from "@/components/clipboard";
 
 interface Props {
   paper: Paper;
@@ -172,10 +172,7 @@ export function PaperCard({ paper, showScore, refNum, isNew }: Props) {
                   `${paper.title}. ${paper.authors[0] || ""} (${paper.year || "n.d."})`,
                   300
                 );
-                navigator.clipboard
-                  .writeText(snippet)
-                  .then(() => toast("Citation snippet copied", "success"))
-                  .catch(() => toast("Could not copy. Select the text instead.", "error"));
+                copyText(snippet, "Citation snippet");
               }}
               className="btn-ghost btn-sm"
             >

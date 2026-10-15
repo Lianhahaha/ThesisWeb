@@ -9,6 +9,7 @@ import { getCachedUsername } from "@/lib/auth/username-cache";
 import { deleteShare, listMyShares, publishShare, shareUrl } from "@/lib/library/share";
 import { MAX_SHARED, type SharedLibrary } from "@/lib/library/shared-copy";
 import { toast } from "@/components/Toaster";
+import { copyText } from "@/components/clipboard";
 
 /** Readable message for a failed share write. */
 function shareError(e: unknown): string {
@@ -79,13 +80,6 @@ export function ShareDialog({
     } finally {
       setBusy(false);
     }
-  }
-
-  function copy(url: string) {
-    navigator.clipboard
-      .writeText(url)
-      .then(() => toast("Link copied", "success"))
-      .catch(() => toast("Could not copy. Select the link instead.", "error"));
   }
 
   async function stop(share: SharedLibrary) {
@@ -168,7 +162,7 @@ export function ShareDialog({
                 <div className="mt-4 flex gap-2">
                   <label htmlFor="share-link" className="sr-only">Share link</label>
                   <input id="share-link" readOnly value={link} onFocus={(e) => e.target.select()} className="input flex-1 text-xs" />
-                  <button onClick={() => copy(link)} className="btn-secondary">
+                  <button onClick={() => copyText(link, "Link")} className="btn-secondary">
                     <Copy className="h-4 w-4" aria-hidden />
                     Copy
                   </button>
@@ -188,7 +182,7 @@ export function ShareDialog({
                             {new Date(s.updatedAt).toLocaleDateString("en-PH", { month: "short", day: "numeric", year: "numeric" })}
                           </p>
                         </div>
-                        <button onClick={() => copy(shareUrl(s.id))} className="btn-ghost btn-sm" aria-label={`Copy link to ${s.name}`}>
+                        <button onClick={() => copyText(shareUrl(s.id), "Link")} className="btn-ghost btn-sm" aria-label={`Copy link to ${s.name}`}>
                           <Copy className="h-3.5 w-3.5" aria-hidden />
                           Link
                         </button>

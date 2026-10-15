@@ -12,6 +12,7 @@ import { fetchIntegrity } from "@/lib/search/integrity";
 import type { IntegrityStatus } from "@/lib/types";
 import { formatCitation, citationToText, inTextCitation, toBibtex, CITATION_STYLES, type CitationStyle } from "@/lib/citations";
 import { toast } from "@/components/Toaster";
+import { copyText } from "@/components/clipboard";
 import type { Paper, SavedPaper } from "@/lib/types";
 import { useAuth } from "@/lib/auth/store";
 import { RelatedPapers } from "@/components/RelatedPapers";
@@ -404,23 +405,13 @@ export default function PaperDetailPage({ params }: { params: Promise<{ id: stri
 
         <div className="mt-3 flex flex-wrap gap-2">
           <button
-            onClick={() => {
-              navigator.clipboard
-                .writeText(citationToText(formatCitation(p, style, 1)))
-                .then(() => toast("Citation copied", "success"))
-                .catch(() => toast("Could not copy. Select the text instead.", "error"));
-            }}
+            onClick={() => copyText(citationToText(formatCitation(p, style, 1)), "Citation")}
             className="btn-secondary btn-sm"
           >
             Copy citation
           </button>
           <button
-            onClick={() => {
-              navigator.clipboard
-                .writeText(toBibtex(p))
-                .then(() => toast("BibTeX copied", "success"))
-                .catch(() => toast("Could not copy. Select the text instead.", "error"));
-            }}
+            onClick={() => copyText(toBibtex(p), "BibTeX")}
             className="btn-ghost btn-sm"
           >
             Copy BibTeX

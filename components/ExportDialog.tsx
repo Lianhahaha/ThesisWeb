@@ -16,8 +16,8 @@ import {
   type CitationStyle,
 } from "@/lib/citations";
 import { getPreferences } from "@/lib/preferences";
+import { copyText } from "@/components/clipboard";
 import { downloadFile } from "@/lib/download";
-import { toast } from "@/components/Toaster";
 
 export function ExportDialog({
   papers,
@@ -73,15 +73,11 @@ export function ExportDialog({
     .join("\n");
 
   function copy(text: string, field: string) {
-    // Only say "Copied" once it really was: the clipboard can be blocked
-    // (insecure context, permissions, some in-app browsers).
-    navigator.clipboard
-      .writeText(text)
-      .then(() => {
-        setCopied(field);
-        setTimeout(() => setCopied(null), 1500);
-      })
-      .catch(() => toast("Could not copy. Select the text instead.", "error"));
+    // The button says "Copied" once it really was.
+    copyText(text, "Text", () => {
+      setCopied(field);
+      setTimeout(() => setCopied(null), 1500);
+    });
   }
 
   return (
