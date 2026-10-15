@@ -38,7 +38,8 @@ export async function searchThesesFr(query: string, opts: AdapterOptions = {}): 
 
   // No year filter in the API: ask for more and keep the defended, recent ones.
   const params = new URLSearchParams({ q: query, nombre: String(perSource * 3), debut: "0" });
-  const res = await fetchWithTimeout(`${BASE}?${params}`, { headers: { "User-Agent": USER_AGENT } });
+  // theses.fr often takes 5-8 s; the default 8 s cut it off from servers further away.
+  const res = await fetchWithTimeout(`${BASE}?${params}`, { headers: { "User-Agent": USER_AGENT } }, 11000);
   if (!res.ok) throw new Error(`theses.fr ${res.status}`);
   const data = await readJson<{ theses?: ThesisRecord[] }>(res);
 
