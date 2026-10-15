@@ -1,0 +1,33 @@
+# Every morning, ask each of the 50 databases about a topic it certainly
+# holds (tests/live/sources.test.ts). A database that fails or suddenly finds
+# nothing (often a site that changed its pages, which breaks a scraper) fails
+# this run, and GitHub emails the repository owner. Run it by hand from the
+# Actions tab after changing an adapter.
+#
+# API keys are optional: add any of these as repository secrets to test with
+# them; without them the databases are called the way they are without keys.
+name: Database health
+
+on:
+  schedule:
+    - cron: "0 22 * * *" # 06:00 in the Philippines
+  workflow_dispatch:
+
+jobs:
+  live:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run test:live
+        env:
+          CONTACT_EMAIL: ${{ secrets.CONTACT_EMAIL }}
+          OPENALEX_API_KEY: ${{ secrets.OPENALEX_API_KEY }}
+          SEMANTIC_SCHOLAR_API_KEY: ${{ secrets.SEMANTIC_SCHOLAR_API_KEY }}
+          NCBI_API_KEY: ${{ secrets.NCBI_API_KEY }}
+          CORE_API_KEY: ${{ secrets.CORE_API_KEY }}
