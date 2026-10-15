@@ -33,6 +33,12 @@ describe("sentenceCase (APA 7)", () => {
     expect(sentenceCase("Self-Efficacy and Well-Being of Nurses")).toBe("Self-efficacy and well-being of nurses");
   });
 
+  it("keeps a capital letter joined to a word, as in a model's name", () => {
+    expect(sentenceCase("U-Net: Convolutional Networks for Biomedical Image Segmentation")).toBe(
+      "U-Net: Convolutional networks for biomedical image segmentation"
+    );
+  });
+
   it("leaves a sentence-case title and a non-English title alone", () => {
     expect(sentenceCase("Teacher burnout and the Philippine K to 12 curriculum")).toBe(
       "Teacher burnout and the Philippine K to 12 curriculum"

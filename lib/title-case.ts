@@ -187,6 +187,8 @@ export function sentenceCase(title: string): string {
       const beforeNumber = /^(?:\d|[IVXLC]{2,}[.,]?$)/.test(words[i + 1] ?? "") && !MINOR.has(norm(word));
       // "(LET)" after a name: an acronym, also in an all-caps title.
       if (/^\(\p{Lu}[\p{Lu}-]{1,9}\)[,.;:]?$/u.test(word)) return word;
+      // "U-Net", "T-Cell": a capital letter joined to a word is usually a name; kept as written.
+      if (!allCaps && /^\p{Lu}-\p{Lu}/u.test(word)) return word;
       const parts = word.split("-").map((part, j) => {
         if (/\d/.test(part) && allCaps) return part; // COVID-19, K-12
         if (!allCaps && hasInnerCapital(part)) return part;
