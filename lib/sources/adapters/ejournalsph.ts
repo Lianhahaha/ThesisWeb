@@ -56,12 +56,19 @@ export function parseEjournalsArticle(html: string, id: string): Paper | null {
   const abs = html.match(/<h4>Abstract:<\/h4>([\s\S]*?)(?:<h4|<\/div>)/);
   const pdf = metas(html, "citation_pdf_url")[0];
   const pdfUrl = pdf ? `${BASE}/${encodeURI(decodeEntities(pdf).replace(/^\/+/, ""))}` : null;
+  const first = metas(html, "citation_firstpage")[0];
+  const last = metas(html, "citation_lastpage")[0];
   return {
     id: paperId(null, title),
     title,
     authors: metas(html, "citation_author").slice(0, 10),
     year: extractYear(metas(html, "citation_publication_date")[0]),
     venue: metas(html, "citation_journal_title")[0] ?? "Philippine E-Journals",
+    type: "article",
+    volume: metas(html, "citation_volume")[0] ?? null,
+    issue: metas(html, "citation_issue")[0] ?? null,
+    // Many pages give "1" to "1" as a placeholder; keep a range only when it is one.
+    pages: Number(last) > Number(first) ? `${first}-${last}` : null,
     doi: null,
     abstract: abs ? stripHtml(abs[1]) || null : null,
     openAccessUrl: pdfUrl,

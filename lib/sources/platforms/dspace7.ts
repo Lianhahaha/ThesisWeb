@@ -1,8 +1,8 @@
 import { paperId } from "@/lib/utils";
 import { fetchWithTimeout, readJson } from "@/lib/server/http";
 import { USER_AGENT } from "@/lib/server/config";
-import { extractDoi, flipName, stripHtml } from "@/lib/text";
-import type { Paper } from "@/lib/types";
+import { extractDoi, flipName, pageRange, stripHtml } from "@/lib/text";
+import type { Paper, WorkType } from "@/lib/types";
 import type { Adapter, AdapterOptions } from "@/lib/sources/types";
 
 /**
@@ -67,6 +67,22 @@ function values(m: Metadata, ...keys: string[]): string[] {
 }
 const first = (m: Metadata, ...keys: string[]) => values(m, ...keys)[0] ?? null;
 
+/** A repository's free-text dc.type ("Thesis", "Technical Report", "Book chapter") as a record type. */
+export function dspaceType(dcType: string | null): WorkType | undefined {
+  const t = dcType?.toLowerCase() ?? "";
+  if (/thesis|dissertation/.test(t)) return "thesis";
+  if (/chapter|book part/.test(t)) return "chapter";
+  if (/preprint/.test(t)) return "preprint";
+  if (/article/.test(t)) return "article";
+  if (/conference|proceeding/.test(t)) return "conference";
+  if (/report|working paper|policy|brief|technical/.test(t)) return "report";
+  if (/book/.test(t)) return "book";
+  return undefined;
+}
+
+/** "Washington, DC: World Bank" -> "World Bank": APA 7 drops the place. */
+const withoutPlace = (publisher: string | null) => publisher?.replace(/^[^:]{1,60}:\s*/, "") || null;
+
 export function dspace7Adapter(cfg: Dspace7Config): Adapter {
   return async (query: string, opts: AdapterOptions = {}): Promise<Paper[]> => {
     const { fromYear, perSource = 15, openAccessOnly } = opts;
@@ -122,6 +138,11 @@ export function dspace7Adapter(cfg: Dspace7Config): Adapter {
             first(m, "dc.publisher", "dcterms.publisher") ??
             cfg.publisher
         ),
+        type: dspaceType(first(m, "dc.type", "dcterms.type")),
+        volume: first(m, "dc.citation.volume", "oaire.citation.volume"),
+        issue: first(m, "dc.citation.issue", "oaire.citation.issue"),
+        pages: pageRange(first(m, "dc.citation.spage", "oaire.citation.startPage"), first(m, "dc.citation.epage", "oaire.citation.endPage")),
+        publisher: withoutPlace(first(m, "dc.publisher", "dcterms.publisher")) ?? cfg.publisher,
         doi,
         abstract: (() => {
           const a = first(m, "dc.description.abstract", "dcterms.abstract");

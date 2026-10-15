@@ -2,7 +2,7 @@ import { paperId } from "@/lib/utils";
 import { fetchWithTimeout, readJson } from "@/lib/server/http";
 import { USER_AGENT } from "@/lib/server/config";
 import { flipName, stripHtml } from "@/lib/text";
-import type { Paper } from "@/lib/types";
+import type { Paper, WorkType } from "@/lib/types";
 import type { AdapterOptions } from "@/lib/sources/types";
 
 /**
@@ -29,10 +29,17 @@ interface ZenodoHit {
     creators?: { name?: string }[];
     keywords?: string[];
     resource_type?: { type?: string; subtype?: string; title?: string };
-    journal?: { title?: string };
+    journal?: { title?: string; volume?: string; issue?: string; pages?: string };
     imprint?: { publisher?: string };
+    thesis?: { university?: string };
   };
 }
+
+/** Zenodo publication subtypes -> the app's record types. */
+const WORK_TYPE: Record<string, WorkType> = {
+  article: "article", preprint: "preprint", thesis: "thesis", report: "report", workingpaper: "report",
+  technicalnote: "report", book: "book", section: "chapter", conferencepaper: "conference", proposal: "other",
+};
 
 export async function searchZenodo(
   query: string,
@@ -76,6 +83,11 @@ export async function searchZenodo(
       publishedDate: m.publication_date ?? null,
       // Journal name if it has one, else the kind of record ("Thesis", "Report"...).
       venue: m.journal?.title ?? m.imprint?.publisher ?? m.resource_type?.title ?? "Zenodo",
+      type: m.resource_type?.subtype ? WORK_TYPE[m.resource_type.subtype] : undefined,
+      volume: m.journal?.volume ?? null,
+      issue: m.journal?.issue ?? null,
+      pages: m.journal?.pages ?? null,
+      publisher: m.thesis?.university ?? m.imprint?.publisher ?? null,
       doi,
       abstract: m.description ? stripHtml(m.description) : null,
       openAccessUrl: isOpen ? pdf ?? h.links?.self_html ?? null : null,

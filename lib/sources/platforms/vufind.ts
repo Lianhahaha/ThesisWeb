@@ -2,7 +2,7 @@ import { paperId } from "@/lib/utils";
 import { fetchWithTimeout, readJson } from "@/lib/server/http";
 import { USER_AGENT } from "@/lib/server/config";
 import { extractDoi, flipName, stripHtml } from "@/lib/text";
-import type { Paper } from "@/lib/types";
+import type { Paper, WorkType } from "@/lib/types";
 import type { Adapter, AdapterOptions } from "@/lib/sources/types";
 
 /**
@@ -48,6 +48,18 @@ const FORMATS: Record<string, string> = {
   report: "Report",
 };
 
+/** VuFind format codes -> the app's record types. */
+const TYPES: Record<string, WorkType> = {
+  masterThesis: "thesis",
+  doctoralThesis: "thesis",
+  bachelorThesis: "thesis",
+  book: "book",
+  bookPart: "chapter",
+  conferenceObject: "conference",
+  report: "report",
+  article: "article",
+};
+
 export function vufindAdapter(cfg: VufindConfig): Adapter {
   return async (query: string, opts: AdapterOptions = {}): Promise<Paper[]> => {
     const { fromYear, perSource = 15 } = opts;
@@ -78,6 +90,7 @@ export function vufindAdapter(cfg: VufindConfig): Adapter {
         authors: people.map(flipName).slice(0, 10),
         year: Number(r.publicationDates?.[0]?.slice(0, 4)) || null,
         venue: (format && FORMATS[format]) || cfg.fallbackVenue,
+        type: format ? TYPES[format] : undefined,
         doi,
         abstract: r.summary?.[0] ? stripHtml(r.summary[0]) : null,
         // These portals index open repositories; the link is the repository copy.

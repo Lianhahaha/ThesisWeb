@@ -54,6 +54,8 @@ export function parseUpd(html: string): Paper[] {
         .slice(0, 10),
       year: extractYear(meta(block, "Date")),
       venue: type ? `UP Diliman ${type.replace("/", " / ")}` : "UP Diliman",
+      type: type && /thesis|dissertation/i.test(type) ? "thesis" : undefined,
+      publisher: "University of the Philippines Diliman",
       doi: null,
       abstract: abs ? stripHtml(abs[1]) || null : null,
       // Full text is often restricted to the UP network, so no open-access claim.

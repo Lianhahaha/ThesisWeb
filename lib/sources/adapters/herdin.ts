@@ -2,7 +2,7 @@ import { paperId } from "@/lib/utils";
 import { fetchWithTimeout } from "@/lib/server/http";
 import { USER_AGENT } from "@/lib/server/config";
 import { decodeEntities, extractYear, stripHtml } from "@/lib/text";
-import type { Paper } from "@/lib/types";
+import type { Paper, WorkType } from "@/lib/types";
 import type { AdapterOptions } from "@/lib/sources/types";
 
 /**
@@ -25,6 +25,26 @@ function field(block: string, label: string): string | null {
   const m = block.match(re);
   const text = m ? stripHtml(m[1]) : "";
   return text || null;
+}
+
+/** HERDIN's trailing "(Journal)", "(Thesis)", ... label as a record type. */
+const TYPES: Record<string, WorkType> = {
+  journal: "article", thesis: "thesis", dissertation: "thesis", proceedings: "conference", report: "report", book: "book",
+};
+
+/**
+ * Volume, issue, pages and record type from a "Source Document" line:
+ * "Acta Medica Philippina. 2011; Vol. 45 ( 1 ) : p. 53-62 (Journal)".
+ */
+export function herdinCitation(source: string | null): Pick<Paper, "type" | "volume" | "issue" | "pages"> {
+  const s = source ?? "";
+  const pages = s.match(/:\s*p\.\s*([\w.]+)(?:\s*[-\u2013]\s*([\w.]+))?/);
+  return {
+    type: TYPES[s.match(/\((\w+)\)\s*$/)?.[1].toLowerCase() ?? ""],
+    volume: s.match(/Vol\.\s*([\w.-]+)/)?.[1] ?? null,
+    issue: s.match(/Vol\.\s*[\w.-]+\s*\(\s*([\w.-]+)/)?.[1] ?? null,
+    pages: pages ? (pages[2] && pages[2] !== pages[1] ? `${pages[1]}-${pages[2]}` : pages[1]) : null,
+  };
 }
 
 /** Papers from a HERDIN results page. */
@@ -53,6 +73,7 @@ export function parseHerdin(html: string): Paper[] {
         .slice(0, 10),
       year: extractYear(source),
       venue: venue ?? "HERDIN",
+      ...herdinCitation(source),
       doi: null,
       abstract: null,
       // "Full-text" here means a copy at the holding library, not online.

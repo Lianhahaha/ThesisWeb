@@ -53,6 +53,7 @@ export function parseOjs(html: string, cfg: Pick<OjsConfig, "id" | "publisher" |
         .slice(0, 10),
       year: extractYear(published ? stripHtml(published[1]) : null),
       venue: (journal && cfg.journals?.[journal]) || cfg.publisher,
+      type: "article",
       doi: null,
       abstract: null,
       openAccessUrl: url,

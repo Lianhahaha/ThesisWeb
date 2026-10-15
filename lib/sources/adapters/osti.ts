@@ -2,7 +2,7 @@ import { paperId } from "@/lib/utils";
 import { fetchWithTimeout, readJson } from "@/lib/server/http";
 import { USER_AGENT } from "@/lib/server/config";
 import { extractDoi, flipName, stripHtml } from "@/lib/text";
-import type { Paper } from "@/lib/types";
+import type { Paper, WorkType } from "@/lib/types";
 import type { AdapterOptions } from "@/lib/sources/types";
 
 /**
@@ -25,9 +25,25 @@ interface OstiRecord {
   doi?: string;
   description?: string;
   journal_name?: string;
+  journal_volume?: string;
+  journal_issue?: string;
+  publisher?: string;
+  research_orgs?: string[];
+  /** "Journal Article", "Technical Report", "Conference", "Thesis/Dissertation", "Book", ... */
   product_type?: string;
   subjects?: string[];
   links?: { rel?: string; href?: string }[];
+}
+
+/** OSTI product types -> the app's record types. */
+function ostiType(productType: string | undefined): WorkType | undefined {
+  const t = productType?.toLowerCase() ?? "";
+  if (t.includes("journal")) return "article";
+  if (t.includes("thesis")) return "thesis";
+  if (t.includes("report")) return "report";
+  if (t.includes("conference")) return "conference";
+  if (t.includes("book")) return "book";
+  return undefined;
 }
 
 /** "Smith, Jane A. [Sandia National Labs] (ORCID:0000...)" -> "Jane A. Smith". */
@@ -62,6 +78,7 @@ export async function searchOsti(
     const year = r.publication_date ? Number(r.publication_date.slice(0, 4)) || null : null;
     // Subject codes like "14 SOLAR ENERGY" are categories, not keywords.
     const keywords = (r.subjects ?? []).filter((s) => !/^\d+\s/.test(s)).slice(0, 5);
+    const type = ostiType(r.product_type);
 
     papers.push({
       id: paperId(doi, title),
@@ -70,6 +87,11 @@ export async function searchOsti(
       year,
       publishedDate: r.publication_date ?? null,
       venue: r.journal_name || r.product_type || "OSTI.GOV",
+      type,
+      volume: r.journal_volume ?? null,
+      issue: r.journal_issue ?? null,
+      // A report is published by the lab that wrote it; "Golden, CO (United States)" is dropped.
+      publisher: r.publisher || (type === "report" || type === "thesis" ? r.research_orgs?.[0]?.replace(/,.*$/, "") : null) || null,
       doi,
       abstract: r.description ? stripHtml(r.description) : null,
       openAccessUrl: fulltext,

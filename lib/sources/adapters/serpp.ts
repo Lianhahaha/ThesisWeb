@@ -43,6 +43,9 @@ export function parseSerpp(html: string): Paper[] {
       authors: [],
       year: extractYear(meta("fa-calendar-alt")),
       venue: (series && institution && !series.startsWith(institution) ? `${institution} ${series}` : series || institution) || "SERP-P",
+      // Discussion papers, policy notes and studies: cited as reports.
+      type: "report",
+      publisher: institution || null,
       doi: null,
       abstract: null,
       openAccessUrl: url,

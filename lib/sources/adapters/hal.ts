@@ -2,7 +2,7 @@ import { paperId } from "@/lib/utils";
 import { fetchWithTimeout, readJson } from "@/lib/server/http";
 import { USER_AGENT } from "@/lib/server/config";
 import { stripHtml } from "@/lib/text";
-import type { Paper } from "@/lib/types";
+import type { Paper, WorkType } from "@/lib/types";
 import type { AdapterOptions } from "@/lib/sources/types";
 
 /**
@@ -18,8 +18,14 @@ const BASE = "https://api.archives-ouvertes.fr/search/";
 const FIELDS = [
   "halId_s", "title_s", "authFullName_s", "producedDateY_i", "doiId_s", "abstract_s",
   "uri_s", "journalTitle_s", "conferenceTitle_s", "openAccess_bool", "docType_s",
-  "keyword_s", "fileMain_s",
+  "keyword_s", "fileMain_s", "volume_s", "issue_s", "page_s", "publisher_s",
 ].join(",");
+
+/** HAL document type codes -> the app's record types. */
+const WORK_TYPE: Record<string, WorkType> = {
+  ART: "article", COMM: "conference", THESE: "thesis", HDR: "thesis", MEM: "thesis",
+  REPORT: "report", UNDEFINED: "preprint", COUV: "chapter", OUV: "book",
+};
 
 /** HAL document type codes -> readable labels, used when there's no journal. */
 const DOC_TYPES: Record<string, string> = {
@@ -41,6 +47,10 @@ interface HalDoc {
   docType_s?: string;
   keyword_s?: string[];
   fileMain_s?: string;
+  volume_s?: string;
+  issue_s?: string[];
+  page_s?: string;
+  publisher_s?: string[];
 }
 
 export async function searchHal(
@@ -78,6 +88,11 @@ export async function searchHal(
       authors: (d.authFullName_s ?? []).slice(0, 10), // already "Given Family"
       year: d.producedDateY_i ?? null,
       venue: d.journalTitle_s ?? d.conferenceTitle_s ?? (d.docType_s ? DOC_TYPES[d.docType_s] : null) ?? "HAL",
+      type: d.docType_s ? WORK_TYPE[d.docType_s] : undefined,
+      volume: d.volume_s ?? null,
+      issue: d.issue_s?.[0] ?? null,
+      pages: d.page_s ?? null,
+      publisher: d.publisher_s?.[0] ?? null,
       doi,
       abstract: d.abstract_s?.[0] ? stripHtml(d.abstract_s[0]) : null,
       openAccessUrl: isOA ? d.fileMain_s ?? d.uri_s ?? null : null,

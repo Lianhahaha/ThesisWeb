@@ -114,6 +114,7 @@ export async function searchArxiv(
       year,
       publishedDate: publishedStr ? publishedStr.slice(0, 10) : null,
       venue: "arXiv", // Preprints
+      type: "preprint",
       doi,
       abstract,
       tldr: null, // arXiv doesn't provide TLDRs

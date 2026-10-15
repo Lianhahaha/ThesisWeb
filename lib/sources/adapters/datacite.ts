@@ -91,6 +91,9 @@ export async function searchDataCite(
         .slice(0, 10),
       year: a.publicationYear ?? null,
       venue: a.publisher ? `${a.publisher} (thesis)` : "Thesis",
+      // Only the "dissertation" resource type is asked for.
+      type: "thesis",
+      publisher: a.publisher ?? null,
       doi,
       abstract: abstract ? stripHtml(abstract) : null,
       openAccessUrl: open ? a.url ?? (doi ? `https://doi.org/${doi}` : null) : null,

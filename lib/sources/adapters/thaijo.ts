@@ -77,6 +77,7 @@ export async function searchThaijo(query: string, opts: AdapterOptions = {}): Pr
       year,
       publishedDate: a.datePublished?.slice(0, 10) ?? null,
       venue: englishPart(a.copyrightHolder?.en_US) ?? "ThaiJO",
+      type: "article",
       doi,
       abstract: englishPart(a.abstract_clean?.en_US, 80),
       // ThaiJO journals are open access.
