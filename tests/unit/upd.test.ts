@@ -1,5 +1,20 @@
-import { describe, expect, it } from "vitest";
-import { parseUpd } from "@/lib/sources/adapters/upd";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import { parseUpd, searchUpd } from "@/lib/sources/adapters/upd";
+
+afterEach(() => vi.unstubAllGlobals());
+
+describe("searchUpd", () => {
+  it("reads the 'No records found' page as no matches, not as a changed layout", async () => {
+    const page = `<div id="divSearchResultMsg"><div class="alert alert-danger alert-dismissable"><strong>No records found matching your search! Please try again</strong>.</div></div>`;
+    vi.stubGlobal("fetch", vi.fn(async () => new Response(page)));
+    await expect(searchUpd("zqxvbnwk pfhtgrlm")).resolves.toEqual([]);
+  });
+
+  it("still fails on a page it doesn't recognise", async () => {
+    vi.stubGlobal("fetch", vi.fn(async () => new Response("<html>Maintenance</html>")));
+    await expect(searchUpd("teacher")).rejects.toThrow("unexpected page");
+  });
+});
 
 /** One result as UP Diliman's search page renders it (trimmed). */
 const result = (id: number, title: string, author: string, date: string, abstract: string) => `

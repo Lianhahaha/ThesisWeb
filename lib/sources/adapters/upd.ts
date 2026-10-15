@@ -78,6 +78,8 @@ export async function searchUpd(query: string, opts: AdapterOptions = {}): Promi
   );
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
   const html = await res.text();
+  // No matches is a page of its own, without the "returned N records" line.
+  if (html.includes("No records found matching your search")) return [];
   const total = Number(html.match(/returned <strong>(\d+)<\/strong> records/)?.[1] ?? NaN);
   // A changed page layout should show up as a failed source, not as "no results".
   if (Number.isNaN(total)) throw new Error("unexpected page");
