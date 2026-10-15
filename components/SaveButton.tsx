@@ -3,7 +3,8 @@
 import { useState, useEffect } from "react";
 import { Bookmark, BookmarkCheck } from "lucide-react";
 import { useLiveQuery } from "dexie-react-hooks";
-import { getDb, savePaper, unsavePaper, isSaved } from "@/lib/library/store";
+import { getDb, savePaper, unsavePaper } from "@/lib/library/store";
+import { requestSavedState, useSavedState } from "@/lib/library/saved-ids";
 import type { Paper, SavedPaper } from "@/lib/types";
 import { toast } from "@/components/Toaster";
 import { cn } from "@/lib/utils";
@@ -16,7 +17,7 @@ interface Props {
 
 /**
  * Toggle a paper in the library: IndexedDB when signed out, Firestore when
- * signed in.
+ * signed in (saved state from lib/library/saved-ids.ts).
  */
 export function SaveButton({ paper, className }: Props) {
   const { user, initialized } = useAuth();
@@ -26,19 +27,18 @@ export function SaveButton({ paper, className }: Props) {
     return (await getDb().papers.get(paper.id)) !== undefined;
   }, [paper.id]);
 
-  const [cloudSaved, setCloudSaved] = useState<boolean | null>(null);
+  // Signed in: shared with every other Save button, looked up in batches.
+  const cloudSaved = useSavedState((s) => (user && s.uid === user.uid ? s.saved[paper.id] : undefined));
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
-    if (!user) { setCloudSaved(null); return; }
-    // A failed lookup must not become an unhandled rejection; treat as "not saved".
-    isSaved(paper.id).then(setCloudSaved).catch(() => setCloudSaved(false));
+    if (user) requestSavedState(user.uid, paper.id);
   }, [user, paper.id]);
 
   const saved = user ? cloudSaved ?? false : localSaved ?? false;
   // Until sign-in state and the lookup are known, "Save" could be wrong, and a
   // click before sign-in loads would save to this browser instead of the account.
-  const unknown = !initialized || (user ? cloudSaved === null : localSaved === undefined);
+  const unknown = !initialized || (user ? cloudSaved === undefined : localSaved === undefined);
 
   async function toggle() {
     if (busy) return; // ignore double-clicks while a write is in flight
@@ -46,7 +46,6 @@ export function SaveButton({ paper, className }: Props) {
     try {
       if (saved) {
         await unsavePaper(paper.id);
-        if (user) setCloudSaved(false);
         toast("Removed from library", "info");
       } else {
         const entry: SavedPaper = {
@@ -56,7 +55,6 @@ export function SaveButton({ paper, className }: Props) {
           readingStatus: "to-read",
         };
         await savePaper(entry);
-        if (user) setCloudSaved(true);
         toast("Saved to library", "success");
       }
     } catch {

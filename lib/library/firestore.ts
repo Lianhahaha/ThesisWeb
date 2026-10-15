@@ -6,6 +6,8 @@ import {
   getDoc,
   getDocs,
   query,
+  where,
+  documentId,
   orderBy,
   updateDoc,
   deleteField,
@@ -73,10 +75,26 @@ export async function fsGetPaper(uid: string, id: string): Promise<SavedPaper | 
   return undefined;
 }
 
-export async function fsIsSaved(uid: string, id: string): Promise<boolean> {
-  const ref = doc(db, "users", uid, "papers", safeId(id));
-  const snap = await getDoc(ref);
-  return snap.exists();
+/** Most ids one Firestore "in" filter may hold. */
+const IN_LIMIT = 30;
+
+/**
+ * Which of `ids` are in the library: one query per 30 ids instead of one read
+ * per paper. Firestore bills a query by the papers it finds (at least one
+ * read), so checking a page of 300 results costs about ten reads plus the
+ * saved ones, not 300.
+ */
+export async function fsSavedAmong(uid: string, ids: string[]): Promise<Set<string>> {
+  const bySafeId = new Map(ids.map((id) => [safeId(id), id]));
+  const keys = [...bySafeId.keys()];
+  const chunks: string[][] = [];
+  for (let i = 0; i < keys.length; i += IN_LIMIT) chunks.push(keys.slice(i, i + IN_LIMIT));
+  const snaps = await Promise.all(
+    chunks.map((chunk) => getDocs(query(collection(db, "users", uid, "papers"), where(documentId(), "in", chunk))))
+  );
+  const found = new Set<string>();
+  for (const snap of snaps) for (const d of snap.docs) found.add(bySafeId.get(d.id) ?? d.id);
+  return found;
 }
 
 export async function fsUpdatePaper(uid: string, id: string, changes: Partial<SavedPaper>): Promise<void> {

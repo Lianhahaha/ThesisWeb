@@ -5,6 +5,7 @@ import type { SavedPaper } from "@/lib/types";
 import { mergeSavedPaper } from "@/lib/library/merge";
 import { auth } from "@/lib/firebase";
 import * as fs from "@/lib/library/firestore";
+import { setSavedState } from "@/lib/library/saved-ids";
 
 /**
  * Hybrid local + cloud persistence.
@@ -86,6 +87,7 @@ export async function savePaper(p: SavedPaper): Promise<void> {
     // If this read fails (offline), the save fails too rather than risk
     // overwriting a saved paper blind.
     await fs.fsSavePaper(uid, mergeSavedPaper(await fs.fsGetPaper(uid, p.id), p));
+    setSavedState(uid, [p.id], true);
   } else {
     const local = getDb();
     await local.transaction("rw", local.papers, async () => {
@@ -107,7 +109,9 @@ export async function savePapers(papers: SavedPaper[]): Promise<number> {
   let count = papers.length;
   if (uid) {
     const existing = new Map((await fs.fsAllPapers(uid)).map((p) => [p.id, p]));
-    count = (await fs.fsSaveMany(uid, papers.map((p) => mergeSavedPaper(existing.get(p.id), p)))).length;
+    const saved = await fs.fsSaveMany(uid, papers.map((p) => mergeSavedPaper(existing.get(p.id), p)));
+    setSavedState(uid, saved, true);
+    count = saved.length;
   } else {
     const local = getDb();
     await local.transaction("rw", local.papers, async () => {
@@ -132,6 +136,7 @@ export async function moveLocalPapersToAccount(): Promise<number> {
   if (local.length === 0) return 0;
   const cloud = new Map((await fs.fsAllPapers(uid)).map((p) => [p.id, p]));
   const saved = await fs.fsSaveMany(uid, local.map((p) => mergeSavedPaper(cloud.get(p.id), p)));
+  setSavedState(uid, saved, true);
   await removeLocalPapers(saved);
   changed();
   return saved.length;
@@ -156,6 +161,7 @@ export async function unsavePaper(id: string): Promise<void> {
   const uid = auth.currentUser?.uid;
   if (uid) {
     await fs.fsUnsavePaper(uid, id);
+    setSavedState(uid, [id], false);
   } else {
     await getDb().papers.delete(id);
   }
@@ -168,14 +174,6 @@ export async function getPaper(id: string): Promise<SavedPaper | undefined> {
     return fs.fsGetPaper(uid, id);
   }
   return getDb().papers.get(id);
-}
-
-export async function isSaved(id: string): Promise<boolean> {
-  const uid = auth.currentUser?.uid;
-  if (uid) {
-    return fs.fsIsSaved(uid, id);
-  }
-  return (await getDb().papers.get(id)) !== undefined;
 }
 
 export async function updatePaper(id: string, changes: Partial<SavedPaper>): Promise<void> {

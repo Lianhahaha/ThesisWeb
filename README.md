@@ -130,7 +130,8 @@ lib/search/          search page (browser): params.ts (URL <-> form, shared with
                      recent-papers.ts, result-view.ts (sort, refine),
                      related-terms.ts, integrity.ts (asks the retraction route)
 lib/library/         saved papers (browser): store.ts (IndexedDB or Firestore),
-                     firestore.ts, merge.ts (combining two copies), backup.ts,
+                     firestore.ts, saved-ids.ts (Save buttons' state, looked up
+                     in batches), merge.ts (combining two copies), backup.ts,
                      import.ts (.bib/.ris), scope.ts (Local/Foreign),
                      reference-list.ts, rtf.ts + matrix-export.ts (Word/Excel
                      downloads), shared-copy.ts + share.ts (group libraries)
