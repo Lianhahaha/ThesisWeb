@@ -15,7 +15,7 @@ const MAX_TEXT = 50_000;
  * pattern is consistent with the other routes.)
  */
 export async function POST(req: NextRequest) {
-  const limited = rateLimit(req, "summarize");
+  const limited = await rateLimit(req, "summarize");
   if (limited) return limited;
 
   // Untrusted input: the body can be any JSON value (even null), not just our shape.

@@ -10,7 +10,7 @@ export const dynamic = "force-dynamic";
  * Browser calls this to avoid CORS when reading Unpaywall directly.
  */
 export async function GET(req: NextRequest) {
-  const limited = rateLimit(req, "pdf");
+  const limited = await rateLimit(req, "pdf");
   if (limited) return limited;
 
   const doi = new URL(req.url).searchParams.get("doi");

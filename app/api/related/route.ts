@@ -20,7 +20,7 @@ const DOI_PATTERN = /^10\.\d{4,9}\/\S{1,200}$/;
  * OpenAlex, for snowballing a literature review from one good paper.
  */
 export async function GET(req: NextRequest) {
-  const limited = rateLimit(req, "related");
+  const limited = await rateLimit(req, "related");
   if (limited) return limited;
 
   const doi = (new URL(req.url).searchParams.get("doi") ?? "").trim();

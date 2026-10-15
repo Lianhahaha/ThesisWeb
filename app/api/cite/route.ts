@@ -25,7 +25,7 @@ export interface CiteResult {
  * first; OpenAlex fills in when Crossref has no entry or is down.
  */
 export async function POST(req: NextRequest) {
-  const limited = rateLimit(req, "cite");
+  const limited = await rateLimit(req, "cite");
   if (limited) return limited;
 
   const body = await req.json().catch(() => null);

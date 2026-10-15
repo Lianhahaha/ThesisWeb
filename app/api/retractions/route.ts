@@ -17,7 +17,7 @@ const MAX_DOIS = MAX_RESULTS;
  * DOIs against Crossref takes several seconds.
  */
 export async function POST(req: NextRequest) {
-  const limited = rateLimit(req, "retractions");
+  const limited = await rateLimit(req, "retractions");
   if (limited) return limited;
 
   const body = (await req.json().catch(() => null)) as { dois?: unknown } | null;

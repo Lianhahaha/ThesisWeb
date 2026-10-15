@@ -17,7 +17,7 @@ export const maxDuration = 30;
  * one rate limit.
  */
 export async function GET(req: NextRequest) {
-  const limited = rateLimit(req, "search");
+  const limited = await rateLimit(req, "search");
   if (limited) return limited;
 
   const qs = new URL(req.url).searchParams;
