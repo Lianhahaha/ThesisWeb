@@ -1,6 +1,6 @@
 import { paperId } from "@/lib/utils";
 import { fetchWithTimeout, readJson, upstreamError } from "@/lib/server/http";
-import type { Paper } from "@/lib/types";
+import type { Paper, WorkType } from "@/lib/types";
 import type { AdapterOptions } from "@/lib/sources/types";
 import { CONTACT_EMAIL } from "@/lib/server/config";
 import { doiUrlPath } from "@/lib/text";
@@ -32,8 +32,9 @@ interface OpenAlexWork {
   referenced_works_count?: number;
   cited_by_count?: number;
   authorships?: { author: { display_name: string } }[];
+  biblio?: { volume?: string | null; issue?: string | null; first_page?: string | null; last_page?: string | null } | null;
   primary_location?: {
-    source?: { display_name?: string; type?: string } | null;
+    source?: { display_name?: string; type?: string; host_organization_name?: string | null } | null;
     is_oa?: boolean;
     pdf_url?: string | null;
     landing_page_url?: string | null;
@@ -80,6 +81,34 @@ export async function searchOpenAlex(
   return data.results.map(workToPaper);
 }
 
+/** OpenAlex work types as the app's record types; types not listed stay unknown. */
+const WORK_TYPE: Record<string, WorkType> = {
+  preprint: "preprint",
+  dissertation: "thesis",
+  book: "book",
+  "book-chapter": "chapter",
+  report: "report",
+  dataset: "other",
+};
+
+/** The record type: OpenAlex calls conference papers "article", so the source type tells them apart. */
+function workType(w: OpenAlexWork): WorkType | undefined {
+  if (w.type && WORK_TYPE[w.type]) return WORK_TYPE[w.type];
+  if (w.type === "article" || w.type === "review" || w.type === "letter" || w.type === "editorial") {
+    const source = w.primary_location?.source?.type;
+    return source === "conference" ? "conference" : source === "journal" ? "article" : undefined;
+  }
+  return undefined;
+}
+
+/** "45-67", or "45" when the work starts and ends on one page. */
+export function pageRange(first?: string | null, last?: string | null): string | null {
+  const a = first?.trim();
+  const b = last?.trim();
+  if (!a) return null;
+  return b && b !== a ? `${a}-${b}` : a;
+}
+
 /** Normalize one OpenAlex work into the app's Paper shape. */
 export function workToPaper(w: OpenAlexWork): Paper {
   const title = w.title || w.display_name || "Untitled";
@@ -96,6 +125,11 @@ export function workToPaper(w: OpenAlexWork): Paper {
     year: w.publication_year ?? null,
     publishedDate: w.publication_date ?? null,
     venue: w.primary_location?.source?.display_name ?? null,
+    type: workType(w),
+    volume: w.biblio?.volume ?? null,
+    issue: w.biblio?.issue ?? null,
+    pages: pageRange(w.biblio?.first_page, w.biblio?.last_page),
+    publisher: w.primary_location?.source?.host_organization_name ?? null,
     doi,
     abstract: deinvert(w.abstract_inverted_index) || null,
     openAccessUrl: freeUrl,

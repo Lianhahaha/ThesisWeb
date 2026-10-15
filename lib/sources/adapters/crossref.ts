@@ -1,6 +1,6 @@
 import { paperId } from "@/lib/utils";
 import { fetchWithTimeout, readJson, upstreamError } from "@/lib/server/http";
-import type { Paper } from "@/lib/types";
+import type { Paper, WorkType } from "@/lib/types";
 import type { AdapterOptions } from "@/lib/sources/types";
 import { CONTACT_EMAIL } from "@/lib/server/config";
 import { doiUrlPath, stripHtml } from "@/lib/text";
@@ -28,6 +28,12 @@ interface CrossrefItem {
   "published-online"?: { "date-parts": number[][] };
   issued?: { "date-parts": number[][] };
   abstract?: string;
+  volume?: string;
+  issue?: string;
+  page?: string;
+  publisher?: string;
+  /** For a dissertation, the university that awarded it. */
+  institution?: { name?: string }[];
   "is-referenced-by-count"?: number;
   link?: { URL: string; "content-type": string }[];
   license?: { URL: string }[];
@@ -56,6 +62,24 @@ const OPEN_LICENSE_FILTER = [
 ]
   .map((u) => `license.url:${u}`)
   .join(",");
+
+/** Crossref work types as the app's record types; types not listed stay unknown. */
+const WORK_TYPE: Record<string, WorkType> = {
+  "journal-article": "article",
+  "posted-content": "preprint",
+  "proceedings-article": "conference",
+  "book-chapter": "chapter",
+  "book-section": "chapter",
+  "book-part": "chapter",
+  book: "book",
+  monograph: "book",
+  "edited-book": "book",
+  "reference-book": "book",
+  dissertation: "thesis",
+  report: "report",
+  "report-component": "report",
+  dataset: "other",
+};
 
 function yearFromItem(it: CrossrefItem): number | null {
   const parts =
@@ -101,12 +125,23 @@ function itemToPaper(it: CrossrefItem): Paper {
   const title = it.title?.[0] ? stripHtml(it.title[0]) : "Untitled";
   const doi = it.DOI || null;
   const open = hasOpenLicense(it);
+  const type = it.type ? WORK_TYPE[it.type] : undefined;
+  // A chapter or proceedings paper lists the series first and its book last
+  // (["Lecture Notes in Computer Science", "Computer Vision – ECCV 2020"]);
+  // the book is what a citation names.
+  const containers = it["container-title"] ?? [];
+  const container = type === "chapter" || type === "conference" ? containers.at(-1) : containers[0];
   return {
     id: paperId(doi, title),
     title,
     authors: (it.author || []).map((a) => stripHtml([a.given, a.family].filter(Boolean).join(" "))),
     year: yearFromItem(it),
-    venue: it["container-title"]?.[0] ? stripHtml(it["container-title"][0]) : null,
+    venue: container ? stripHtml(container) : null,
+    type,
+    volume: it.volume ?? null,
+    issue: it.issue ?? null,
+    pages: it.page ?? null,
+    publisher: (it.type === "dissertation" ? it.institution?.[0]?.name : undefined) ?? it.publisher ?? null,
     doi,
     abstract: it.abstract ? stripHtml(it.abstract) : null,
     citedByCount: it["is-referenced-by-count"] ?? 0,
