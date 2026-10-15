@@ -232,6 +232,28 @@ function bigrams(text: string): string[] {
 
 // ─── Relevance scoring ──────────────────────────────────────────────────────
 
+/** Share of the query's words (exact or stemmed) found in the title and in the abstract. */
+function coverage(p: Paper, qTerms: string[]): { title: number; abstract: number } {
+  const share = (text: string) => {
+    const tokens = stemTokenize(text.toLowerCase());
+    return qTerms.filter((t) => tokens.has(t) || tokens.has(stem(t))).length / qTerms.length;
+  };
+  return { title: share(p.title || ""), abstract: share(p.abstract || "") };
+}
+
+/** The floor every result must clear: a quarter of the query in the title, or 30% in the abstract. */
+const coversQuery = (c: { title: number; abstract: number }) => c.title >= 0.25 || c.abstract >= 0.3;
+
+/**
+ * True if a paper clears the relevance floor on its own (the rest of the
+ * score depends on the other results). The server drops records that don't,
+ * before sending them to the page.
+ */
+export function matchesQuery(p: Paper, query: string): boolean {
+  const qTerms = tokenizeQuery(query);
+  return qTerms.length === 0 || coversQuery(coverage(p, qTerms));
+}
+
 /**
  * Google-like relevance scoring with stemming.
  *
@@ -246,8 +268,6 @@ export function scoreRelevance(papers: Paper[], query: string): Paper[] {
   const qTermCount = qTerms.length;
   if (qTermCount === 0) return papers;
 
-  // Stem query terms for matching
-  const qStems = new Set(qTerms.map(stem));
   const qBigrams = bigrams(query);
   const qBigramSet = new Set(qBigrams);
 
@@ -259,27 +279,9 @@ export function scoreRelevance(papers: Paper[], query: string): Paper[] {
       const titleLower = (p.title || "").toLowerCase();
       const absLower = (p.abstract || "").toLowerCase();
 
-      // ── 1. Title term coverage with stemming (0-40 points) ──
-      const titleTokens = stemTokenize(titleLower);
-      let titleHits = 0;
-      for (const t of qTerms) {
-        // Match exact or stemmed form
-        if (titleTokens.has(t) || titleTokens.has(stem(t))) {
-          titleHits++;
-        }
-      }
-      const titleCoverage = titleHits / qTermCount;
+      // ── 1–2. Title (0-40 points) and abstract (0-15 points) term coverage with stemming ──
+      const { title: titleCoverage, abstract: absCoverage } = coverage(p, qTerms);
       const titleScore = titleCoverage * 40;
-
-      // ── 2. Abstract term coverage with stemming (0-15 points) ──
-      const absTokens = stemTokenize(absLower);
-      let absHits = 0;
-      for (const t of qTerms) {
-        if (absTokens.has(t) || absTokens.has(stem(t))) {
-          absHits++;
-        }
-      }
-      const absCoverage = absHits / qTermCount;
       const absScore = absCoverage * 15;
 
       // ── 3. Exact phrase match bonus (0-30 points) ──
@@ -341,10 +343,7 @@ export function scoreRelevance(papers: Paper[], query: string): Paper[] {
       const raw = titleScore + absScore + phraseScore + bigramScore + positionScore + recencyScore + citeScore;
 
       // ── FILTERING (balanced) ──
-      // Must have at least 25% coverage in title OR 30% coverage in abstract
-      const passes = titleCoverage >= 0.25 || absCoverage >= 0.3;
-
-      if (!passes || raw < 25) {
+      if (!coversQuery({ title: titleCoverage, abstract: absCoverage }) || raw < 25) {
         p.relevance = -1; // Remove
       } else {
         p.relevance = Math.round(Math.max(0, Math.min(100, raw)));

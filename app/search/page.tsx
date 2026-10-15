@@ -1,15 +1,16 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import Link from "next/link";
-import { useMutation } from "@tanstack/react-query";
 import { Bookmark, BookmarkCheck, ChevronDown } from "lucide-react";
 import { PaperCard } from "@/components/PaperCard";
 import { SearchPanel, DEFAULT_FROM_YEAR } from "@/components/SearchPanel";
 import { toast } from "@/components/Toaster";
 import { storeRecentPapers } from "@/lib/search/recent-papers";
 import { applyIntegrity, fetchIntegrity } from "@/lib/search/integrity";
-import type { SearchResult } from "@/lib/types";
+import type { Paper, SearchResult } from "@/lib/types";
+import { rankResults } from "@/lib/search/rank";
+import { streamSearch } from "@/lib/search/stream";
 import { SOURCE_COUNT, sourceLabel, SOURCE_META } from "@/lib/sources/meta";
 import { suggestTerms } from "@/lib/search/related-terms";
 import { addSearchHistory } from "@/lib/search/history";
@@ -123,58 +124,113 @@ export default function SearchPage() {
     });
   }
 
-  const search = useMutation({
-    mutationFn: async (input: SearchInput) => {
-      const res = await fetch(`/api/search?${buildSearchParams(input)}`);
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({ error: "Search failed" }));
-        throw new Error(err.error || "Search failed");
-      }
-      return (await res.json()) as SearchResult;
-    },
-    onSuccess: (data, input) => {
-      setResult(data);
-      // Mirror the search in the URL so it survives a refresh and can be shared.
-      window.history.replaceState(null, "", `?${buildSearchParams(input)}`);
-      setSelectedSources(new Set());
-      addSearchHistory(input.query);
-      setSearched(input);
-      storeRecentPapers(data.papers);
-      // Retraction check is slow (several seconds), so it lands after the
-      // results are on screen and patches the badges in.
-      fetchIntegrity(data.papers.map((p) => p.doi ?? "")).then((status) => {
-        if (Object.keys(status).length === 0) return;
-        const papers = applyIntegrity(data.papers, status);
-        storeRecentPapers(papers);
-        setResult((prev) => (prev === data ? { ...data, papers } : prev));
-      });
-      // A saved search: mark what wasn't there the last time it was opened.
-      const check = checkSavedSearch(input, data.papers.map((p) => p.id));
-      setIsSaved(!!check);
-      setFreshIds(new Set(check?.fresh ?? []));
-      setFreshSince(check?.since ?? null);
-      // Coming back from a paper shows these again without searching.
-      rememberSearch(buildSearchParams(input).toString(), data, check?.fresh ?? [], check?.since ?? null);
-      setOnlyNew(false);
-      setRefinement(NO_REFINEMENT);
-      const ok = Object.values(data.sources).filter((s) => s === "ok").length;
-      if (ok === 0) toast("No database returned results. Try different words.", "error");
-      else if (check)
-        toast(
-          check.fresh.length > 0
-            ? `${check.fresh.length} new since ${shortDate(check.since)} · ${data.papers.length} papers`
-            : `Nothing new since ${shortDate(check.since)} · ${data.papers.length} papers`,
-          "success"
-        );
-      else toast(`${data.papers.length} papers in ${(data.tookMs / 1000).toFixed(1)}s`, "success");
-      trackEvent("search", { search_term: input.query, results: data.papers.length });
-    },
-    onError: (e: Error) => toast(e.message, "error"),
-  });
+  // A search in progress: how many databases have answered, and how to stop it
+  // when a new search starts or the page closes.
+  const [pending, setPending] = useState(false);
+  const [searchError, setSearchError] = useState<string | null>(null);
+  const [answered, setAnswered] = useState(0);
+  const running = useRef<AbortController | null>(null);
+  useEffect(() => () => running.current?.abort(), []);
 
-  function run(input: SearchInput) {
+  /** What follows a finished search: URL, history, retraction check, saved-search marks, message. */
+  function finish(data: SearchResult, input: SearchInput) {
+    // Mirror the search in the URL so it survives a refresh and can be shared.
+    window.history.replaceState(null, "", `?${buildSearchParams(input)}`);
+    addSearchHistory(input.query);
+    storeRecentPapers(data.papers);
+    // Retraction check is slow (several seconds), so it lands after the
+    // results are on screen and patches the badges in.
+    fetchIntegrity(data.papers.map((p) => p.doi ?? "")).then((status) => {
+      if (Object.keys(status).length === 0) return;
+      const papers = applyIntegrity(data.papers, status);
+      storeRecentPapers(papers);
+      setResult((prev) => (prev === data ? { ...data, papers } : prev));
+    });
+    // A saved search: mark what wasn't there the last time it was opened.
+    const check = checkSavedSearch(input, data.papers.map((p) => p.id));
+    setIsSaved(!!check);
+    setFreshIds(new Set(check?.fresh ?? []));
+    setFreshSince(check?.since ?? null);
+    // Coming back from a paper shows these again without searching.
+    rememberSearch(buildSearchParams(input).toString(), data, check?.fresh ?? [], check?.since ?? null);
+    const ok = Object.values(data.sources).filter((s) => s === "ok").length;
+    if (ok === 0) toast("No database returned results. Try different words.", "error");
+    else if (check)
+      toast(
+        check.fresh.length > 0
+          ? `${check.fresh.length} new since ${shortDate(check.since)} · ${data.papers.length} papers`
+          : `Nothing new since ${shortDate(check.since)} · ${data.papers.length} papers`,
+        "success"
+      );
+    else toast(`${data.papers.length} papers in ${(data.tookMs / 1000).toFixed(1)}s`, "success");
+    trackEvent("search", { search_term: input.query, results: data.papers.length });
+  }
+
+  /**
+   * Run a search. Results show as soon as the first databases answer and are
+   * re-ranked as the rest come in (at most every 800 ms, so the list doesn't
+   * reshuffle under the reader with every database).
+   */
+  async function run(input: SearchInput) {
+    running.current?.abort();
+    const controller = new AbortController();
+    running.current = controller;
     setForm(input);
-    search.mutate(input);
+    setSearched(input);
+    setPending(true);
+    setSearchError(null);
+    setAnswered(0);
+    setResult(null);
+    setSelectedSources(new Set());
+    setRefinement(NO_REFINEMENT);
+    setOnlyNew(false);
+    setFreshIds(new Set());
+    setFreshSince(null);
+    setIsSaved(isSearchSaved(input));
+
+    const started = Date.now();
+    const records: Paper[] = [];
+    const sources: SearchResult["sources"] = {};
+    const errors: Record<string, string> = {};
+    const snapshot = (tookMs: number): SearchResult => ({
+      papers: rankResults(records, input.query, input),
+      sources: { ...sources },
+      errors: { ...errors },
+      tookMs,
+    });
+    let lastPaint = 0;
+    let paintTimer: ReturnType<typeof setTimeout> | undefined;
+    const paint = () => {
+      lastPaint = Date.now();
+      paintTimer = undefined;
+      if (running.current === controller) setResult(snapshot(Date.now() - started));
+    };
+
+    try {
+      const { tookMs } = await streamSearch(input, {
+        signal: controller.signal,
+        onSource: (update) => {
+          records.push(...update.papers);
+          sources[update.id] = update.status;
+          if (update.error) errors[update.id] = update.error;
+          setAnswered((n) => n + 1);
+          if (!paintTimer) paintTimer = setTimeout(paint, Math.max(0, 800 - (Date.now() - lastPaint)));
+        },
+      });
+      clearTimeout(paintTimer);
+      if (running.current !== controller) return;
+      const data = snapshot(tookMs);
+      setResult(data);
+      finish(data, input);
+    } catch (e) {
+      clearTimeout(paintTimer);
+      if (controller.signal.aborted) return;
+      const message = e instanceof Error ? e.message : "Search failed";
+      setSearchError(message);
+      toast(message, "error");
+    } finally {
+      if (running.current === controller) setPending(false);
+    }
   }
 
   // Opened from the home page, a shared link or a refresh: restore and run.
@@ -201,6 +257,9 @@ export default function SearchPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // While a search runs, results show once there are some; after it, always (also "no papers").
+  const showResults = !!result && (result.papers.length > 0 || !pending);
+
   return (
     // Phones: one column. From lg up the sidebar sits right of the results;
     // in the DOM it comes first so on a phone the filter precedes the list.
@@ -223,12 +282,12 @@ export default function SearchPage() {
           value={form}
           onChange={setForm}
           onSearch={run}
-          pending={search.isPending}
-          showSuggestions={!result}
+          pending={pending}
+          showSuggestions={!result && !pending}
         />
       </div>
 
-      {result && !search.isPending && (
+      {result && showResults && (
         <aside className="min-w-0 space-y-6 lg:sticky lg:top-20 lg:col-start-2 lg:row-span-2 lg:row-start-1 lg:max-h-[calc(100vh-6rem)] lg:overflow-y-auto lg:pr-1">
           <section aria-labelledby="refine-h">
             <div className="flex items-baseline justify-between">
@@ -388,16 +447,17 @@ export default function SearchPage() {
       )}
 
       <div className="min-w-0 lg:col-start-1 lg:row-start-2">
-        {search.isError && (
+        {searchError && !pending && (
           <p role="alert" className="notice notice-danger">
-            <strong>Search failed.</strong> {(search.error as Error).message}
+            <strong>Search failed.</strong> {searchError}
           </p>
         )}
 
-        {search.isPending && (
+        {pending && !showResults && (
           <div>
             <p role="status" className="text-sm text-muted">
-              Searching {SOURCE_COUNT} databases. Slow ones are dropped after a few seconds.
+              Searching {SOURCE_COUNT} databases{answered > 0 ? `: ${answered} answered` : ""}. Results show as soon as
+              the first ones are in.
             </p>
             <div className="card mt-3 divide-y divide-border" aria-hidden>
               {Array.from({ length: 5 }).map((_, i) => (
@@ -411,7 +471,7 @@ export default function SearchPage() {
           </div>
         )}
 
-        {result && !search.isPending && (
+        {result && showResults && (
           <section aria-label="Results">
             <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border pb-3">
               <h2 className="text-xl">
@@ -440,6 +500,7 @@ export default function SearchPage() {
               <button
                 type="button"
                 onClick={toggleSaved}
+                disabled={pending}
                 aria-pressed={isSaved}
                 className="btn-ghost btn-sm"
                 title={isSaved ? "Stop tracking new papers for this search" : "Keep this search and mark new papers next time"}
@@ -463,6 +524,13 @@ export default function SearchPage() {
               )}
               </div>
             </div>
+
+            {pending && (
+              <p role="status" className="notice notice-info mt-3">
+                {answered} of {SOURCE_COUNT} databases have answered. The list updates as the rest come in; slow
+                ones are dropped after a few seconds.
+              </p>
+            )}
 
             {result.papers.length > 0 && (
               <p className="mt-3 text-xs text-subtle">
