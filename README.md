@@ -84,7 +84,9 @@ npm run test:live            # calls every real database once
 | `CONTACT_EMAIL`, `UNPAYWALL_EMAIL` | Recommended | Polite-pool access; PDF lookup |
 | `SEMANTIC_SCHOLAR_API_KEY`, `OPENALEX_API_KEY` | Recommended | Higher rate limits on the two biggest sources |
 | `NCBI_API_KEY` | Optional | 10 instead of 3 requests/s to PubMed and PubMed Central |
-| `CORE_API_KEY` | Optional | Higher CORE rate limit (works without, but may fail when busy) |
+| `CORE_API_KEY` | Optional | Higher CORE rate limit (works without, but may fail when busy). Free at [core.ac.uk/services/api](https://core.ac.uk/services/api); a revoked or expired key gets `401` and CORE shows as failed until it is replaced |
+| `NEXT_PUBLIC_SITE_URL` | Optional | The public address used in canonical links, the sitemap and share cards (default `https://thesiswebph.vercel.app`; set it if you move to a custom domain) |
+| `NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION` | Optional | The code from Google Search Console's HTML-tag check, see *Search engines* below |
 | `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN` | Optional | Rate limits shared by every server instance (Vercel's Upstash integration sets `KV_REST_API_URL`/`KV_REST_API_TOKEN`, also read) |
 
 **Firebase setup:**
@@ -94,9 +96,17 @@ npm run test:live            # calls every real database once
 
 Rules restrict each user to their own `users/{uid}` data, cap field sizes, and allow single-document (never listing) public reads of a shared library by its link. Test locally with `npx firebase-tools emulators:start --only auth,firestore` + `NEXT_PUBLIC_FIREBASE_EMULATORS=1` (never set that var on Vercel).
 
-**Cost/abuse protection:** Firebase Spark plan never bills — it just pauses at the daily quota. Firestore reads are kept cheap (count queries, in-place patches). Every API route has a per-IP rate limit ([`lib/server/rate-limit.ts`](lib/server/rate-limit.ts): search 12/min, cite 10, related 20, pdf/summarize 30, retractions 40, search also capped at 120/min site-wide) returning `429` + `Retry-After`. Without Redis each server instance counts on its own, so the real ceiling is a small multiple; add a free Upstash Redis database (Vercel → Storage → Upstash, which sets `KV_REST_API_URL`/`KV_REST_API_TOKEN`, or set `UPSTASH_REDIS_REST_URL`/`_TOKEN`) and every instance counts together. If Redis is slow or down, requests fall back to the per-instance count. A Vercel Firewall rule on `/api/*` is another option. Searches space out their calls to arXiv (one every 3 s), NCBI and Semantic Scholar to stay inside those APIs' limits.
+**Cost/abuse protection:** Firebase Spark plan never bills — it just pauses at the daily quota. Firestore reads are kept cheap (count queries, in-place patches). Every API route has a per-IP rate limit ([`lib/server/rate-limit.ts`](lib/server/rate-limit.ts): search 12/min, cite 10, related 20, pdf/summarize/abstract 30, retractions 40, search also capped at 120/min site-wide) returning `429` + `Retry-After`. Without Redis each server instance counts on its own, so the real ceiling is a small multiple; add a free Upstash Redis database (Vercel → Storage → Upstash, which sets `KV_REST_API_URL`/`KV_REST_API_TOKEN`, or set `UPSTASH_REDIS_REST_URL`/`_TOKEN`) and every instance counts together. If Redis is slow or down, requests fall back to the per-instance count. A Vercel Firewall rule on `/api/*` is another option. Searches space out their calls to arXiv (one every 3 s), NCBI and Semantic Scholar to stay inside those APIs' limits.
 
 **Deploy:** import to Vercel → add the env vars → add the Vercel domain to Firebase authorized domains → redeploy.
+
+**Search engines:** the site serves [`/sitemap.xml`](app/sitemap.ts) (the public pages), [`/robots.txt`](app/robots.ts) (everything but `/api/`), a share-card image ([`app/opengraph-image.tsx`](app/opengraph-image.tsx)), per-page titles, descriptions and canonical links ([`lib/site.ts`](lib/site.ts)), and schema.org JSON-LD for the site and app. Personal pages (library, settings, paper and shared pages, sign-in) carry `noindex`. To get listed on Google:
+1. Open [Google Search Console](https://search.google.com/search-console) → **Add property** → **URL prefix** → `https://thesiswebph.vercel.app`.
+2. Choose **HTML tag**, copy only the `content="…"` value, add it in Vercel as `NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION`, redeploy, then press **Verify**.
+3. **Sitemaps** → submit `sitemap.xml`.
+4. **URL inspection** → paste the home page address → **Request indexing**.
+
+[Bing Webmaster Tools](https://www.bing.com/webmasters) can import the verified site from Search Console in one step, which also covers DuckDuckGo and Yahoo. New sites usually take days to a few weeks to appear.
 
 **Project structure:** grouped by where code runs, so a bug can be traced from the page to the data.
 
