@@ -8,7 +8,7 @@ import { ServiceWorker } from "@/components/layout/ServiceWorker";
 import { Toaster } from "@/components/Toaster";
 import { Analytics } from "@vercel/analytics/react";
 import { THEME_SCRIPT } from "@/lib/theme";
-import { SITE_DESCRIPTION, SITE_IMAGE, SITE_NAME, SITE_OPEN_GRAPH, SITE_TAGLINE, SITE_URL } from "@/lib/site";
+import { SITE_DESCRIPTION, SITE_IMAGE, SITE_JSON_LD, SITE_NAME, SITE_OPEN_GRAPH, SITE_TAGLINE, SITE_URL } from "@/lib/site";
 
 // Self-hosted at build time, so there is no layout shift or runtime font request.
 const serif = EB_Garamond({
@@ -61,6 +61,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en" className={serif.variable} suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }} />
+        <script
+          type="application/ld+json"
+          // "<" escaped so no text in the data can close the tag.
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(SITE_JSON_LD).replace(/</g, "\\u003c") }}
+        />
       </head>
       <body className="min-h-screen antialiased">
         <Providers>

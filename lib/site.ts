@@ -32,3 +32,39 @@ export function pageMetadata({ title, description, path }: { title: string; desc
     twitter: { card: "summary_large_image", title, description, images: [SITE_IMAGE] },
   };
 }
+
+/**
+ * Structured data for search engines: the site, with a search box Google may
+ * show under the result, and the app itself as a free educational tool.
+ */
+export const SITE_JSON_LD = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "WebSite",
+      "@id": `${SITE_URL}/#website`,
+      url: SITE_URL,
+      name: SITE_NAME,
+      description: SITE_DESCRIPTION,
+      inLanguage: "en",
+      potentialAction: {
+        "@type": "SearchAction",
+        target: { "@type": "EntryPoint", urlTemplate: `${SITE_URL}/search?q={search_term_string}` },
+        "query-input": "required name=search_term_string",
+      },
+    },
+    {
+      "@type": "WebApplication",
+      "@id": `${SITE_URL}/#app`,
+      name: SITE_NAME,
+      url: SITE_URL,
+      description: SITE_DESCRIPTION,
+      applicationCategory: "EducationalApplication",
+      operatingSystem: "Any",
+      browserRequirements: "Requires JavaScript",
+      isAccessibleForFree: true,
+      offers: { "@type": "Offer", price: "0", priceCurrency: "PHP" },
+      audience: { "@type": "EducationalAudience", educationalRole: "student" },
+    },
+  ],
+};
