@@ -1,14 +1,14 @@
 import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/site";
 import Link from "next/link";
 import { ExternalLink } from "lucide-react";
 import { FIELDS, KINDS, SOURCE_COUNT, SOURCE_META, type Field, type Kind, type SourceMeta } from "@/lib/sources/meta";
 
-export const metadata: Metadata = {
-  title: "The 50 free databases searched",
+export const metadata: Metadata = pageMetadata({
+  title: `The ${SOURCE_COUNT} free databases searched`,
   description: "Every free academic database Thesisweb searches, what it covers and how far to trust it.",
-  alternates: { canonical: "/databases" },
-  openGraph: { title: "The 50 free databases searched", description: "Every free academic database Thesisweb searches, what it covers and how far to trust it." },
-};
+  path: "/databases",
+});
 
 /** What each kind of source means for a student deciding whether to cite it. */
 const KIND_ADVICE: Record<Kind, string> = {

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/site";
 import Link from "next/link";
 import { CONTACT_EMAIL, LEGAL_UPDATED } from "@/lib/legal";
 import { SOURCE_COUNT, SOURCE_META } from "@/lib/sources/meta";
@@ -9,11 +10,11 @@ const DATABASE_NAMES = Object.values(SOURCE_META)
   .sort((a, b) => a.localeCompare(b))
   .join(", ");
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: "Privacy Policy",
   description: "What Thesisweb collects, why, where it is stored, and how to remove it.",
-  alternates: { canonical: "/privacy" },
-};
+  path: "/privacy",
+});
 
 export default function PrivacyPage() {
   return (
