@@ -31,6 +31,9 @@ import { ResultsSidebar } from "@/components/search/ResultsSidebar";
 import { localCountry } from "@/lib/countries";
 import { trackEvent } from "@/lib/analytics-events";
 
+/** Results shown at first, and added by each "Show more". */
+const PAGE_SIZE = 40;
+
 /** "Oct 3", for "new since" messages. */
 const shortDate = (t: number) => new Date(t).toLocaleDateString("en-PH", { month: "short", day: "numeric" });
 
@@ -59,6 +62,10 @@ export default function SearchPage() {
   // The search that produced the results; the form may have been edited since.
   const [searched, setSearched] = useState<SearchInput | null>(null);
   const local = localCountry(searched?.country ?? defaultCountry);
+  // Results show a page at a time: rendering all ~300 cards (and re-ranking
+  // them while a search streams in) is slow on low-end phones.
+  const [shown, setShown] = useState(PAGE_SIZE);
+  useEffect(() => setShown(PAGE_SIZE), [searched, selectedSources, refinement, sortKey, onlyNew]);
   const visible = useMemo(() => {
     const list = refine(filterBySources(result?.papers ?? [], selectedSources), refinement);
     return sortPapers(onlyNew ? list.filter((p) => freshIds.has(p.id)) : list, sortKey);
@@ -350,13 +357,23 @@ export default function SearchPage() {
             )}
 
             {visible.length > 0 ? (
-              <ol className="card mt-4 divide-y divide-border">
-                {visible.map((p, i) => (
-                  <li key={p.id}>
-                    <PaperCard paper={p} showScore refNum={i + 1} isNew={freshIds.has(p.id)} />
-                  </li>
-                ))}
-              </ol>
+              <>
+                <ol className="card mt-4 divide-y divide-border">
+                  {visible.slice(0, shown).map((p, i) => (
+                    <li key={p.id}>
+                      <PaperCard paper={p} showScore refNum={i + 1} isNew={freshIds.has(p.id)} />
+                    </li>
+                  ))}
+                </ol>
+                {visible.length > shown && (
+                  <div className="mt-4 text-center">
+                    <button type="button" onClick={() => setShown((n) => n + PAGE_SIZE)} className="btn-secondary">
+                      Show {Math.min(PAGE_SIZE, visible.length - shown)} more
+                      <span className="text-subtle">({visible.length - shown} left)</span>
+                    </button>
+                  </div>
+                )}
+              </>
             ) : (
               <div className="panel mt-4 text-center">
                 <p className="font-medium">No papers matched.</p>
