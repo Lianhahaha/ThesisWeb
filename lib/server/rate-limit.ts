@@ -26,6 +26,8 @@ const LIMITS = {
   cite: { limit: 10, windowMs: 60_000 },
   related: { limit: 20, windowMs: 60_000 },
   pdf: { limit: 30, windowMs: 60_000 },
+  // One per opened paper that came without an abstract.
+  abstract: { limit: 30, windowMs: 60_000 },
   summarize: { limit: 30, windowMs: 60_000 },
   // One per search, plus one per opened paper.
   retractions: { limit: 40, windowMs: 60_000 },

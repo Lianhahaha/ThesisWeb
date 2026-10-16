@@ -1,6 +1,6 @@
 "use client";
 
-import { use, useState, useEffect } from "react";
+import { use, useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useMutation } from "@tanstack/react-query";
 import { useLiveQuery } from "dexie-react-hooks";
@@ -133,6 +133,44 @@ export default function PaperDetailPage({ params }: { params: Promise<{ id: stri
     onError: (e: Error) => toast(e.message, "error"),
   });
 
+  // A paper whose database sent no abstract: look one up (DOI, PMC or the
+  // record page, /api/abstract) and keep it on the saved copy.
+  const [lookup, setLookup] = useState<{ id: string; abstract: string | null; source: string | null } | null>(null);
+  const [lookingUp, setLookingUp] = useState(false);
+  const missingAbstract = !!paper && !paper.abstract;
+  const lookupDoi = paper?.doi ?? null;
+  const lookupUrl = paper?.url ?? paper?.openAccessUrl ?? null;
+  const latest = useRef({ paper, isSavedData, user });
+  useEffect(() => {
+    latest.current = { paper, isSavedData, user };
+  });
+  useEffect(() => {
+    if (!missingAbstract || (!lookupDoi && !lookupUrl)) return;
+    let live = true;
+    setLookingUp(true);
+    const qs = new URLSearchParams();
+    if (lookupDoi) qs.set("doi", lookupDoi);
+    if (lookupUrl) qs.set("url", lookupUrl);
+    fetch(`/api/abstract?${qs}`)
+      .then((r) => (r.ok ? r.json() : null))
+      .catch(() => null)
+      .then((r: { abstract?: string | null; source?: string | null } | null) => {
+        if (!live) return;
+        const abstract = r?.abstract ?? null;
+        setLookup({ id: decodedId, abstract, source: r?.source ?? null });
+        const { paper: current, isSavedData: saved, user: signedIn } = latest.current;
+        if (!abstract || !current) return;
+        mergeRecentPapers([{ ...current, abstract }]);
+        if (saved) {
+          updatePaper(decodedId, { abstract })
+            .then(() => { if (signedIn) setCloudSavedData((prev) => (prev ? { ...prev, abstract } : prev)); })
+            .catch(() => {});
+        }
+      })
+      .finally(() => { if (live) setLookingUp(false); });
+    return () => { live = false; };
+  }, [decodedId, missingAbstract, lookupDoi, lookupUrl]);
+
   const summarize = useMutation({
     mutationFn: async (text: string) => {
       const res = await fetch("/api/summarize", {
@@ -223,7 +261,10 @@ export default function PaperDetailPage({ params }: { params: Promise<{ id: stri
     }
   }
 
-  const base: Paper = isSavedData ?? paper;
+  const found = lookup?.id === decodedId ? lookup : null;
+  const stored: Paper = isSavedData ?? paper;
+  // A looked-up abstract shows at once, before the saved copy catches up.
+  const base: Paper = stored.abstract || !found?.abstract ? stored : { ...stored, abstract: found.abstract };
   const p: Paper =
     integrity === "retracted" ? { ...base, retracted: true } : integrity === "concern" ? { ...base, concern: true } : base;
   const freeUrl = p.openAccessUrl || foundUrl;
@@ -341,7 +382,7 @@ export default function PaperDetailPage({ params }: { params: Promise<{ id: stri
         </p>
       )}
 
-      {(p.tldr || p.abstract) && (
+      {(p.tldr || p.abstract || lookingUp || found) && (
         <section className="mt-10" aria-labelledby="abstract">
           <h2 id="abstract" className="text-lg">Abstract</h2>
 
@@ -356,9 +397,19 @@ export default function PaperDetailPage({ params }: { params: Promise<{ id: stri
           )}
 
           {p.abstract ? (
-            <p className="prose-read mt-4 whitespace-pre-line text-base">{p.abstract}</p>
+            <>
+              <p className="prose-read mt-4 whitespace-pre-line text-base">{p.abstract}</p>
+              {found?.abstract && found.abstract === p.abstract && found.source && (
+                <p className="field-hint">Not in the search record; found on {found.source}.</p>
+              )}
+            </>
+          ) : lookingUp ? (
+            <p role="status" className="mt-3 text-muted">Looking for the abstract…</p>
           ) : (
-            <p className="mt-3 text-muted">No abstract is available for this paper.</p>
+            <p className="mt-3 text-muted">
+              No abstract is available for this paper.
+              {p.url && " Open the record page to read what the database has."}
+            </p>
           )}
 
           {p.abstract && p.abstract.length > 400 && (
