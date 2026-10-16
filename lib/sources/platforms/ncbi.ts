@@ -23,7 +23,8 @@ const GAP_MS = KEY ? 110 : 350;
 const MAX_ATTEMPTS = 3;
 
 async function eutils(path: string, params: Record<string, string>): Promise<Response> {
-  const q = new URLSearchParams({ ...params, retmode: "json", tool: "ThesisWeb", email: CONTACT_EMAIL });
+  // JSON unless the call asks otherwise (efetch only answers in XML).
+  const q = new URLSearchParams({ retmode: "json", ...params, tool: "ThesisWeb", email: CONTACT_EMAIL });
   if (KEY) q.set("api_key", KEY);
 
   for (let attempt = 1; ; attempt++) {
@@ -40,6 +41,14 @@ export async function eSearch(db: string, term: string, retmax: number): Promise
   if (!res.ok) throw new Error(`esearch ${res.status}`);
   const data = await readJson<{ esearchresult?: { idlist?: string[] } }>(res);
   return data?.esearchresult?.idlist ?? [];
+}
+
+/** Full records as XML (PubmedArticleSet for PubMed); "" for no ids. */
+export async function eFetchXml(db: string, ids: string[]): Promise<string> {
+  if (ids.length === 0) return "";
+  const res = await eutils("efetch.fcgi", { db, id: ids.join(","), retmode: "xml" });
+  if (!res.ok) throw new Error(`efetch ${res.status}`);
+  return res.text();
 }
 
 /** Summary records keyed by id (missing ids are simply absent). */
