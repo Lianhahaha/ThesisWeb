@@ -22,7 +22,7 @@ import { ExportDialog } from "@/components/ExportDialog";
 import { ImportReferencesButton } from "@/components/ImportReferencesButton";
 import { ShareDialog } from "@/components/ShareDialog";
 import { toast } from "@/components/Toaster";
-import type { SavedPaper } from "@/lib/types";
+import { READING_STATUSES, type ReadingStatus, type SavedPaper } from "@/lib/types";
 import { useAuth } from "@/lib/auth/store";
 import { applyIntegrity, fetchIntegrity } from "@/lib/search/integrity";
 import { paperScope, SCOPE_LABELS, type Scope } from "@/lib/library/scope";
@@ -124,6 +124,7 @@ export default function LibraryPage() {
   const [filter, setFilter] = useState("");
   const [collectionFilter, setCollectionFilter] = useState("");
   const [scopeFilter, setScopeFilter] = useState<Scope | "">("");
+  const [statusFilter, setStatusFilter] = useState<ReadingStatus | "">("");
   // Local means the student's country focus (Settings), else the Philippines.
   const [country, setCountry] = useState("Philippines");
   useEffect(() => setCountry(localCountry(getPreferences().country)), []);
@@ -143,10 +144,17 @@ export default function LibraryPage() {
     return counts;
   }, [papers, scopeOf]);
 
+  const statusCounts = useMemo(() => {
+    const counts: Record<ReadingStatus, number> = { "to-read": 0, reading: 0, done: 0 };
+    for (const p of papers || []) counts[p.readingStatus] = (counts[p.readingStatus] ?? 0) + 1;
+    return counts;
+  }, [papers]);
+
   const filtered = useMemo(() => {
     let list = (papers || []).slice().sort((a, b) => b.savedAt - a.savedAt);
     if (collectionFilter) list = list.filter((p) => p.collection === collectionFilter);
     if (scopeFilter) list = list.filter((p) => scopeOf(p) === scopeFilter);
+    if (statusFilter) list = list.filter((p) => p.readingStatus === statusFilter);
     if (filter.trim()) {
       const q = filter.toLowerCase();
       list = list.filter(
@@ -157,11 +165,19 @@ export default function LibraryPage() {
       );
     }
     return list;
-  }, [papers, filter, collectionFilter, scopeFilter, scopeOf]);
+  }, [papers, filter, collectionFilter, scopeFilter, statusFilter, scopeOf]);
 
   async function assignScope(id: string, scope: Scope) {
     try {
       await updatePaper(id, { scope });
+    } catch {
+      toast("Could not change it. Try again.", "error");
+    }
+  }
+
+  async function assignStatus(id: string, readingStatus: ReadingStatus) {
+    try {
+      await updatePaper(id, { readingStatus });
     } catch {
       toast("Could not change it. Try again.", "error");
     }
@@ -340,6 +356,27 @@ export default function LibraryPage() {
             ))}
           </div>
 
+          <div className="mt-3 flex flex-wrap items-center gap-2">
+            <span className="text-xs text-subtle">Status</span>
+            <button
+              onClick={() => setStatusFilter("")}
+              aria-pressed={statusFilter === ""}
+              className={`chip-btn ${statusFilter === "" ? "chip-on" : ""}`}
+            >
+              All
+            </button>
+            {READING_STATUSES.map((s) => (
+              <button
+                key={s.key}
+                onClick={() => setStatusFilter(statusFilter === s.key ? "" : s.key)}
+                aria-pressed={statusFilter === s.key}
+                className={`chip-btn ${statusFilter === s.key ? "chip-on" : ""}`}
+              >
+                {s.label} ({statusCounts[s.key]})
+              </button>
+            ))}
+          </div>
+
           {collections.length > 0 && (
             <div className="mt-3 flex flex-wrap items-center gap-2">
               <span className="text-xs text-subtle">Collection</span>
@@ -376,6 +413,7 @@ export default function LibraryPage() {
                         scope={scopeOf(p)}
                         onAssign={assignCollection}
                         onScope={assignScope}
+                        onStatus={assignStatus}
                         onRemove={remove}
                       />
                     </li>
@@ -409,6 +447,7 @@ function LibraryControls({
   scope,
   onAssign,
   onScope,
+  onStatus,
   onRemove,
 }: {
   paper: SavedPaper;
@@ -416,6 +455,7 @@ function LibraryControls({
   scope: Scope;
   onAssign: (id: string, c: string) => void;
   onScope: (id: string, s: Scope) => void;
+  onStatus: (id: string, s: ReadingStatus) => void;
   onRemove: (id: string) => void;
 }) {
   const [adding, setAdding] = useState(false);
@@ -472,9 +512,19 @@ function LibraryControls({
         <option value="foreign">Foreign{paper.scope ? "" : " (guess)"}</option>
       </select>
 
-      <span className="chip ml-auto capitalize">{paper.readingStatus.replace("-", " ")}</span>
+      <label htmlFor={`status-${paper.id}`} className="text-xs text-subtle">Status</label>
+      <select
+        id={`status-${paper.id}`}
+        value={paper.readingStatus}
+        onChange={(e) => onStatus(paper.id, e.target.value as ReadingStatus)}
+        className="input !min-h-[32px] !w-auto !py-1 text-xs"
+      >
+        {READING_STATUSES.map((s) => (
+          <option key={s.key} value={s.key}>{s.label}</option>
+        ))}
+      </select>
 
-      <button onClick={() => onRemove(paper.id)} className="btn-ghost btn-sm !text-danger">
+      <button onClick={() => onRemove(paper.id)} className="btn-ghost btn-sm ml-auto !text-danger">
         <Trash2 className="h-3.5 w-3.5" aria-hidden />
         Remove
       </button>

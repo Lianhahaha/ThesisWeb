@@ -57,6 +57,14 @@ export interface Paper {
 /** A publisher notice on a paper, from the retraction check (lib/server/retractions.ts). */
 export type IntegrityStatus = "retracted" | "concern";
 
+/** How far the student has got with a saved paper. */
+export type ReadingStatus = "to-read" | "reading" | "done";
+export const READING_STATUSES: { key: ReadingStatus; label: string }[] = [
+  { key: "to-read", label: "To read" },
+  { key: "reading", label: "Reading" },
+  { key: "done", label: "Done" },
+];
+
 /** A user's saved copy of a paper, with their annotations. */
 export interface SavedPaper extends Paper {
   savedAt: number;
@@ -64,7 +72,7 @@ export interface SavedPaper extends Paper {
   collection?: string;
   tags: string[];
   notes?: string;
-  readingStatus: "to-read" | "reading" | "done";
+  readingStatus: ReadingStatus;
   /** Local or foreign, when the student set it; otherwise guessed (lib/library/scope.ts). */
   scope?: "local" | "foreign";
   /** Entries for the synthesis matrix */
