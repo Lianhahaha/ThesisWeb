@@ -10,8 +10,9 @@ const DATABASE_NAMES = Object.values(SOURCE_META)
   .join(", ");
 
 export const metadata: Metadata = {
-  title: "Privacy Policy · Thesisweb",
+  title: "Privacy Policy",
   description: "What Thesisweb collects, why, where it is stored, and how to remove it.",
+  alternates: { canonical: "/privacy" },
 };
 
 export default function PrivacyPage() {

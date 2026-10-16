@@ -3,8 +3,9 @@ import Link from "next/link";
 import { CONTACT_EMAIL, LEGAL_UPDATED } from "@/lib/legal";
 
 export const metadata: Metadata = {
-  title: "Terms of Use · Thesisweb",
+  title: "Terms of Use",
   description: "The rules for using Thesisweb, and what it does and does not promise.",
+  alternates: { canonical: "/terms" },
 };
 
 export default function TermsPage() {

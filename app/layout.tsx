@@ -8,6 +8,7 @@ import { ServiceWorker } from "@/components/layout/ServiceWorker";
 import { Toaster } from "@/components/Toaster";
 import { Analytics } from "@vercel/analytics/react";
 import { THEME_SCRIPT } from "@/lib/theme";
+import { SITE_DESCRIPTION, SITE_NAME, SITE_TAGLINE, SITE_URL } from "@/lib/site";
 
 // Self-hosted at build time, so there is no layout shift or runtime font request.
 const serif = EB_Garamond({
@@ -19,10 +20,29 @@ const serif = EB_Garamond({
 });
 
 export const metadata: Metadata = {
-  title: "Thesisweb",
-  description:
-    "Find related literature across free academic databases, keep it organised, and generate citations.",
+  metadataBase: new URL(SITE_URL),
+  title: { default: `${SITE_NAME}: ${SITE_TAGLINE}`, template: `%s · ${SITE_NAME}` },
+  description: SITE_DESCRIPTION,
+  keywords: [
+    "RRL", "review of related literature", "related literature and studies", "thesis", "research paper",
+    "Philippines", "local studies", "foreign studies", "synthesis matrix", "APA citation generator",
+    "free academic databases", "senior high school research", "college thesis",
+  ],
+  alternates: { canonical: "/" },
+  openGraph: {
+    type: "website",
+    siteName: SITE_NAME,
+    locale: "en_PH",
+    title: `${SITE_NAME}: ${SITE_TAGLINE}`,
+    description: SITE_DESCRIPTION,
+  },
+  twitter: { card: "summary_large_image", title: `${SITE_NAME}: ${SITE_TAGLINE}`, description: SITE_DESCRIPTION },
+  // Google Search Console: paste the verification code in Vercel's environment variables.
+  ...(process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION
+    ? { verification: { google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION } }
+    : {}),
   applicationName: "Thesisweb",
+  category: "education",
   appleWebApp: { capable: true, title: "Thesisweb", statusBarStyle: "default" },
   icons: {
     icon: [{ url: "/icons/favicon-48.png", sizes: "48x48", type: "image/png" }],

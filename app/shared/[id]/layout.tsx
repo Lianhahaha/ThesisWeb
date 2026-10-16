@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 
 // Shared libraries are for the group that has the link, not for search engines.
 export const metadata: Metadata = {
-  title: "Shared library · Thesisweb",
+  title: "Shared library",
   robots: { index: false, follow: false },
 };
 
