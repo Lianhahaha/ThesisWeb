@@ -2,7 +2,15 @@
 
 import { initializeApp, getApps } from "firebase/app";
 import { getAuth, connectAuthEmulator } from "firebase/auth";
-import { getFirestore, initializeFirestore, connectFirestoreEmulator, type Firestore } from "firebase/firestore";
+import {
+  getFirestore,
+  initializeFirestore,
+  connectFirestoreEmulator,
+  memoryLocalCache,
+  persistentLocalCache,
+  persistentMultipleTabManager,
+  type Firestore,
+} from "firebase/firestore";
 import { getAnalytics, isSupported, type Analytics } from "firebase/analytics";
 
 const firebaseConfig = {
@@ -26,6 +34,13 @@ function initDb(): Firestore {
   try {
     return initializeFirestore(app, {
       ignoreUndefinedProperties: true,
+      // A copy of the account's library in this browser (IndexedDB, shared by
+      // open tabs), so it opens offline. Signing out wipes it
+      // (lib/auth/sign-out.ts), as school computers are shared.
+      localCache:
+        typeof window !== "undefined"
+          ? persistentLocalCache({ tabManager: persistentMultipleTabManager() })
+          : memoryLocalCache(),
       // The emulator's streaming channel is unreliable in some browsers.
       ...(process.env.NEXT_PUBLIC_FIREBASE_EMULATORS === "1" ? { experimentalForceLongPolling: true } : {}),
     });

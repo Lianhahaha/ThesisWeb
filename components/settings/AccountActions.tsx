@@ -1,11 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { deleteDoc, doc } from "firebase/firestore";
-import { deleteUser, EmailAuthProvider, reauthenticateWithCredential, sendPasswordResetEmail, signOut, type User } from "firebase/auth";
+import { deleteUser, EmailAuthProvider, reauthenticateWithCredential, sendPasswordResetEmail, type User } from "firebase/auth";
 import { auth, db } from "@/lib/firebase";
-import { clearCachedUsername } from "@/lib/auth/username-cache";
+import { signOutAndForget } from "@/lib/auth/sign-out";
 import { authMessage } from "@/lib/auth/errors";
 import { confirmWithGoogle, googleErrorMessage, hasPassword } from "@/lib/auth/google";
 import { fsDeleteAllPapers } from "@/lib/library/firestore";
@@ -15,7 +14,6 @@ import { PasswordField, Section } from "@/components/settings/parts";
 
 /** Reset link, sign out and account deletion, for a signed-in account. */
 export function AccountActions({ user }: { user: User }) {
-  const router = useRouter();
   const [resetBusy, setResetBusy] = useState(false);
   const [deletePass, setDeletePass] = useState("");
   const [deleting, setDeleting] = useState(false);
@@ -58,9 +56,8 @@ export function AccountActions({ user }: { user: User }) {
       await fsDeleteAllPapers(uid);
       await deleteDoc(doc(db, "users", uid, "profile", "main")).catch(() => {});
       await deleteUser(user);
-      clearCachedUsername(uid);
       toast("Your account has been deleted", "success");
-      router.push("/");
+      await signOutAndForget(uid, { delayMs: 1500 });
     } catch (err) {
       const code = (err as { code?: string })?.code;
       toast(
@@ -77,9 +74,7 @@ export function AccountActions({ user }: { user: User }) {
   }
 
   async function handleSignOut() {
-    clearCachedUsername(user.uid);
-    await signOut(auth);
-    router.push("/");
+    await signOutAndForget(user.uid);
   }
 
   return (

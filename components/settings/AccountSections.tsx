@@ -1,19 +1,18 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import { doc, setDoc } from "firebase/firestore";
 import {
   EmailAuthProvider,
   reauthenticateWithCredential,
   sendEmailVerification,
-  signOut,
   updatePassword,
   verifyBeforeUpdateEmail,
   type User,
 } from "firebase/auth";
 import { auth, db } from "@/lib/firebase";
 import { cacheUsername } from "@/lib/auth/username-cache";
+import { signOutAndForget } from "@/lib/auth/sign-out";
 import { authMessage } from "@/lib/auth/errors";
 import { hasPassword } from "@/lib/auth/google";
 import { toast } from "@/components/Toaster";
@@ -37,7 +36,6 @@ export function AccountSections({
   email: string;
   onEmail: (email: string) => void;
 }) {
-  const router = useRouter();
 
   const [savingUsername, setSavingUsername] = useState(false);
 
@@ -150,9 +148,8 @@ export function AccountSections({
       // means the change went through.
       if (code === "auth/user-token-expired") {
         setPendingEmail("");
-        await signOut(auth).catch(() => {});
         toast("Email changed. Sign in again with your new address.", "success");
-        router.push("/login");
+        await signOutAndForget(user.uid, { to: "/login", delayMs: 1500 });
         return;
       }
       toast(authMessage(err, "Refresh failed. Try again."), "error");

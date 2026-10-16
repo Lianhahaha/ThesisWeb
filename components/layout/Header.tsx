@@ -7,9 +7,9 @@ import { Search, Library, Quote, Home, LogOut, Settings } from "lucide-react";
 import { useLiveQuery } from "dexie-react-hooks";
 import { getDb, LIBRARY_EVENT } from "@/lib/library/store";
 import { useAuth } from "@/lib/auth/store";
-import { cacheUsername, clearCachedUsername, getCachedUsername, USERNAME_EVENT } from "@/lib/auth/username-cache";
-import { auth, db } from "@/lib/firebase";
-import { signOut } from "firebase/auth";
+import { cacheUsername, getCachedUsername, USERNAME_EVENT } from "@/lib/auth/username-cache";
+import { db } from "@/lib/firebase";
+import { signOutAndForget } from "@/lib/auth/sign-out";
 import { doc, getDoc } from "firebase/firestore";
 import { ThemeToggle } from "@/components/layout/ThemeToggle";
 
@@ -177,10 +177,7 @@ function UserArea() {
         <span className="truncate">{username || user.email || "Account"}</span>
       </Link>
       <button
-        onClick={() => {
-          clearCachedUsername(user.uid);
-          signOut(auth);
-        }}
+        onClick={() => signOutAndForget(user.uid)}
         className="btn-ghost btn-sm !px-2"
         aria-label="Sign out"
         title="Sign out"
