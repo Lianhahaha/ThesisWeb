@@ -2,7 +2,7 @@
 
 A free web app that helps thesis students find related literature (RRL), keep it organised, and cite it correctly.
 
-- **Search** — one topic, 50 free academic databases at once, merged, de-duplicated and ranked, with preprint, retraction and expression-of-concern warnings. Save a search and the next time you open it, papers that weren't there before are marked *New*.
+- **Search** — one topic, 51 free academic databases at once, merged, de-duplicated and ranked, with preprint, retraction and expression-of-concern warnings. Save a search and the next time you open it, papers that weren't there before are marked *New*.
 - **Library** — save papers, group them by chapter, take notes, fill a synthesis matrix, or import a .bib/.ris file from Zotero, Mendeley or EndNote. Each paper is tagged **Local** or **Foreign** (guessed from the paper, changeable), to filter the library and split the exported reference list. **Share** a collection with your thesis group by link: they can read it, export it and copy it into their own library.
 - **Cite** — paste DOIs and get references in APA, MLA, IEEE or Chicago, or export your whole library.
 
@@ -24,7 +24,7 @@ No account needed to search. Only links to legal open-access full text. Light an
 
 ## Databases searched
 
-All free, no key needed. The in-app [Databases page](app/databases/page.tsx) (`/databases`) lists each one with its region, fields and record type.
+All free; only IEEE Xplore needs a free registration key. The in-app [Databases page](app/databases/page.tsx) (`/databases`) lists each one with its region, fields and record type.
 
 | Database | Best for |
 |---|---|
@@ -48,6 +48,7 @@ All free, no key needed. The in-app [Databases page](app/databases/page.tsx) (`/
 | SERP-P (PIDS) | Philippine socioeconomic research: PIDS, BSP, NEDA and university studies |
 | CGSpace (CGIAR, incl. IRRI), GBIF Literature, Krishikosh | Agriculture, fisheries, food, biodiversity (Krishikosh = Indian agricultural theses) |
 | OSTI.GOV, NASA NTRS, USGS | Engineering, energy, aerospace, earth science reports |
+| IEEE Xplore | Engineering and computing journal articles, conference papers and standards (free key, 200 calls/day) |
 | arXiv, INSPIRE-HEP | Physics, maths, computing (arXiv = preprints) |
 | OSF Preprints | Psychology, education, social sciences (preprints) |
 | IDRC Digital Library | Development research in Asia, Africa, Latin America |
@@ -85,6 +86,7 @@ npm run test:live            # calls every real database once
 | `SEMANTIC_SCHOLAR_API_KEY`, `OPENALEX_API_KEY` | Recommended | Higher rate limits on the two biggest sources |
 | `NCBI_API_KEY` | Optional | 10 instead of 3 requests/s to PubMed and PubMed Central |
 | `CORE_API_KEY` | Optional | Higher CORE rate limit (works without, but may fail when busy). Free at [core.ac.uk/services/api](https://core.ac.uk/services/api); a revoked or expired key gets `401` and CORE shows as failed until it is replaced |
+| `IEEE_XPLORE_API_KEY` | Optional | Adds IEEE Xplore (engineering and computing). Free at [developer.ieee.org/apps/register](https://developer.ieee.org/apps/register); the key allows 200 calls/day, so responses are cached for 24 h and the source stops when the daily budget is spent |
 | `NEXT_PUBLIC_SITE_URL` | Optional | The public address used in canonical links, the sitemap and share cards (default `https://thesiswebph.vercel.app`; set it if you move to a custom domain) |
 | `NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION` | Optional | The code from Google Search Console's HTML-tag check, see *Search engines* below |
 | `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN` | Optional | Rate limits shared by every server instance (Vercel's Upstash integration sets `KV_REST_API_URL`/`KV_REST_API_TOKEN`, also read) |

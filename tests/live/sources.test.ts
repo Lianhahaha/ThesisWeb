@@ -26,6 +26,7 @@ const PROBES: Record<SourceId, string> = {
   hal: "climate change", openaire: "climate change", inspire: "dark matter", plos: "malaria", datacite: "education",
   osti: "solar energy", cinii: "education", jstage: "education", figshare: "climate change", worldbank: "poverty",
   cgspace: "rice", idrc: "climate change", pmc: "dengue", ntrs: "aerospace", econbiz: "inflation", usgs: "earthquake",
+  ieee: "engineering",
   gbif: "biodiversity", lareferencia: "educación", bdtd: "educação", thesesfr: "climat", osf: "psychology",
   seafdec: "shrimp", ssoar: "migration", who: "dengue", nber: "inflation", openlibrary: "statistics",
   core: "climate change", ntu: "engineering", upspace: "education", upou: "distance education", upv: "fisheries",
@@ -37,7 +38,7 @@ describe.skipIf(!LIVE)(QUERY ? `live sources: "${QUERY}"` : "live sources: probe
   for (const [id, { run }] of Object.entries(ADAPTERS) as [SourceId, (typeof ADAPTERS)[SourceId]][]) {
     if (ONLY.length && !ONLY.includes(id)) continue;
     // One retry: a slow moment at a database is not a broken adapter.
-    it(id, { timeout: 45_000, retry: 1 }, async () => {
+    it(id, { timeout: 45_000, retry: 1, skip: id === "ieee" && !process.env.IEEE_XPLORE_API_KEY }, async () => {
       const papers = await run(QUERY || PROBES[id], { fromYear: QUERY ? 2020 : 0, perSource: 10 });
       expect(Array.isArray(papers)).toBe(true);
       for (const p of papers) {

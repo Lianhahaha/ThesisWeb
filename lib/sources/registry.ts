@@ -25,6 +25,7 @@ import { searchPmc } from "@/lib/sources/adapters/pmc";
 import { searchNtrs } from "@/lib/sources/adapters/ntrs";
 import { searchEconBiz } from "@/lib/sources/adapters/econbiz";
 import { searchUsgs } from "@/lib/sources/adapters/usgs";
+import { searchIeee } from "@/lib/sources/adapters/ieee";
 import { searchGbif } from "@/lib/sources/adapters/gbif";
 import { searchLaReferencia } from "@/lib/sources/adapters/lareferencia";
 import { searchBdtd } from "@/lib/sources/adapters/bdtd";
@@ -91,6 +92,7 @@ export const ADAPTERS: Record<SourceId, AdapterEntry> = {
   ntrs:            { run: searchNtrs, boolean: false },
   econbiz:         { run: searchEconBiz, boolean: false },
   usgs:            { run: searchUsgs, boolean: false },
+  ieee:            { run: searchIeee, boolean: true },
   gbif:            { run: searchGbif, boolean: false },
   lareferencia:    { run: searchLaReferencia, boolean: false },
   bdtd:            { run: searchBdtd, boolean: false, country: "Brazil" },
