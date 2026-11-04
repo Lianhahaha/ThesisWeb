@@ -18,7 +18,7 @@ const csp = [
   [
     "connect-src 'self'",
     "https://*.googleapis.com",
-    "https://*.google-analytics.com https://*.analytics.google.com https://www.googletagmanager.com",
+    "https://*.google-analytics.com https://*.analytics.google.com https://www.googletagmanager.com https://www.google.com",
     "https://va.vercel-scripts.com",
     ...(emulators || dev ? ["http://127.0.0.1:9099 http://127.0.0.1:8085 ws://127.0.0.1:8085"] : []),
     ...(dev ? ["ws://localhost:*"] : []),

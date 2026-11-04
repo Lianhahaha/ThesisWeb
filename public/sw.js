@@ -9,15 +9,15 @@
  * - /api and anything cross-origin (databases, Firebase): never cached.
  * Bump VERSION to drop every cached file after a breaking change.
  */
-const VERSION = "tw-v1";
+const VERSION = "tw-v2";
 const PAGES = `${VERSION}-pages`;
 const ASSETS = `${VERSION}-assets`;
 /** Opened offline when the page asked for was never visited. */
-const FALLBACK = ["/library", "/"];
+const FALLBACK = "/offline.html";
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
-    caches.open(PAGES).then((c) => c.addAll(FALLBACK)).then(() => self.skipWaiting())
+    caches.open(PAGES).then((c) => c.add(FALLBACK)).then(() => self.skipWaiting())
   );
 });
 
@@ -36,6 +36,11 @@ self.addEventListener("fetch", (event) => {
   const url = new URL(req.url);
   if (url.origin !== self.location.origin || url.pathname.startsWith("/api/")) return;
 
+  // Next.js prefetches and client navigations carry ?_rsc (and Pages Router
+  // uses /_next/data). They are tied to one build; caching one and then
+  // deploying again makes the client render an old tree against new chunks.
+  if (url.searchParams.has("_rsc") || url.pathname.startsWith("/_next/data/")) return;
+
   if (req.mode === "navigate") {
     event.respondWith(
       fetch(req)
@@ -48,7 +53,7 @@ self.addEventListener("fetch", (event) => {
         })
         .catch(async () => {
           const cache = await caches.open(PAGES);
-          for (const key of [url.pathname, ...FALLBACK]) {
+          for (const key of [url.pathname, FALLBACK]) {
             const hit = await cache.match(key);
             if (hit) return hit;
           }
@@ -66,9 +71,14 @@ self.addEventListener("fetch", (event) => {
       caches.open(ASSETS).then(async (cache) => {
         const hit = await cache.match(req);
         if (hit) return hit;
-        const res = await fetch(req);
-        if (res.ok) cache.put(req, res.clone());
-        return res;
+        try {
+          const res = await fetch(req);
+          if (res.ok) cache.put(req, res.clone());
+          return res;
+        } catch {
+          // respondWith must always receive a Response, never undefined.
+          return new Response("", { status: 504, statusText: "Gateway Timeout" });
+        }
       })
     );
     return;
@@ -77,13 +87,22 @@ self.addEventListener("fetch", (event) => {
   event.respondWith(
     caches.open(ASSETS).then(async (cache) => {
       const hit = await cache.match(req);
-      const refresh = fetch(req)
-        .then((res) => {
-          if (res.ok) cache.put(req, res.clone());
-          return res;
-        })
-        .catch(() => hit);
-      return hit || refresh;
+      if (hit) {
+        // Refresh the cached copy in the background, but answer from cache.
+        fetch(req)
+          .then((res) => {
+            if (res.ok) cache.put(req, res.clone());
+          })
+          .catch(() => {});
+        return hit;
+      }
+      try {
+        const res = await fetch(req);
+        if (res.ok) cache.put(req, res.clone());
+        return res;
+      } catch {
+        return new Response("", { status: 504, statusText: "Gateway Timeout" });
+      }
     })
   );
 });
