@@ -44,7 +44,10 @@ export const metadata: Metadata = {
   category: "education",
   appleWebApp: { capable: true, title: "Thesisweb", statusBarStyle: "default" },
   icons: {
-    icon: [{ url: "/icons/favicon-48.png", sizes: "48x48", type: "image/png" }],
+    icon: [
+      { url: "/icons/icon.svg", type: "image/svg+xml" },
+      { url: "/icons/favicon-48.png", sizes: "48x48", type: "image/png" },
+    ],
     apple: [{ url: "/icons/apple-touch-icon.png", sizes: "180x180" }],
   },
 };
