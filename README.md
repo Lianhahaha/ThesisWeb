@@ -86,7 +86,7 @@ npm run test:live            # calls every real database once
 | `SEMANTIC_SCHOLAR_API_KEY`, `OPENALEX_API_KEY` | Recommended | Higher rate limits on the two biggest sources |
 | `NCBI_API_KEY` | Optional | 10 instead of 3 requests/s to PubMed and PubMed Central |
 | `CORE_API_KEY` | Optional | Higher CORE rate limit (works without, but may fail when busy). Free at [core.ac.uk/services/api](https://core.ac.uk/services/api); a revoked or expired key gets `401` and CORE shows as failed until it is replaced |
-| `IEEE_XPLORE_API_KEY` | Optional | Adds IEEE Xplore (engineering and computing). Free at [developer.ieee.org/apps/register](https://developer.ieee.org/apps/register); the key allows 200 calls/day, so responses are cached for 24 h and the source stops when the daily budget is spent |
+| `IEEE_XPLORE_API_KEY` | Optional | Adds IEEE Xplore (engineering and computing). Free at [developer.ieee.org/apps/register](https://developer.ieee.org/apps/register); the key allows 200 calls/day, so responses are cached for 24 h and the source stops when the daily budget is spent. A `403 Developer Inactive` reply means the key is not usable yet: finish the portal registration or get a new key |
 | `NEXT_PUBLIC_SITE_URL` | Optional | The public address used in canonical links, the sitemap and share cards (default `https://thesiswebph.vercel.app`; set it if you move to a custom domain) |
 | `NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION` | Optional | The code from Google Search Console's HTML-tag check, see *Search engines* below |
 | `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN` | Optional | Rate limits shared by every server instance (Vercel's Upstash integration sets `KV_REST_API_URL`/`KV_REST_API_TOKEN`, also read) |
@@ -95,6 +95,8 @@ npm run test:live            # calls every real database once
 1. Auth → Sign-in method → enable **Email/Password** and **Google**.
 2. Firestore → Rules → paste [`firestore.rules`](firestore.rules) → **Publish**. Until published, Firestore is locked and saving and sharing fail (accounts still work).
 3. Auth → Settings → Authorized domains → add your Vercel domain.
+
+If **Continue with Google** shows Firebase's `auth/operation-not-allowed` ("not switched on for this site"), step 1 was not saved: no web config or environment variable can turn the provider on, so enable Google in the console and redeploy. A redirect fallback covers browsers that block the sign-in popup.
 
 Rules restrict each user to their own `users/{uid}` data, cap field sizes, and allow single-document (never listing) public reads of a shared library by its link. Test locally with `npx firebase-tools emulators:start --only auth,firestore` + `NEXT_PUBLIC_FIREBASE_EMULATORS=1` (never set that var on Vercel).
 
@@ -150,7 +152,7 @@ lib/library/         saved papers (browser): store.ts (IndexedDB or Firestore),
                      reference-list.ts, rtf.ts + matrix-export.ts (Word/Excel
                      downloads), shared-copy.ts + share.ts (group libraries)
 lib/auth/            accounts (browser): store.ts, errors.ts, google.ts (Google
-                     sign-in), username-cache.ts, legacy-cleanup.ts
+                     sign-in), username-cache.ts
 lib/                 shared: types.ts, text.ts, utils.ts, citations.ts, countries.ts
                      (names, demonyms, "is this local"), preferences.ts, theme.ts,
                      firebase.ts, legal.ts
