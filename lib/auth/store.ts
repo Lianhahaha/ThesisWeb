@@ -1,7 +1,6 @@
 import { create } from "zustand";
 import { User, onAuthStateChanged, Unsubscribe } from "firebase/auth";
 import { auth } from "@/lib/firebase";
-import { removeRetiredRecoveryData } from "@/lib/auth/legacy-cleanup";
 
 interface AuthState {
   user: User | null;
@@ -20,6 +19,5 @@ let _authUnsub: Unsubscribe | null = null;
 if (typeof window !== "undefined" && !_authUnsub) {
   _authUnsub = onAuthStateChanged(auth, (user) => {
     useAuth.setState({ user, loading: false, initialized: true });
-    if (user) removeRetiredRecoveryData(user.uid).catch(() => {});
   });
 }
