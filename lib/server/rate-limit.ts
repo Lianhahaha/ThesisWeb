@@ -37,9 +37,13 @@ const LIMITS = {
 const GLOBAL_SEARCH: Rule = { limit: 120, windowMs: 60_000 };
 
 function clientIp(req: NextRequest): string {
-  // Vercel sets x-forwarded-for; the first entry is the client.
+  // Vercel sets x-real-ip to the real client. Prefer it: a caller can send
+  // their own x-forwarded-for, and taking its first entry would let them
+  // rotate spoofed addresses to get a fresh rate-limit bucket on every request.
+  const real = req.headers.get("x-real-ip")?.trim();
+  if (real) return real;
   const fwd = req.headers.get("x-forwarded-for");
-  return fwd?.split(",")[0].trim() || req.headers.get("x-real-ip") || "unknown";
+  return fwd?.split(",").pop()?.trim() || "unknown";
 }
 
 // ─── Shared counters (Upstash Redis, optional) ───────────────────────────────

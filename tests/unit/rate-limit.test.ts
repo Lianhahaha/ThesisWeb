@@ -31,6 +31,16 @@ describe("rateLimit with shared Redis counters", () => {
     expect(body[2][1]).toMatch(/^tw:rl:search:\*:\d+$/);
   });
 
+  it("uses the proxy-set x-real-ip instead of a spoofable x-forwarded-for", async () => {
+    const { rateLimit, fetchMock } = await withRedis(() => Response.json([{ result: 1 }, { result: 0 }, { result: 1 }, { result: 0 }]));
+    const spoofed = new NextRequest("http://localhost/api/search", {
+      headers: { "x-forwarded-for": "1.2.3.4, 198.51.100.7", "x-real-ip": "203.0.113.9" },
+    });
+    expect(await rateLimit(spoofed, "search")).toBeNull();
+    const body = JSON.parse(String(fetchMock.mock.calls[0][1].body)) as string[][];
+    expect(body[0][1]).toMatch(/^tw:rl:search:203\.0\.113\.9:\d+$/);
+  });
+
   it("refuses over the limit, with the seconds left in the window", async () => {
     const { rateLimit } = await withRedis(() => Response.json([{ result: 13 }, { result: 0 }, { result: 60 }, { result: 0 }]));
     const refused = await rateLimit(req("203.0.113.9"), "search");
