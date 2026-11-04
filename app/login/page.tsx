@@ -12,7 +12,7 @@ import { cacheUsername } from "@/lib/auth/username-cache";
 import { toast } from "@/components/Toaster";
 import { trackEvent } from "@/lib/analytics-events";
 import { authMessage } from "@/lib/auth/errors";
-import { googleErrorMessage, isInAppBrowser, signInWithGoogle } from "@/lib/auth/google";
+import { finishGoogleRedirect, googleErrorMessage, isInAppBrowser, signInWithGoogle } from "@/lib/auth/google";
 import { GoogleButton } from "@/components/GoogleButton";
 
 export default function LoginPage() {
@@ -35,12 +35,33 @@ export default function LoginPage() {
   }, [initialized, user, router]);
   useEffect(() => setInApp(isInAppBrowser(navigator.userAgent)), []);
 
+  // A popup-blocked browser returns from Google on a full page load.
+  useEffect(() => {
+    let cancelled = false;
+    finishGoogleRedirect()
+      .then((result) => {
+        if (!result || cancelled) return;
+        toast(result.isNew ? "Account created with Google" : "Signed in", "success");
+        trackEvent(result.isNew ? "sign_up" : "login", { method: "google" });
+        router.replace("/library");
+      })
+      .catch((err) => {
+        if (cancelled) return;
+        const message = googleErrorMessage(err);
+        if (message) toast(message, "error");
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [router]);
+
   async function continueWithGoogle() {
     setGoogleBusy(true);
     try {
-      const { isNew } = await signInWithGoogle();
-      toast(isNew ? "Account created with Google" : "Signed in", "success");
-      trackEvent(isNew ? "sign_up" : "login", { method: "google" });
+      const result = await signInWithGoogle();
+      if (!result) return;
+      toast(result.isNew ? "Account created with Google" : "Signed in", "success");
+      trackEvent(result.isNew ? "sign_up" : "login", { method: "google" });
       router.push("/library");
     } catch (err) {
       const message = googleErrorMessage(err);

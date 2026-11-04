@@ -3,8 +3,10 @@
 import {
   GoogleAuthProvider,
   getAdditionalUserInfo,
+  getRedirectResult,
   reauthenticateWithPopup,
   signInWithPopup,
+  signInWithRedirect,
   type User,
 } from "firebase/auth";
 import { doc, getDoc, setDoc } from "firebase/firestore";
@@ -24,11 +26,8 @@ function provider(): GoogleAuthProvider {
   return p;
 }
 
-/** Sign in (or sign up) with Google; a first sign-in gets a profile named after the Google account. */
-export async function signInWithGoogle(): Promise<{ user: User; isNew: boolean }> {
-  const cred = await signInWithPopup(auth, provider());
-  const user = cred.user;
-  const isNew = getAdditionalUserInfo(cred)?.isNewUser ?? false;
+/** Give a first sign-in a profile named after the Google account. */
+async function ensureProfile(user: User): Promise<void> {
   const ref = doc(db, "users", user.uid, "profile", "main");
   // A failed profile write must not undo a successful sign-in.
   try {
@@ -41,7 +40,41 @@ export async function signInWithGoogle(): Promise<{ user: User; isNew: boolean }
   } catch {
     // Settings can set the name later.
   }
-  return { user, isNew };
+}
+
+/** Popups some browsers refuse outright; a redirect always works there. */
+const REDIRECT_CODES = new Set(["auth/popup-blocked", "auth/operation-not-supported-in-this-environment"]);
+
+/**
+ * Sign in (or sign up) with Google. Returns null when the browser blocked the
+ * popup and the page is redirecting to Google instead.
+ */
+export async function signInWithGoogle(): Promise<{ user: User; isNew: boolean } | null> {
+  try {
+    const cred = await signInWithPopup(auth, provider());
+    await ensureProfile(cred.user);
+    return { user: cred.user, isNew: getAdditionalUserInfo(cred)?.isNewUser ?? false };
+  } catch (err) {
+    const code = (err as { code?: string })?.code ?? "";
+    if (!REDIRECT_CODES.has(code)) throw err;
+    await signInWithRedirect(auth, provider());
+    return null;
+  }
+}
+
+// React's development mode mounts effects twice. Both reads must share one
+// promise, or the second call finds the result already consumed and returns null.
+let redirectResult: Promise<{ user: User; isNew: boolean } | null> | null = null;
+
+/** Finish a sign-in that was sent through Google's full-page redirect. */
+export function finishGoogleRedirect(): Promise<{ user: User; isNew: boolean } | null> {
+  redirectResult ??= (async () => {
+    const cred = await getRedirectResult(auth);
+    if (!cred) return null;
+    await ensureProfile(cred.user);
+    return { user: cred.user, isNew: getAdditionalUserInfo(cred)?.isNewUser ?? false };
+  })();
+  return redirectResult;
 }
 
 /** Confirm it is really the owner (for deleting the account) by signing in with Google again. */
