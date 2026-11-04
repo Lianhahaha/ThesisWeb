@@ -252,6 +252,22 @@ const META = {
     label: "Krishikosh (India)", blurb: "150k+ agricultural theses from India's agricultural universities: agronomy, horticulture, fisheries, veterinary, food technology (ICAR)", color: "#3b7d23",
     region: "India", fields: ["agriculture", "sciences"], kind: "theses", url: "https://krishikosh.egranth.ac.in",
   },
+  saliksik: {
+    label: "Saliksik (UP Diliman Journals)", blurb: "Peer-reviewed journals from UP Diliman colleges and units: public administration, social sciences, humanities, education, science and Filipino language", color: "#6f1d2c",
+    region: "Philippines", fields: ["all"], kind: "journals", url: "https://saliksik.upd.edu.ph",
+  },
+  pcaarrd: {
+    label: "PCAARRD eLibrary", blurb: "DOST-PCAARRD's agriculture, aquatic and natural resources library: theses, research papers, books, manuals and reports from Philippine consortia and state universities", color: "#2f7d32",
+    region: "Philippines", fields: ["agriculture", "sciences", "social"], kind: "repository", url: "https://elibrary.pcaarrd.dost.gov.ph",
+  },
+  scielo: {
+    label: "SciELO", blurb: "Open-access journals from Latin America, Spain, Portugal and South Africa, mostly Spanish and Portuguese with English titles and abstracts", color: "#d52b1e",
+    region: "Latin America", fields: ["all"], kind: "journals", url: "https://www.scielo.org",
+  },
+  persee: {
+    label: "Persée", blurb: "French humanities and social science journals, books and reviews, many with free full text", color: "#4b6cb7",
+    region: "France", fields: ["humanities", "social"], kind: "journals", url: "https://www.persee.fr",
+  },
 } satisfies Record<string, SourceMeta>;
 
 /** Every source id. lib/sources/registry.ts must have an adapter for each one. */

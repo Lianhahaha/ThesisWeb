@@ -32,6 +32,7 @@ const PROBES: Record<SourceId, string> = {
   core: "climate change", ntu: "engineering", upspace: "education", upou: "distance education", upv: "fisheries",
   wvsu: "teachers", thaijo: "nursing", herdin: "dengue", serpp: "poverty", krishikosh: "rice", upd: "education",
   aiias: "education", actamedica: "dengue", pnu: "teachers", ejournalsph: "education",
+  saliksik: "education", pcaarrd: "rice", scielo: "education", persee: "education",
 };
 
 describe.skipIf(!LIVE)(QUERY ? `live sources: "${QUERY}"` : "live sources: probe topics", () => {

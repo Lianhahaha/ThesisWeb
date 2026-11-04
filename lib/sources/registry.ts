@@ -51,6 +51,10 @@ import { searchAiias } from "@/lib/sources/adapters/aiias";
 import { searchActaMedica } from "@/lib/sources/adapters/actamedica";
 import { searchPnu } from "@/lib/sources/adapters/pnu";
 import { searchEjournalsPh } from "@/lib/sources/adapters/ejournalsph";
+import { searchSaliksik } from "@/lib/sources/adapters/saliksik";
+import { searchPcaarrd } from "@/lib/sources/adapters/pcaarrd";
+import { searchScielo } from "@/lib/sources/adapters/scielo";
+import { searchPersee } from "@/lib/sources/adapters/persee";
 
 /**
  * The adapter for every source in lib/sources/meta.ts. Typed as a Record over
@@ -121,4 +125,10 @@ export const ADAPTERS: Record<SourceId, AdapterEntry> = {
   pnu:             { run: searchPnu, boolean: false, country: "Philippines" },
   // A list page, then one article page per result, so it needs extra room.
   ejournalsph:     { run: searchEjournalsPh, boolean: false, country: "Philippines", deadlineMs: 16000 },
+  // A search API, then an article page per result for authors and year.
+  saliksik:        { run: searchSaliksik, boolean: false, country: "Philippines", deadlineMs: 16000 },
+  // A results page, then one record page per result for abstract and authors.
+  pcaarrd:         { run: searchPcaarrd, boolean: false, country: "Philippines", deadlineMs: 16000 },
+  scielo:          { run: searchScielo, boolean: false },
+  persee:          { run: searchPersee, boolean: false },
 };

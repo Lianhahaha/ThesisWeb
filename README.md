@@ -2,7 +2,7 @@
 
 A free web app that helps thesis students find related literature (RRL), keep it organised, and cite it correctly.
 
-- **Search** — one topic, 51 free academic databases at once, merged, de-duplicated and ranked, with preprint, retraction and expression-of-concern warnings. Save a search and the next time you open it, papers that weren't there before are marked *New*.
+- **Search** — one topic, 55 free academic databases at once, merged, de-duplicated and ranked, with preprint, retraction and expression-of-concern warnings. Save a search and the next time you open it, papers that weren't there before are marked *New*.
 - **Library** — save papers, group them by chapter, take notes, fill a synthesis matrix, or import a .bib/.ris file from Zotero, Mendeley or EndNote. Each paper is tagged **Local** or **Foreign** (guessed from the paper, changeable), to filter the library and split the exported reference list. **Share** a collection with your thesis group by link: they can read it, export it and copy it into their own library.
 - **Cite** — paste DOIs and get references in APA, MLA, IEEE or Chicago, or export your whole library.
 
@@ -35,6 +35,8 @@ All free; only IEEE Xplore needs a free registration key. The in-app [Databases 
 | WVSU Repository | Philippine theses: education, nursing, management, public administration |
 | UP Diliman | Philippine theses and dissertations from every UP Diliman college, with abstracts |
 | AIIAS Repository | Philippine graduate theses: education, business, public health, nursing, theology |
+| Saliksik (UP Diliman Journals) | Philippine peer-reviewed journals: public administration, social sciences, humanities, education, science |
+| PCAARRD eLibrary | Philippine agriculture, aquatic and natural resources: theses, research papers, books, manuals |
 | SSOAR | Social sciences, politics, psychology, communication (free full text) |
 | DOAJ, PLOS, J-STAGE, ThaiJO | Peer-reviewed open-access journals (ThaiJO = Thai journals, English abstracts) |
 | Philippine E-Journals | Articles from hundreds of Philippine university journals, most with a free PDF |
@@ -56,6 +58,8 @@ All free; only IEEE Xplore needs a free registration key. The in-app [Databases 
 | DR-NTU (Singapore) | Southeast Asian theses and papers: engineering, computing, business, education |
 | UPSpace (South Africa) | African theses and research: education, health, veterinary, engineering |
 | LA Referencia | Latin American repositories (Spanish, Portuguese) |
+| SciELO | Latin American, Spanish, Portuguese and South African open-access journals (English abstracts) |
+| Persée | French humanities and social science journals, books and reviews |
 | Zenodo, Figshare, HAL | Repository copies, reports, small-journal papers |
 | DataCite Theses, theses.fr, BDTD (Brazil) | Theses and dissertations |
 | Open Library | Books and textbooks (catalogue records; public-domain scans free) |
