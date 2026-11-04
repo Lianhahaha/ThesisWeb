@@ -90,6 +90,7 @@ npm run test:live            # calls every real database once
 | `SEMANTIC_SCHOLAR_API_KEY`, `OPENALEX_API_KEY` | Recommended | Higher rate limits on the two biggest sources |
 | `NCBI_API_KEY` | Optional | 10 instead of 3 requests/s to PubMed and PubMed Central |
 | `CORE_API_KEY` | Optional | Higher CORE rate limit (works without, but may fail when busy). Free at [core.ac.uk/services/api](https://core.ac.uk/services/api); a revoked or expired key gets `401` and CORE shows as failed until it is replaced |
+| `CINII_APP_ID` | Optional | Adds CiNii Research (Japanese and Asian articles, theses and books). Its OpenSearch endpoint requires a free Application ID (`appid`); without it the API answers `403`. Register at [support.nii.ac.jp/en/cir/r_opensearch](https://support.nii.ac.jp/en/cir/r_opensearch) |
 | `IEEE_XPLORE_API_KEY` | Optional | Adds IEEE Xplore (engineering and computing). Free at [developer.ieee.org/apps/register](https://developer.ieee.org/apps/register); the key allows 200 calls/day, so responses are cached for 24 h and the source stops when the daily budget is spent. A `403 Developer Inactive` reply means the key is not usable yet: finish the portal registration or get a new key |
 | `NEXT_PUBLIC_SITE_URL` | Optional | The public address used in canonical links, the sitemap and share cards (default `https://thesiswebph.vercel.app`; set it if you move to a custom domain) |
 | `NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION` | Optional | The code from Google Search Console's HTML-tag check, see *Search engines* below |

@@ -10,11 +10,12 @@ import type { AdapterOptions } from "@/lib/sources/types";
  * - Articles, theses, books and research data from Japanese universities
  *   and publishers, plus international journals indexed alongside them.
  *   Strong on Asian research; many records are in English.
- * - Free, no API key for the OpenSearch endpoint.
+ * - Free Application ID (appid) required by the OpenSearch endpoint.
  * Docs: https://support.nii.ac.jp/en/cir/r_opensearch
  */
 
 const BASE = "https://cir.nii.ac.jp/opensearch/articles";
+const APP_ID = process.env.CINII_APP_ID?.trim() || "";
 
 interface CiniiItem {
   title?: string;
@@ -35,8 +36,9 @@ export async function searchCinii(
   opts: AdapterOptions = {}
 ): Promise<Paper[]> {
   const { fromYear, perSource = 15 } = opts;
+  if (!APP_ID) throw new Error("CiNii needs a free Application ID (CINII_APP_ID)");
 
-  const params = new URLSearchParams({ q: query, format: "json", count: String(perSource) });
+  const params = new URLSearchParams({ q: query, format: "json", count: String(perSource), appid: APP_ID });
   if (fromYear && fromYear > 0) params.set("from", String(fromYear));
 
   const res = await fetchWithTimeout(`${BASE}?${params}`, { headers: { "User-Agent": USER_AGENT } });
