@@ -34,6 +34,16 @@ eslint-report.json
 *-debug.log
 .mimocode/.cron-lock
 
+# agent / analysis output (keep out of search + context)
+/.kilo/
+/.mimocode/
+/.playwright-mcp/
+/decompiled/
+/dumps/
+*.har
+*.hprof
+rea-*
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts
