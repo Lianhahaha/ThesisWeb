@@ -189,7 +189,9 @@ export async function searchIeee(query: string, opts: AdapterOptions = {}): Prom
     { headers: { Accept: "application/json", "User-Agent": USER_AGENT } },
     10000
   );
-  if (res.status === 403) throw new Error("key not active yet");
+  if (res.status === 403) {
+    throw new Error("IEEE Xplore rejected the key (inactive). Register a new key at developer.ieee.org.");
+  }
   if (res.status === 429) throw new Error("rate limited");
   if (!res.ok) throw upstreamError("IEEE Xplore", res.status);
 
