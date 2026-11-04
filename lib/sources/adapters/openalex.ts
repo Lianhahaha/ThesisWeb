@@ -1,6 +1,6 @@
 import { paperId } from "@/lib/utils";
 import { fetchWithTimeout, readJson, upstreamError } from "@/lib/server/http";
-import type { Paper, WorkType } from "@/lib/types";
+import type { Paper, RelatedPapers, WorkType } from "@/lib/types";
 import type { AdapterOptions } from "@/lib/sources/types";
 import { CONTACT_EMAIL } from "@/lib/server/config";
 import { doiUrlPath, pageRange } from "@/lib/text";
@@ -152,17 +152,6 @@ export async function getOpenAlexByDoi(doi: string): Promise<Paper | null> {
   if (!res.ok) throw upstreamError("OpenAlex", res.status);
   const w = await readJson<OpenAlexWork>(res);
   return { ...workToPaper(w), doi, id: paperId(doi, w.title || w.display_name || "Untitled") };
-}
-
-export interface RelatedPapers {
-  /** Works this paper cites, most-cited first. */
-  references: Paper[];
-  referencesTotal: number;
-  /** Works that cite this paper, most-cited first. */
-  citedBy: Paper[];
-  citedByTotal: number;
-  /** OpenAlex's algorithmically related works, most-cited first. */
-  similar: Paper[];
 }
 
 const shortId = (url: string) => url.split("/").pop() ?? url;

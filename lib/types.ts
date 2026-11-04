@@ -92,6 +92,18 @@ export const MATRIX_LABELS: Record<MatrixKey, string> = {
 /** Longest text kept in one matrix cell; a Firestore document is capped at 1 MiB. */
 export const MATRIX_CELL_MAX = 5000;
 
+/** Citation neighbourhood returned by /api/related. */
+export interface RelatedPapers {
+  /** Works this paper cites, most-cited first. */
+  references: Paper[];
+  referencesTotal: number;
+  /** Works that cite this paper, most-cited first. */
+  citedBy: Paper[];
+  citedByTotal: number;
+  /** OpenAlex's algorithmically related works, most-cited first. */
+  similar: Paper[];
+}
+
 export interface SearchResult {
   papers: Paper[];
   /** Per-source status for the UI. */

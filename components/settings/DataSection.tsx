@@ -40,6 +40,7 @@ export function DataSection({ user }: { user: User | null }) {
       const papers = parseBackup(JSON.parse(await file.text()));
       if (papers.length === 0) throw new Error("No papers found in this file.");
       const saved = await savePapers(papers);
+      setBrowserCount((await localPapers()).length);
       if (saved < papers.length) {
         toast(`Imported ${saved} of ${papers.length} papers. The rest could not be saved.`, "error");
       } else {
@@ -57,8 +58,9 @@ export function DataSection({ user }: { user: User | null }) {
     setBusy(true);
     try {
       const moved = await moveLocalPapersToAccount();
-      const left = browserCount - moved;
-      setBrowserCount(Math.max(0, left));
+      // Re-read instead of subtracting from a possibly stale render value.
+      const left = (await localPapers()).length;
+      setBrowserCount(left);
       toast(
         left > 0
           ? `Copied ${moved} papers. ${left} could not be copied and are still in this browser.`

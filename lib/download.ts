@@ -9,7 +9,10 @@ export function downloadFile(content: string, filename: string, mime: string): v
   const a = document.createElement("a");
   a.href = url;
   a.download = filename;
+  // Safari and older Firefox need the link in the document for click() to start a download.
+  document.body.append(a);
   a.click();
+  a.remove();
   // Revoking in the same tick as the click can cancel the download in some
   // browsers; the file is tiny, so keeping the URL a moment costs nothing.
   setTimeout(() => URL.revokeObjectURL(url), 1000);

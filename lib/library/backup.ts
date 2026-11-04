@@ -32,7 +32,10 @@ export function parseBackup(raw: unknown): SavedPaper[] {
       id: p.id.slice(0, 300),
       title: p.title.slice(0, 1000),
       authors: Array.isArray(p.authors) ? p.authors.filter((a) => typeof a === "string").slice(0, 50) : [],
-      year: typeof p.year === "number" ? p.year : null,
+      year:
+        typeof p.year === "number" && Number.isInteger(p.year) && p.year >= 1000 && p.year <= new Date().getFullYear() + 1
+          ? p.year
+          : null,
       publishedDate: str(p.publishedDate, 40),
       venue: str(p.venue, 500),
       type: WORK_TYPES.includes(p.type as WorkType) ? p.type : undefined,
@@ -51,8 +54,8 @@ export function parseBackup(raw: unknown): SavedPaper[] {
       retracted: p.retracted === true || undefined,
       concern: p.concern === true || undefined,
       preprint: typeof p.preprint === "boolean" ? p.preprint : undefined,
-      sources: Array.isArray(p.sources) ? p.sources.filter((s) => typeof s === "string") : [],
-      savedAt: typeof p.savedAt === "number" ? p.savedAt : Date.now(),
+      sources: Array.isArray(p.sources) ? p.sources.filter((s) => typeof s === "string").slice(0, 50) : [],
+      savedAt: typeof p.savedAt === "number" && Number.isFinite(p.savedAt) ? p.savedAt : Date.now(),
       collection: str(p.collection, 100),
       notes: str(p.notes, 20000),
       matrix: (() => {
@@ -64,7 +67,7 @@ export function parseBackup(raw: unknown): SavedPaper[] {
         );
         return Object.keys(cells).length ? cells : undefined;
       })(),
-      tags: Array.isArray(p.tags) ? p.tags.filter((t) => typeof t === "string") : [],
+      tags: Array.isArray(p.tags) ? p.tags.filter((t) => typeof t === "string").slice(0, 50) : [],
       readingStatus: p.readingStatus === "reading" || p.readingStatus === "done" ? p.readingStatus : "to-read",
       scope: p.scope === "local" || p.scope === "foreign" ? p.scope : undefined,
     } as SavedPaper);

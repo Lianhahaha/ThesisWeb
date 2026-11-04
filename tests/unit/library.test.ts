@@ -87,4 +87,19 @@ describe("parseBackup", () => {
     expect(p.url).toBeUndefined();
     expect(() => parseBackup({ hello: 1 })).toThrow();
   });
+
+  it("caps list fields and discards impossible years and dates", () => {
+    const [p] = parseBackup([{
+      id: "x",
+      title: "T",
+      year: 999999,
+      savedAt: Infinity,
+      tags: Array.from({ length: 80 }, (_, i) => `tag-${i}`),
+      sources: Array.from({ length: 80 }, (_, i) => `source-${i}`),
+    }]);
+    expect(p.year).toBeNull();
+    expect(Number.isFinite(p.savedAt)).toBe(true);
+    expect(p.tags).toHaveLength(50);
+    expect(p.sources).toHaveLength(50);
+  });
 });
