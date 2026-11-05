@@ -1,5 +1,6 @@
 import { paperId } from "@/lib/utils";
-import { fetchWithTimeout, readJson } from "@/lib/server/http";
+import { fetchWithTimeout, readJson, sleep } from "@/lib/server/http";
+import { USER_AGENT } from "@/lib/server/config";
 import { extractDoi, flipName, stripHtml } from "@/lib/text";
 import type { Paper, WorkType } from "@/lib/types";
 import type { AdapterOptions } from "@/lib/sources/types";
@@ -52,7 +53,12 @@ export async function searchZbmath(query: string, opts: AdapterOptions = {}): Pr
     results_per_page: String(pageSize),
     page: "1",
   });
-  const res = await fetchWithTimeout(`${BASE}?${params}`, { headers: { Accept: "application/json" } }, 12000);
+  const headers = { Accept: "application/json", "User-Agent": USER_AGENT };
+  let res = await fetchWithTimeout(`${BASE}?${params}`, { headers }, 12000);
+  if (res.status === 429 || res.status >= 500) {
+    await sleep(1500);
+    res = await fetchWithTimeout(`${BASE}?${params}`, { headers }, 12000);
+  }
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
   const data = await readJson<{ result?: ZbMathDoc[] }>(res, {});
   const papers: Paper[] = [];
