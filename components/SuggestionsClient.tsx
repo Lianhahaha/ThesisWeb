@@ -248,21 +248,40 @@ export function SuggestionsClient() {
         {items?.length === 0 && <p className="mt-3 text-sm text-muted">No posts yet. Be the first.</p>}
 
         {items && items.length > 0 && (
-          <ul className="mt-3 divide-y divide-border rounded-xl border border-border">
+          <ul className="mt-3 space-y-3">
             {items.map((item) => {
               const href = internalPath(item.page);
               return (
-                <li key={item.id} className="p-4 sm:p-5">
+                <li
+                  key={item.id}
+                  className="rounded-xl border border-border border-l-4 bg-surface2 p-4 shadow-sm sm:p-5"
+                  style={{
+                    borderLeftColor:
+                      item.kind === "problem" ? "rgb(var(--danger))" : "rgb(var(--accent))",
+                  }}
+                >
                   <div className="flex flex-wrap items-center gap-2 text-sm">
-                    <span className="font-medium">{item.anonymous ? "Anonymous" : item.nickname || "Reader"}</span>
-                    <span className="chip" title={item.kind === "problem" ? "Problem report" : "Suggestion"}>
+                    <span className="text-base font-semibold text-text">
+                      {item.anonymous ? "Anonymous" : item.nickname || "Reader"}
+                    </span>
+                    <span
+                      className="chip"
+                      title={item.kind === "problem" ? "Problem report" : "Suggestion"}
+                      style={
+                        item.kind === "problem"
+                          ? { color: "rgb(var(--danger))", borderColor: "rgb(var(--danger) / 0.45)" }
+                          : undefined
+                      }
+                    >
                       {item.kind === "problem" ? "Problem" : "Suggestion"}
                     </span>
                     <time dateTime={new Date(item.createdAt).toISOString()} className="text-xs text-subtle">
                       {formatDate(item.createdAt)}
                     </time>
                   </div>
-                  <p className="mt-2 whitespace-pre-wrap text-sm text-muted">{item.body}</p>
+                  <p className="mt-2 whitespace-pre-wrap break-words text-[15px] leading-relaxed text-text">
+                    {item.body}
+                  </p>
                   {href && (
                     <p className="mt-2 text-xs text-subtle">
                       Related page: <Link href={href} className="underline hover:text-text">{href}</Link>

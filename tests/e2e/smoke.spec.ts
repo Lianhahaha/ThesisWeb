@@ -26,6 +26,19 @@ test("a missing page shows the custom 404", async ({ page }) => {
   await expect(page.getByRole("heading", { level: 1, name: /page not found/i })).toBeVisible();
 });
 
+test("public pages fit a phone viewport without sideways scrolling", async ({ page }) => {
+  await page.setViewportSize({ width: 320, height: 800 });
+  for (const path of [
+    "/", "/search", "/library", "/cite", "/settings", "/status", "/suggestions", "/databases", "/about",
+  ]) {
+    await page.goto(path);
+    const overflow = await page.evaluate(
+      () => document.documentElement.scrollWidth - document.documentElement.clientWidth
+    );
+    expect(overflow, `${path} overflows horizontally`).toBeLessThanOrEqual(1);
+  }
+});
+
 test("public pages have no serious accessibility violations", async ({ page }) => {
   for (const path of ["/", "/about", "/databases", "/login"]) {
     await page.goto(path);

@@ -10,10 +10,10 @@ import { CORE_SOURCE_IDS, LOCAL_SOURCE_IDS, SOURCE_COUNT } from "@/lib/sources/m
 
 export type SourceMode = "all" | "core" | "local";
 
-export const SOURCE_MODES: { value: SourceMode; label: string; hint: string }[] = [
-  { value: "all", label: `All sources (${SOURCE_COUNT})`, hint: "Every database" },
-  { value: "core", label: `Core indexes (${CORE_SOURCE_IDS.size})`, hint: "Faster, major indexes only" },
-  { value: "local", label: `Philippines (${LOCAL_SOURCE_IDS.size})`, hint: "Philippine databases only" },
+export const SOURCE_MODES: { value: SourceMode; label: string; shortLabel: string; hint: string }[] = [
+  { value: "all", label: `All sources (${SOURCE_COUNT})`, shortLabel: `All ${SOURCE_COUNT}`, hint: "Every database" },
+  { value: "core", label: `Core indexes (${CORE_SOURCE_IDS.size})`, shortLabel: `Core ${CORE_SOURCE_IDS.size}`, hint: "Faster, major indexes only" },
+  { value: "local", label: `Philippines (${LOCAL_SOURCE_IDS.size})`, shortLabel: `PH ${LOCAL_SOURCE_IDS.size}`, hint: "Philippine databases only" },
 ];
 
 export interface SearchInput {

@@ -56,35 +56,38 @@ export function Header() {
   return (
     <>
       <header className="sticky top-0 z-40 border-b border-border bg-surface">
-        <div className="mx-auto flex h-14 w-full max-w-6xl items-center gap-3 px-4 md:grid md:grid-cols-[1fr_auto_1fr] md:px-6">
-          <Link href="/" className="flex min-w-0 items-center gap-2 sm:gap-3" aria-label="Thesisweb home">
-            <span className="serif text-[21px] font-medium leading-none">Thesisweb</span>
-            <span className="whitespace-nowrap rounded-full border border-border px-1.5 py-0.5 text-[9px] font-medium uppercase tracking-[0.12em] text-subtle sm:px-2 sm:text-[10px]">
-              RRL toolkit
-            </span>
-          </Link>
+        <div className="mx-auto w-full max-w-6xl px-4 md:px-6">
+          <div className="flex h-14 items-center gap-3 md:grid md:grid-cols-[1fr_auto_1fr]">
+            <Link href="/" className="flex min-w-0 shrink items-center" aria-label="Thesisweb home">
+              <span className="serif text-[21px] font-medium leading-none">Thesisweb</span>
+            </Link>
 
-          <nav className="hidden md:block" aria-label="Main">
-            <div className="seg">
-              {NAV.map(({ href, label, icon: Icon }) => (
-                <Link
-                  key={href}
-                  href={href}
-                  data-on={isOn(href)}
-                  aria-current={isOn(href) ? "page" : undefined}
-                >
-                  <Icon className="h-4 w-4" aria-hidden />
-                  {label}
-                  {href === "/library" && count > 0 && <span className="counter ml-0.5">{count}</span>}
-                </Link>
-              ))}
+            <nav className="hidden md:block" aria-label="Main">
+              <div className="seg">
+                {NAV.map(({ href, label, icon: Icon }) => (
+                  <Link
+                    key={href}
+                    href={href}
+                    data-on={isOn(href)}
+                    aria-current={isOn(href) ? "page" : undefined}
+                  >
+                    <Icon className="h-4 w-4" aria-hidden />
+                    {label}
+                    {href === "/library" && count > 0 && <span className="counter ml-0.5">{count}</span>}
+                  </Link>
+                ))}
+              </div>
+            </nav>
+
+            <div className="flex min-w-0 flex-1 items-center justify-end gap-1">
+              <ThemeToggle />
+              <UserArea />
             </div>
-          </nav>
-
-          <div className="flex flex-1 items-center justify-end gap-1">
-            <ThemeToggle />
-            <UserArea />
           </div>
+
+          <p className="border-t border-border/70 pb-2 pt-1.5 text-center text-[9px] font-medium uppercase tracking-[0.18em] text-subtle">
+            Related literature, found faster
+          </p>
         </div>
       </header>
 

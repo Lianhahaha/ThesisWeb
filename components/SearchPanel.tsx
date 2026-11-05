@@ -133,7 +133,8 @@ export function SearchPanel({
               onClick={() => set({ sourceMode: mode.value })}
               title={mode.hint}
             >
-              {mode.label}
+              <span className="hidden sm:inline">{mode.label}</span>
+              <span className="sm:hidden">{mode.shortLabel}</span>
             </button>
           ))}
         </div>
@@ -251,7 +252,12 @@ export function SearchPanel({
         <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-border pt-4">
           <span className="text-xs text-subtle">Try</span>
           {examples.map((t) => (
-            <button key={t} type="button" onClick={() => set({ query: t })} className="chip-btn">
+            <button
+              key={t}
+              type="button"
+              onClick={() => set({ query: t })}
+              className="chip-btn max-w-full !whitespace-normal text-left"
+            >
               {t}
             </button>
           ))}
