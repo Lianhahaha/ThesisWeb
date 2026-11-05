@@ -84,10 +84,6 @@ export function Header() {
               <UserArea />
             </div>
           </div>
-
-          <p className="border-t border-border/70 pb-2 pt-1.5 text-center text-[9px] font-medium uppercase tracking-[0.18em] text-subtle">
-            Related literature, found faster
-          </p>
         </div>
       </header>
 
