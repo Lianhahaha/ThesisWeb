@@ -89,6 +89,16 @@ export default function PrivacyPage() {
         database has its own privacy policy, and this app has no control over it.
       </p>
 
+      <h2 className="mt-8 text-xl">Public feedback board</h2>
+      <p className="mt-2">
+        You can post a problem report or suggestion on the{" "}
+        <Link href="/suggestions" className="underline">Suggestions</Link> page. Those posts are
+        public: anyone can read them, and they are not private messages. If you post anonymously,
+        the post contains only your message, its type, the related page and the time; your account
+        name and email are not stored with it. If you use a nickname, that nickname is stored and
+        shown. Do not include private or personal information in a post.
+      </p>
+
       <h2 className="mt-8 text-xl">Analytics</h2>
       <p className="mt-2">
         The app uses Firebase Analytics and Vercel Analytics to count page views and to see which
