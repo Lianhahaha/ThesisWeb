@@ -8,6 +8,7 @@ import { signOutAndForget } from "@/lib/auth/sign-out";
 import { authMessage } from "@/lib/auth/errors";
 import { confirmWithGoogle, googleErrorMessage, hasPassword } from "@/lib/auth/google";
 import { fsDeleteAllPapers } from "@/lib/library/firestore";
+import { deleteMyShares } from "@/lib/library/share";
 import { GoogleButton } from "@/components/GoogleButton";
 import { toast } from "@/components/Toaster";
 import { PasswordField, Section } from "@/components/settings/parts";
@@ -54,6 +55,9 @@ export function AccountActions({ user }: { user: User }) {
       }
       const uid = user.uid;
       await fsDeleteAllPapers(uid);
+      // Shared libraries are public by link; leaving them behind would keep
+      // the account's data readable after the account itself is gone.
+      await deleteMyShares(uid);
       await deleteDoc(doc(db, "users", uid, "profile", "main")).catch(() => {});
       await deleteUser(user);
       toast("Your account has been deleted", "success");
@@ -91,7 +95,7 @@ export function AccountActions({ user }: { user: User }) {
       </Section>
       <Section
         title="Delete account"
-        description="Removes your account, saved papers, notes and matrix for good. Download a library backup first if you want to keep anything."
+        description="Removes your account, saved papers, notes, matrix and shared library links for good. Download a library backup first if you want to keep anything."
       >
         {hasPassword(user) ? (
           <form onSubmit={deleteAccount} className="space-y-4">

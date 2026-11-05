@@ -59,3 +59,9 @@ export async function publishShare(opts: {
 export async function deleteShare(id: string): Promise<void> {
   await deleteDoc(doc(db, "shared", id));
 }
+
+/** Remove every group library this account shared by link (account deletion). */
+export async function deleteMyShares(uid: string): Promise<void> {
+  const snap = await getDocs(query(collection(db, "shared"), where("owner", "==", uid)));
+  await Promise.all(snap.docs.map((d) => deleteDoc(d.ref)));
+}
