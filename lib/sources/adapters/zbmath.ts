@@ -45,9 +45,11 @@ export async function searchZbmath(query: string, opts: AdapterOptions = {}): Pr
   // zbMATH does not mark open-access copies.
   if (openAccessOnly) return [];
 
+  // Relevance order is old-heavy; ask for more and filter by year here.
+  const pageSize = fromYear ? Math.min(perSource * 6, 100) : perSource;
   const params = new URLSearchParams({
     search_string: query,
-    results_per_page: String(perSource),
+    results_per_page: String(pageSize),
     page: "1",
   });
   const res = await fetchWithTimeout(`${BASE}?${params}`, { headers: { Accept: "application/json" } }, 12000);

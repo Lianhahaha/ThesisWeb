@@ -1,5 +1,5 @@
 import { paperId } from "@/lib/utils";
-import { fetchWithTimeout, readJson, upstreamError } from "@/lib/server/http";
+import { fetchWithTimeout, readJson, sleep, upstreamError, waitTurn } from "@/lib/server/http";
 import type { Paper, WorkType } from "@/lib/types";
 import type { AdapterOptions } from "@/lib/sources/types";
 import { CONTACT_EMAIL } from "@/lib/server/config";
@@ -15,6 +15,21 @@ import { doiUrlPath, stripHtml } from "@/lib/text";
 
 const MAILTO = CONTACT_EMAIL;
 const BASE = "https://api.crossref.org/works";
+
+/**
+ * All Crossref-backed sources share one polite pace. Several curated
+ * Philippine journal sources run in the same search, and firing them all at
+ * once earns a 429; a small gap plus one retry keeps the burst smooth.
+ */
+async function crossrefFetch(url: string): Promise<Response> {
+  await waitTurn("crossref", 150);
+  let res = await fetchWithTimeout(url, {}, 10000);
+  if (res.status === 429) {
+    await sleep(1500);
+    res = await fetchWithTimeout(url, {}, 10000);
+  }
+  return res;
+}
 
 interface CrossrefItem {
   DOI?: string;
@@ -114,7 +129,7 @@ export async function searchCrossref(
   if (openAccessOnly) filters.push(OPEN_LICENSE_FILTER);
   if (filters.length) params.set("filter", filters.join(","));
 
-  const res = await fetchWithTimeout(`${BASE}?${params}`);
+  const res = await crossrefFetch(`${BASE}?${params}`);
   if (!res.ok) throw new Error(`Crossref ${res.status}`);
   const data = await readJson<{ message: { items: CrossrefItem[] } }>(res);
   if (!data?.message?.items) return [];
@@ -151,7 +166,7 @@ export async function searchCrossrefJournals(
         sort: "relevance",
         filter: filters.join(","),
       });
-      const res = await fetchWithTimeout(`${BASE}?${params}`);
+      const res = await crossrefFetch(`${BASE}?${params}`);
       if (!res.ok) throw new Error(`Crossref ${res.status}`);
       const data = await readJson<{ message: { items: CrossrefItem[] } }>(res);
       return (data?.message?.items ?? [])
@@ -208,7 +223,7 @@ function itemToPaper(it: CrossrefItem, sourceId = "crossref"): Paper {
  * when Crossref fails, so an outage is not reported as "no record".
  */
 export async function getCrossrefByDoi(doi: string): Promise<Paper | null> {
-  const res = await fetchWithTimeout(`${BASE}/${doiUrlPath(doi)}?mailto=${encodeURIComponent(MAILTO)}`);
+  const res = await crossrefFetch(`${BASE}/${doiUrlPath(doi)}?mailto=${encodeURIComponent(MAILTO)}`);
   if (res.status === 404) return null;
   if (!res.ok) throw upstreamError("Crossref", res.status);
   const data = await readJson<{ message?: CrossrefItem }>(res);
