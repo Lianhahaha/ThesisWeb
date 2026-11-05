@@ -8,6 +8,7 @@ export function Footer() {
         <nav className="flex gap-4" aria-label="Site">
           <Link href="/databases" className="hover:text-text">Databases</Link>
           <Link href="/about" className="hover:text-text">About</Link>
+          <Link href="/status" className="hover:text-text">Status</Link>
           <Link href="/privacy" className="hover:text-text">Privacy</Link>
           <Link href="/terms" className="hover:text-text">Terms</Link>
         </nav>
