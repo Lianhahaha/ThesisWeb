@@ -61,6 +61,30 @@ export interface SourceResult {
 }
 
 /**
+ * Free APIs are the bottleneck, so successful per-source answers are reused:
+ * a repeated or similar search skips the network for up to six hours, even
+ * while another visitor already paid for it. This is per server instance, so
+ * it is a burst absorber, not a permanent database.
+ */
+const CACHE_TTL_MS = 6 * 60 * 60 * 1000;
+const CACHE_MAX = 300;
+const cache = new Map<string, { at: number; result: SourceResult }>();
+
+/**
+ * Repeated failures put a source on a short cooldown instead of hitting it
+ * again for every search. It is retried after five minutes and recovers on
+ * the first success. This keeps a dead or rate-limited site from slowing
+ * every search during finals week.
+ */
+const FAILURE_PAUSE_MS = 5 * 60 * 1000;
+const FIRST_FAILURE_PAUSE_MS = 60 * 1000;
+const failures = new Map<string, { count: number; until: number }>();
+
+function sourceKey(id: string, q: string, opts: SearchOpts): string {
+  return JSON.stringify([id, q, opts.fromYear ?? 0, opts.openAccessOnly === true, opts.perSource ?? 15]);
+}
+
+/**
  * Run every database at once, tolerating failures. `onSource` hears about
  * each one as soon as it answers, so results can be shown while slower ones
  * are still working; `signal` stops them all.
@@ -77,9 +101,30 @@ export async function searchSources(
 
   return Promise.all(
     Object.entries(ADAPTERS).map(async ([id, { run, boolean, deadlineMs, country }]): Promise<SourceResult> => {
+      const q = country && country === opts.country ? query : boolean ? booleanQuery : plainQuery;
+      const key = sourceKey(id, q, opts);
+
+      const hit = cache.get(key);
+      if (hit && Date.now() - hit.at < CACHE_TTL_MS) {
+        const result = { ...hit.result, papers: hit.result.papers };
+        onSource?.(result);
+        return result;
+      }
+
+      const paused = failures.get(id);
+      if (paused && paused.until > Date.now()) {
+        const result: SourceResult = {
+          id,
+          status: "error",
+          papers: [],
+          error: "paused after repeated failures; retrying soon",
+        };
+        onSource?.(result);
+        return result;
+      }
+
       let result: SourceResult;
       try {
-        const q = country && country === opts.country ? query : boolean ? booleanQuery : plainQuery;
         const raw = await withDeadline(() => run(q, opts), deadlineMs ?? DEFAULT_DEADLINE_MS, signal);
         if (!Array.isArray(raw)) throw new Error("adapter returned no list");
         // Many databases can't filter by year or free full text themselves, and
@@ -89,11 +134,24 @@ export async function searchSources(
           .map((p) => normalizePaper(p, id))
           .filter((p): p is Paper => p !== null && passesFilters(p, opts) && matchesQuery(p, query));
         result = { id, status: papers.length > 0 ? "ok" : "empty", papers, error: "" };
+        if (!signal?.aborted) {
+          if (cache.size >= CACHE_MAX) cache.clear();
+          cache.set(key, { at: Date.now(), result });
+          failures.delete(id);
+        }
       } catch (e) {
         const error = (e instanceof Error ? e.message : String(e)).slice(0, 120);
         // Shows up in the deployment's function logs, so a source that keeps
         // failing can be told apart from one that is only slow.
-        if (!signal?.aborted) console.warn(`[search] ${id} failed: ${error}`);
+        if (!signal?.aborted) {
+          console.warn(`[search] ${id} failed: ${error}`);
+          const failure = failures.get(id) ?? { count: 0, until: 0 };
+          failure.count += 1;
+          // A first failure gets a short pause; a repeat means the source is
+          // really down or rate-limited, so keep it out of the way longer.
+          failure.until = Date.now() + (failure.count === 1 ? FIRST_FAILURE_PAUSE_MS : FAILURE_PAUSE_MS);
+          failures.set(id, failure);
+        }
         result = { id, status: "error", papers: [], error };
       }
       onSource?.(result);
