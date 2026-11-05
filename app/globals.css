@@ -24,6 +24,7 @@
     --accent-d: 237 225 252;   /* #ede1fc  lavender fill            */
     --accent-h: 226 208 250;   /* #e2d0fa  lavender fill, hovered   */
     --accent-edge: 28 27 24;   /* #1c1b18  primary button edge: ink */
+    --sender:  15 118 110;   /* #0f766e  feedback author highlight */
 
     /* Kept as names for existing markup; both map into the one palette. */
     --ok:        88  85  76;
@@ -49,6 +50,7 @@
     --accent-h:  67  57  92;   /* #43395c                           */
     /* Ink is near-white here, which made primary buttons glow; use a quiet lavender edge. */
     --accent-edge: 92 79 128;  /* #5c4f80                           */
+    --sender:   94 234 212;   /* #5eead4  feedback author highlight */
     --ok:       190 184 172;
     --ok-d:      41  39  36;
     --danger:   198 180 240;
@@ -62,7 +64,7 @@
       --bg: 25 24 22; --surface: 33 32 29; --surface2: 41 39 36; --surface3: 52 50 46;
       --border: 60 58 53; --border2: 86 83 76;
       --text: 237 233 224; --muted: 190 184 172; --subtle: 158 152 141;
-      --accent: 198 180 240; --accent-d: 54 46 74; --accent-h: 67 57 92; --accent-edge: 92 79 128;
+      --accent: 198 180 240; --accent-d: 54 46 74; --accent-h: 67 57 92; --accent-edge: 92 79 128; --sender: 94 234 212;
       --ok: 190 184 172; --ok-d: 41 39 36; --danger: 198 180 240; --danger-d: 54 46 74;
       color-scheme: dark;
     }

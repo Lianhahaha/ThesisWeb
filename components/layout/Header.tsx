@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Search, Library, Quote, Home, LogOut, Settings } from "lucide-react";
+import { Search, Library, Quote, Home, LogOut, Settings, MessageSquarePlus } from "lucide-react";
 import { useLiveQuery } from "dexie-react-hooks";
 import { getDb, LIBRARY_EVENT } from "@/lib/library/store";
 import { useAuth } from "@/lib/auth/store";
@@ -18,6 +18,7 @@ const NAV = [
   { href: "/search", label: "Search", icon: Search },
   { href: "/library", label: "Library", icon: Library },
   { href: "/cite", label: "Cite", icon: Quote },
+  { href: "/suggestions", label: "Suggestions", icon: MessageSquarePlus },
 ];
 
 /** Count of saved papers, from whichever store this user is on. */

@@ -26,6 +26,15 @@ test("a missing page shows the custom 404", async ({ page }) => {
   await expect(page.getByRole("heading", { level: 1, name: /page not found/i })).toBeVisible();
 });
 
+test("phone navigation includes the suggestions board", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/");
+  const nav = page.getByRole("navigation", { name: "Main" }).last();
+  await nav.getByRole("link", { name: "Suggestions" }).click();
+  await expect(page).toHaveURL(/\/suggestions$/);
+  await expect(page.getByRole("heading", { level: 1, name: /problems and suggestions/i })).toBeVisible();
+});
+
 test("public pages fit a phone viewport without sideways scrolling", async ({ page }) => {
   await page.setViewportSize({ width: 320, height: 800 });
   for (const path of [

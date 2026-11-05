@@ -248,31 +248,16 @@ export function SuggestionsClient() {
         {items?.length === 0 && <p className="mt-3 text-sm text-muted">No posts yet. Be the first.</p>}
 
         {items && items.length > 0 && (
-          <ul className="mt-3 space-y-3">
+          <ul className="mt-3 divide-y divide-border border-y border-border">
             {items.map((item) => {
               const href = internalPath(item.page);
               return (
-                <li
-                  key={item.id}
-                  className="rounded-xl border border-border border-l-4 bg-surface2 p-4 shadow-sm sm:p-5"
-                  style={{
-                    borderLeftColor:
-                      item.kind === "problem" ? "rgb(var(--danger))" : "rgb(var(--accent))",
-                  }}
-                >
+                <li key={item.id} className="py-4 sm:py-5">
                   <div className="flex flex-wrap items-center gap-2 text-sm">
-                    <span className="text-base font-semibold text-text">
+                    <span className="text-base font-semibold" style={{ color: "rgb(var(--sender))" }}>
                       {item.anonymous ? "Anonymous" : item.nickname || "Reader"}
                     </span>
-                    <span
-                      className="chip"
-                      title={item.kind === "problem" ? "Problem report" : "Suggestion"}
-                      style={
-                        item.kind === "problem"
-                          ? { color: "rgb(var(--danger))", borderColor: "rgb(var(--danger) / 0.45)" }
-                          : undefined
-                      }
-                    >
+                    <span className="chip" title={item.kind === "problem" ? "Problem report" : "Suggestion"}>
                       {item.kind === "problem" ? "Problem" : "Suggestion"}
                     </span>
                     <time dateTime={new Date(item.createdAt).toISOString()} className="text-xs text-subtle">
