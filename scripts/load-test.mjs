@@ -22,10 +22,12 @@ const statuses = new Map();
 let next = 0;
 async function worker() {
   while (next < requests) {
-    next++;
+    const n = ++next;
     const started = Date.now();
     try {
-      const res = await fetch(url);
+      // Simulate separate visitors from separate addresses. Vercel overwrites
+      // this header in production, so it only affects local/staging tests.
+      const res = await fetch(url, { headers: { "x-real-ip": `198.51.100.${(n % 250) + 1}` } });
       statuses.set(res.status, (statuses.get(res.status) ?? 0) + 1);
       // Read the stream so the server can finish the search.
       await res.text();
