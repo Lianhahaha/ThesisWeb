@@ -9,7 +9,9 @@
     "start": "next start",
     "lint": "eslint .",
     "test": "vitest run tests/unit tests/components",
-    "test:live": "vitest run tests/live --mode live"
+    "test:e2e": "playwright test",
+    "test:live": "vitest run tests/live --mode live",
+    "load-test": "node scripts/load-test.mjs"
   },
   "dependencies": {
     "@tanstack/react-query": "^5.65.1",
@@ -26,7 +28,9 @@
     "zustand": "^5.0.3"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.14.0",
     "@eslint/eslintrc": "^3.3.6",
+    "@playwright/test": "^1.64.1",
     "@testing-library/dom": "^10.4.2",
     "@testing-library/react": "^16.3.3",
     "@testing-library/user-event": "^14.6.8",
