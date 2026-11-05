@@ -50,4 +50,12 @@ jobs:
             exit 0
           fi
           git commit -m "chore(status): update database health"
-          git push
+          for attempt in 1 2 3; do
+            git pull --rebase origin main
+            if git push; then
+              exit 0
+            fi
+            sleep 5
+          done
+          echo "Could not push the health report after three attempts."
+          exit 1
