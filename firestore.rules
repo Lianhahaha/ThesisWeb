@@ -55,12 +55,9 @@ service cloud.firestore {
         && (!('matrix' in request.resource.data) || request.resource.data.matrix is map);
     }
 
-    // ── Shared group libraries ───────────────────────────────────────────
-    // A copy of some papers, readable by anyone who has the link (the id is
-    // random). Only the owner can list, change or remove their shares.
-    // Public feedback board. Anyone can read; signed-in users can post. No uid
-    // or email is stored, so anonymous posts cannot be traced through the
-    // public document.
+    // ── Public feedback board ────────────────────────────────────────────
+    // Anyone can read; signed-in users can post. No uid or email is stored,
+    // so anonymous posts cannot be traced through the public document.
     match /suggestions/{suggestionId} {
       function validSuggestion() {
         let d = request.resource.data;
@@ -80,6 +77,9 @@ service cloud.firestore {
       allow update, delete: if false;
     }
 
+    // ── Shared group libraries ───────────────────────────────────────────
+    // A copy of some papers, readable by anyone who has the link (the id is
+    // random). Only the owner can list, change or remove their shares.
     match /shared/{shareId} {
       function validShare() {
         let d = request.resource.data;
