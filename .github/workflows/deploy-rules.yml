@@ -13,9 +13,28 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: google-github-actions/auth@v2
+        id: auth
         with:
           credentials_json: ${{ secrets.GCP_SA_KEY }}
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-      - run: npx --yes firebase-tools@latest deploy --only firestore:rules --project webthesisph --non-interactive
+      - name: Create and release the Firestore ruleset
+        env:
+          TOKEN: ${{ steps.auth.outputs.access_token }}
+        run: |
+          set -euo pipefail
+          jq -Rs '{source:{files:[{name:"firestore.rules",content:.}]}}' firestore.rules > ruleset-request.json
+          curl --fail-with-body --silent --show-error \
+            -X POST \
+            -H "Authorization: Bearer $TOKEN" \
+            -H "Content-Type: application/json" \
+            --data @ruleset-request.json \
+            "https://firebaserules.googleapis.com/v1/projects/webthesisph/rulesets" > ruleset.json
+          RULESET="$(jq -r .name ruleset.json)"
+          test -n "$RULESET"
+          jq -n --arg ruleset "$RULESET" \
+            '{release:{name:"projects/webthesisph/releases/cloud.firestore",rulesetName:$ruleset}}' > release.json
+          curl --fail-with-body --silent --show-error \
+            -X PATCH \
+            -H "Authorization: Bearer $TOKEN" \
+            -H "Content-Type: application/json" \
+            --data @release.json \
+            "https://firebaserules.googleapis.com/v1/projects/webthesisph/releases/cloud.firestore"
