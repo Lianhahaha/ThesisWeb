@@ -24,7 +24,7 @@ No account needed to search. Only links to legal open-access full text. Light an
 
 ## Databases searched
 
-All free; only IEEE Xplore needs a free registration key. The in-app [Databases page](app/databases/page.tsx) (`/databases`) lists each one with its region, fields and record type.
+All free; IEEE Xplore and Google Books need free registration keys. The in-app [Databases page](app/databases/page.tsx) (`/databases`) lists each one with its region, fields and record type.
 
 | Database | Best for |
 |---|---|
