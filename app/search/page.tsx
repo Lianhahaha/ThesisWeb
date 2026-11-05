@@ -344,6 +344,13 @@ export default function SearchPage() {
               </div>
             </div>
 
+            {result.papers.length > 0 && sortKey === "quality" && (
+              <p className="mt-2 text-xs text-subtle">
+                Quality signals is a heuristic, not a judgment of research quality: peer-reviewed
+                records and cited works rank higher; preprints and retractions rank lower.
+              </p>
+            )}
+
             {pending && (
               <p role="status" className="notice notice-info mt-3">
                 {answered} of {SOURCE_COUNT} databases have answered. The list updates as the rest come in; slow

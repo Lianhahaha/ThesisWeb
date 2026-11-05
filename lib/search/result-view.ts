@@ -7,14 +7,42 @@ import { looksLocal } from "@/lib/countries";
  * narrowing by source without another round-trip to the databases.
  */
 
-export type SortKey = "relevance" | "citations" | "newest" | "oldest";
+export type SortKey = "relevance" | "quality" | "citations" | "newest" | "oldest";
 
 export const SORT_OPTIONS: { key: SortKey; label: string }[] = [
   { key: "relevance", label: "Best match" },
+  { key: "quality", label: "Quality signals" },
   { key: "citations", label: "Most cited" },
   { key: "newest", label: "Newest first" },
   { key: "oldest", label: "Oldest first" },
 ];
+
+/** How much each stated record type counts as an evidence signal. */
+const TYPE_SIGNAL: Record<WorkType, number> = {
+  article: 6,
+  conference: 5,
+  book: 4,
+  chapter: 4,
+  thesis: 3,
+  report: 2,
+  other: 1,
+  preprint: -4,
+};
+
+/**
+ * A transparent heuristic for "Quality signals", not a judgment of research
+ * quality: peer-reviewed journal records rank above preprints, citations help,
+ * and retractions or expressions of concern sink to the bottom.
+ */
+export function qualityScore(p: Paper): number {
+  let score = TYPE_SIGNAL[p.type ?? "other"] ?? 1;
+  if (p.preprint === true) score -= 4;
+  if (p.retracted) score -= 100;
+  if (p.concern) score -= 40;
+  // Logarithmic so one highly cited outlier does not dominate the list.
+  score += Math.min(6, Math.log10(1 + Math.max(0, p.citedByCount ?? 0)) * 2);
+  return score;
+}
 
 /** Papers without a year sort last in both date orders, never first. */
 function byYear(a: Paper, b: Paper, dir: 1 | -1): number {
@@ -31,6 +59,13 @@ export function sortPapers(papers: Paper[], key: SortKey): Paper[] {
     case "citations":
       return list.sort(
         (a, b) => (b.citedByCount ?? 0) - (a.citedByCount ?? 0) || (b.relevance ?? 0) - (a.relevance ?? 0)
+      );
+    case "quality":
+      return list.sort(
+        (a, b) =>
+          qualityScore(b) - qualityScore(a) ||
+          (b.citedByCount ?? 0) - (a.citedByCount ?? 0) ||
+          (b.relevance ?? 0) - (a.relevance ?? 0)
       );
     case "newest":
       return list.sort((a, b) => byYear(a, b, -1) || (b.relevance ?? 0) - (a.relevance ?? 0));

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { NO_REFINEMENT, recordTypes, refine } from "@/lib/search/result-view";
+import { NO_REFINEMENT, recordTypes, refine, sortPapers } from "@/lib/search/result-view";
 import type { Paper } from "@/lib/types";
 
 const paper = (over: Partial<Paper>): Paper => ({ id: Math.random().toString(36), title: "T", authors: [], year: 2023, sources: ["openalex"], ...over });
@@ -19,6 +19,19 @@ describe("recordTypes", () => {
     expect([...recordTypes(paper({ type: "chapter" }))]).toEqual(["book"]);
     expect([...recordTypes(paper({ sources: ["zenodo"], type: "report" }))]).toEqual(["report"]);
     expect(recordTypes(paper({ type: "conference" })).size).toBe(0);
+  });
+});
+
+describe("sortPapers quality signals", () => {
+  it("ranks peer-reviewed articles above preprints and sinks retracted work", () => {
+    const article = paper({ id: "article", type: "article", preprint: false, citedByCount: 10, relevance: 50 });
+    const preprint = paper({ id: "preprint", type: "preprint", preprint: true, citedByCount: 1000, relevance: 99 });
+    const retracted = paper({ id: "retracted", type: "article", retracted: true, citedByCount: 999, relevance: 100 });
+    expect(sortPapers([preprint, retracted, article], "quality").map((p) => p.id)).toEqual([
+      "article",
+      "preprint",
+      "retracted",
+    ]);
   });
 });
 
