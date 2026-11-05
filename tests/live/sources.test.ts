@@ -19,6 +19,19 @@ const LIVE = import.meta.env.MODE === "live";
 const QUERY = process.env.LIVE_QUERY || "";
 const ONLY = (process.env.LIVE_ONLY || "").split(",").filter(Boolean);
 
+/** Sources that need a key are skipped, not failed, when the key is absent. */
+const SKIP: Partial<Record<SourceId, string>> = {};
+if (!process.env.IEEE_XPLORE_API_KEY) SKIP.ieee = "IEEE_XPLORE_API_KEY not configured";
+if (!process.env.CINII_APP_ID) SKIP.cinii = "CINII_APP_ID not configured";
+if (!process.env.CORE_API_KEY) SKIP.core = "CORE_API_KEY not configured";
+
+/**
+ * A rate limit, anti-bot block, timeout or outage is not an adapter bug. It is
+ * reported as unavailable so the daily job only fails on real breakage (an
+ * unexpected page, bad data, or a source that suddenly returns nothing).
+ */
+const TRANSIENT = /rate limited|429|403|\b5\d\d\b|timed out|timeout|fetch failed|ECONN|ENOTFOUND|EAI_AGAIN|socket|network|inactive|rejected the key|not active|not configured/i;
+
 /** A topic each database holds plenty of. Typed over every source, so a new one needs a probe. */
 const PROBES: Record<SourceId, string> = {
   openalex: "climate change", crossref: "climate change", semanticscholar: "climate change", doaj: "teacher education",
@@ -39,8 +52,18 @@ describe.skipIf(!LIVE)(QUERY ? `live sources: "${QUERY}"` : "live sources: probe
   for (const [id, { run }] of Object.entries(ADAPTERS) as [SourceId, (typeof ADAPTERS)[SourceId]][]) {
     if (ONLY.length && !ONLY.includes(id)) continue;
     // One retry: a slow moment at a database is not a broken adapter.
-    it(id, { timeout: 45_000, retry: 1, skip: id === "ieee" && !process.env.IEEE_XPLORE_API_KEY }, async () => {
-      const papers = await run(QUERY || PROBES[id], { fromYear: QUERY ? 2020 : 0, perSource: 10 });
+    it(id, { timeout: 45_000, retry: 1, skip: Boolean(SKIP[id]) }, async () => {
+      let papers: Awaited<ReturnType<typeof run>>;
+      try {
+        papers = await run(QUERY || PROBES[id], { fromYear: QUERY ? 2020 : 0, perSource: 10 });
+      } catch (e) {
+        const message = e instanceof Error ? e.message : String(e);
+        if (TRANSIENT.test(message)) {
+          console.warn(`${id}: unavailable (${message})`);
+          return;
+        }
+        throw e;
+      }
       expect(Array.isArray(papers)).toBe(true);
       for (const p of papers) {
         expect(normalizePaper(p, id), `${id} returned a record with no title`).not.toBeNull();
