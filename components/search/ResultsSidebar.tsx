@@ -11,6 +11,7 @@ import {
   NO_REFINEMENT,
   RECORD_TYPES,
   countBySource,
+  isPeerReviewed,
   isRefined,
   recordTypes,
   type RecordType,
@@ -58,6 +59,11 @@ export function ResultsSidebar({
   }, [result]);
 
   const relatedTerms = useMemo(() => (searched ? suggestTerms(result.papers, searched.query) : []), [result, searched]);
+  const retractedCount = useMemo(
+    () => result.papers.filter((p) => p.retracted === true || p.concern === true).length,
+    [result.papers]
+  );
+  const peerCount = useMemo(() => result.papers.filter(isPeerReviewed).length, [result.papers]);
 
   const sourceCounts = useMemo(() => countBySource(result.papers), [result]);
   // Databases with results first, most results on top; the rest after.
@@ -128,9 +134,31 @@ export function ResultsSidebar({
             className="input !min-h-[32px] !w-auto !py-1 text-sm"
           >
             {MIN_CITATIONS.map((n) => (
-              <option key={n} value={n}>{n === 0 ? "any" : `${n}×`}</option>
+              <option key={n} value={n}>{n === 0 ? "any" : `${n}A-`}</option>
             ))}
           </select>
+        </label>
+        <label className="mt-2 flex cursor-pointer items-center gap-2 text-sm text-muted">
+          <input
+            type="checkbox"
+            checked={refinement.hideRetracted}
+            onChange={(e) => onRefinement((r) => ({ ...r, hideRetracted: e.target.checked }))}
+            className="h-4 w-4 rounded"
+            style={{ accentColor: "rgb(var(--accent))" }}
+          />
+          Hide retracted / concern
+          {retractedCount > 0 && <span className="text-xs tabular-nums text-subtle">({retractedCount})</span>}
+        </label>
+        <label className="mt-2 flex cursor-pointer items-center gap-2 text-sm text-muted">
+          <input
+            type="checkbox"
+            checked={refinement.peerReviewedOnly}
+            onChange={(e) => onRefinement((r) => ({ ...r, peerReviewedOnly: e.target.checked }))}
+            className="h-4 w-4 rounded"
+            style={{ accentColor: "rgb(var(--accent))" }}
+          />
+          Peer-reviewed only
+          {peerCount > 0 && <span className="text-xs tabular-nums text-subtle">({peerCount})</span>}
         </label>
       </section>
 

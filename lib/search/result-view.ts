@@ -133,14 +133,32 @@ export interface Refinement {
   /** Keep only papers from or about this country. */
   localTo: string | null;
   minCitations: number;
+  /** Hide retracted papers and expressions of concern. */
+  hideRetracted: boolean;
+  /** Hide records explicitly marked as preprints. */
+  peerReviewedOnly: boolean;
 }
 
-export const NO_REFINEMENT: Refinement = { types: new Set(), localTo: null, minCitations: 0 };
+export const NO_REFINEMENT: Refinement = {
+  types: new Set(),
+  localTo: null,
+  minCitations: 0,
+  hideRetracted: false,
+  peerReviewedOnly: false,
+};
 
 /** True if any refinement is set. */
-export const isRefined = (r: Refinement) => r.types.size > 0 || r.localTo !== null || r.minCitations > 0;
+export const isRefined = (r: Refinement) =>
+  r.types.size > 0 || r.localTo !== null || r.minCitations > 0 || r.hideRetracted || r.peerReviewedOnly;
 
-/** Narrow a result list by record type, country and citations. */
+/** A record is treated as peer-reviewed unless a source explicitly says it is a preprint. */
+export function isPeerReviewed(p: Paper): boolean {
+  if (p.preprint === true) return false;
+  const types = recordTypes(p);
+  return !(types.has("preprint") && !types.has("journal"));
+}
+
+/** Narrow a result list by record type, country, citations and integrity. */
 export function refine(papers: Paper[], r: Refinement): Paper[] {
   return papers.filter((p) => {
     if (r.types.size > 0) {
@@ -149,6 +167,8 @@ export function refine(papers: Paper[], r: Refinement): Paper[] {
     }
     if (r.localTo && !looksLocal(p, r.localTo)) return false;
     if (r.minCitations > 0 && (p.citedByCount ?? 0) < r.minCitations) return false;
+    if (r.hideRetracted && (p.retracted === true || p.concern === true)) return false;
+    if (r.peerReviewedOnly && !isPeerReviewed(p)) return false;
     return true;
   });
 }

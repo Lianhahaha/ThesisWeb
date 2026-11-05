@@ -56,4 +56,16 @@ describe("refine", () => {
   it("applies a citation floor", () => {
     expect(refine(all, { ...NO_REFINEMENT, minCitations: 50 })).toEqual([preprint]);
   });
+
+  it("hides retracted papers and expressions of concern", () => {
+    const retracted = paper({ preprint: false, retracted: true, title: "Withdrawn" });
+    const concern = paper({ preprint: false, concern: true, title: "Flagged" });
+    expect(refine([...all, retracted, concern], { ...NO_REFINEMENT, hideRetracted: true })).toEqual(all);
+  });
+
+  it("keeps peer-reviewed records and hides explicit preprints", () => {
+    const journalPreprint = paper({ preprint: true, type: "article", sources: ["openalex"] });
+    expect(refine(all, { ...NO_REFINEMENT, peerReviewedOnly: true })).toEqual([thesis, article]);
+    expect(refine([journalPreprint], { ...NO_REFINEMENT, peerReviewedOnly: true })).toEqual([]);
+  });
 });
