@@ -1,4 +1,295 @@
 {
-  "checkedAt": null,
-  "results": []
+  "checkedAt": "2026-11-05T14:09:07.285Z",
+  "results": [
+    {
+      "id": "openalex",
+      "status": "working",
+      "count": 8
+    },
+    {
+      "id": "crossref",
+      "status": "working",
+      "count": 10
+    },
+    {
+      "id": "semanticscholar",
+      "status": "working",
+      "count": 10
+    },
+    {
+      "id": "doaj",
+      "status": "working",
+      "count": 10
+    },
+    {
+      "id": "europepmc",
+      "status": "working",
+      "count": 10
+    },
+    {
+      "id": "pubmed",
+      "status": "working",
+      "count": 10
+    },
+    {
+      "id": "arxiv",
+      "status": "working",
+      "count": 10
+    },
+    {
+      "id": "eric",
+      "status": "working",
+      "count": 10
+    },
+    {
+      "id": "zenodo",
+      "status": "working",
+      "count": 10
+    },
+    {
+      "id": "hal",
+      "status": "working",
+      "count": 10
+    },
+    {
+      "id": "openaire",
+      "status": "working",
+      "count": 10
+    },
+    {
+      "id": "inspire",
+      "status": "working",
+      "count": 10
+    },
+    {
+      "id": "plos",
+      "status": "working",
+      "count": 10
+    },
+    {
+      "id": "datacite",
+      "status": "working",
+      "count": 10
+    },
+    {
+      "id": "osti",
+      "status": "working",
+      "count": 10
+    },
+    {
+      "id": "cinii",
+      "status": "skipped",
+      "detail": "CINII_APP_ID not configured"
+    },
+    {
+      "id": "jstage",
+      "status": "working",
+      "count": 10
+    },
+    {
+      "id": "figshare",
+      "status": "working",
+      "count": 10
+    },
+    {
+      "id": "worldbank",
+      "status": "working",
+      "count": 10
+    },
+    {
+      "id": "cgspace",
+      "status": "working",
+      "count": 10
+    },
+    {
+      "id": "idrc",
+      "status": "working",
+      "count": 10
+    },
+    {
+      "id": "pmc",
+      "status": "working",
+      "count": 10
+    },
+    {
+      "id": "ntrs",
+      "status": "working",
+      "count": 10
+    },
+    {
+      "id": "econbiz",
+      "status": "working",
+      "count": 10
+    },
+    {
+      "id": "usgs",
+      "status": "working",
+      "count": 10
+    },
+    {
+      "id": "ieee",
+      "status": "unavailable",
+      "detail": "IEEE Xplore rejected the key (inactive). Register a new key at developer.ieee.org."
+    },
+    {
+      "id": "gbif",
+      "status": "working",
+      "count": 10
+    },
+    {
+      "id": "lareferencia",
+      "status": "working",
+      "count": 10
+    },
+    {
+      "id": "bdtd",
+      "status": "working",
+      "count": 10
+    },
+    {
+      "id": "thesesfr",
+      "status": "unavailable",
+      "detail": "fetch failed"
+    },
+    {
+      "id": "osf",
+      "status": "working",
+      "count": 10
+    },
+    {
+      "id": "seafdec",
+      "status": "working",
+      "count": 10
+    },
+    {
+      "id": "ssoar",
+      "status": "working",
+      "count": 10
+    },
+    {
+      "id": "who",
+      "status": "working",
+      "count": 10
+    },
+    {
+      "id": "nber",
+      "status": "working",
+      "count": 10
+    },
+    {
+      "id": "openlibrary",
+      "status": "working",
+      "count": 10
+    },
+    {
+      "id": "googlebooks",
+      "status": "skipped",
+      "detail": "GOOGLE_BOOKS_API_KEY not configured"
+    },
+    {
+      "id": "core",
+      "status": "skipped",
+      "detail": "CORE_API_KEY not configured"
+    },
+    {
+      "id": "ntu",
+      "status": "working",
+      "count": 10
+    },
+    {
+      "id": "upspace",
+      "status": "working",
+      "count": 10
+    },
+    {
+      "id": "upou",
+      "status": "working",
+      "count": 10
+    },
+    {
+      "id": "upv",
+      "status": "working",
+      "count": 10
+    },
+    {
+      "id": "philjournals",
+      "status": "working",
+      "count": 9
+    },
+    {
+      "id": "pej",
+      "status": "working",
+      "count": 10
+    },
+    {
+      "id": "ajol",
+      "status": "working",
+      "count": 10
+    },
+    {
+      "id": "ncjrs",
+      "status": "working",
+      "count": 10
+    },
+    {
+      "id": "herdin",
+      "status": "working",
+      "count": 10
+    },
+    {
+      "id": "serpp",
+      "status": "working",
+      "count": 10
+    },
+    {
+      "id": "krishikosh",
+      "status": "working",
+      "count": 10
+    },
+    {
+      "id": "upd",
+      "status": "working",
+      "count": 10
+    },
+    {
+      "id": "aiias",
+      "status": "working",
+      "count": 10
+    },
+    {
+      "id": "actamedica",
+      "status": "working",
+      "count": 10
+    },
+    {
+      "id": "pnu",
+      "status": "working",
+      "count": 10
+    },
+    {
+      "id": "ejournalsph",
+      "status": "working",
+      "count": 10
+    },
+    {
+      "id": "saliksik",
+      "status": "working",
+      "count": 10
+    },
+    {
+      "id": "pcaarrd",
+      "status": "working",
+      "count": 10
+    },
+    {
+      "id": "scielo",
+      "status": "unavailable",
+      "detail": "HTTP 403"
+    },
+    {
+      "id": "persee",
+      "status": "working",
+      "count": 10
+    }
+  ]
 }
