@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { FileText, ExternalLink, Quote, Check } from "lucide-react";
+import { FileText, ExternalLink, Quote, Check, Flag } from "lucide-react";
 import type { Paper } from "@/lib/types";
 import { truncate } from "@/lib/utils";
 import { SaveButton } from "@/components/SaveButton";
@@ -179,6 +179,14 @@ export function PaperCard({ paper, showScore, refNum, isNew }: Props) {
               <Quote className="h-3.5 w-3.5" aria-hidden />
               Copy
             </button>
+            <Link
+              href={`/suggestions?kind=problem&about=${encodeURIComponent(`/paper/${paper.id}`)}`}
+              className="btn-ghost btn-sm"
+              title="Report wrong metadata, a broken link, or another problem with this record"
+            >
+              <Flag className="h-3.5 w-3.5" aria-hidden />
+              Report
+            </Link>
           </div>
         </div>
       </div>
