@@ -64,7 +64,13 @@ export async function searchEuropePMC(
   // A real response always has `resultList`; retry once, then report an error
   // rather than silently showing the source as "empty".
   async function fetchOnce() {
-    const res = await fetchWithTimeout(`${BASE}?${params}`);
+    // Europe PMC sometimes takes 10-12 s on a cold query, and occasionally
+    // answers 503 while its index reloads. One short retry covers that.
+    let res = await fetchWithTimeout(`${BASE}?${params}`, {}, 15000);
+    if (res.status === 429 || res.status === 503) {
+      await sleep(1500);
+      res = await fetchWithTimeout(`${BASE}?${params}`, {}, 15000);
+    }
     if (!res.ok) throw new Error(`EuropePMC ${res.status}`);
     return readJson<{ resultList?: { result?: EPMCResult[] } }>(res);
   }

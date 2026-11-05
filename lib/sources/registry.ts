@@ -74,13 +74,15 @@ export const ADAPTERS: Record<SourceId, AdapterEntry> = {
   // Retries through 429s from its shared public pool, so it needs extra room.
   semanticscholar: { run: searchSemanticScholar, boolean: false, deadlineMs: 16000 },
   doaj:            { run: searchDoaj, boolean: true },
-  europepmc:       { run: searchEuropePMC, boolean: true },
+  // The EBI endpoint can take 10-12 s on a cold query.
+  europepmc:       { run: searchEuropePMC, boolean: true, deadlineMs: 18000 },
   pubmed:          { run: searchPubMed, boolean: true },
   arxiv:           { run: searchArxiv, boolean: true },
   eric:            { run: searchEric, boolean: false },
   zenodo:          { run: searchZenodo, boolean: false },
   hal:             { run: searchHal, boolean: false },
-  openaire:        { run: searchOpenAire, boolean: false },
+  // The Graph API can take 8-12 s when its index is busy.
+  openaire:        { run: searchOpenAire, boolean: false, deadlineMs: 18000 },
   inspire:         { run: searchInspire, boolean: false },
   plos:            { run: searchPlos, boolean: false },
   datacite:        { run: searchDataCite, boolean: false },
@@ -122,13 +124,15 @@ export const ADAPTERS: Record<SourceId, AdapterEntry> = {
   // Search page, then one small journal page per unique journal for its title.
   ajol:            { run: searchAjol, boolean: false, deadlineMs: 18000 },
   ncjrs:           { run: searchNcjrs, boolean: false, country: "United States" },
-  herdin:          { run: searchHerdin, boolean: false, country: "Philippines" },
+  // A scraped page that is sometimes slow (8-12 s).
+  herdin:          { run: searchHerdin, boolean: false, country: "Philippines", deadlineMs: 22000 },
   serpp:           { run: searchSerpp, boolean: false, country: "Philippines" },
   krishikosh:      { run: searchKrishikosh, boolean: false, country: "India" },
   // A form POST, then up to three AJAX pages, so it needs extra room.
   upd:             { run: searchUpd, boolean: false, country: "Philippines", deadlineMs: 16000 },
   aiias:           { run: searchAiias, boolean: false, country: "Philippines" },
-  actamedica:      { run: searchActaMedica, boolean: false, country: "Philippines" },
+  // Slow OJS server; the adapter itself also allows 16 s.
+  actamedica:      { run: searchActaMedica, boolean: false, country: "Philippines", deadlineMs: 18000 },
   pnu:             { run: searchPnu, boolean: false, country: "Philippines" },
   // A list page, then one article page per result, so it needs extra room.
   ejournalsph:     { run: searchEjournalsPh, boolean: false, country: "Philippines", deadlineMs: 16000 },

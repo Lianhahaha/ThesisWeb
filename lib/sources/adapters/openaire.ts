@@ -42,7 +42,7 @@ export async function searchOpenAire(query: string, opts: AdapterOptions = {}): 
   if (fromYear && fromYear > 0) params.set("fromPublicationDate", `${fromYear}-01-01`);
   if (openAccessOnly) params.set("bestOpenAccessRightLabel", "OPEN");
 
-  const res = await fetchWithTimeout(`${BASE}?${params}`, { headers: { "User-Agent": USER_AGENT } });
+  const res = await fetchWithTimeout(`${BASE}?${params}`, { headers: { "User-Agent": USER_AGENT } }, 15000);
   if (!res.ok) throw new Error(`OpenAIRE ${res.status}`);
   const data = await readJson<{ results?: Product[] | null }>(res);
 

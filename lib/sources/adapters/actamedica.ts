@@ -10,4 +10,6 @@ export const searchActaMedica = ojsAdapter({
   id: "actamedica",
   searchUrl: "https://actamedicaphilippina.upm.edu.ph/index.php/acta/search",
   publisher: "Acta Medica Philippina",
+  // The journal's OJS server is slow; the default 10 s cut it off.
+  timeoutMs: 16000,
 });

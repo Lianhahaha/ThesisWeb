@@ -102,7 +102,8 @@ export async function searchHerdin(query: string, opts: AdapterOptions = {}): Pr
     start: "0",
   });
 
-  const res = await fetchWithTimeout(`${BASE}/index.php?${params}`, { headers: { "User-Agent": USER_AGENT } }, 10000);
+  // Usually 8-12 s, but the server occasionally takes 15-18 s.
+  const res = await fetchWithTimeout(`${BASE}/index.php?${params}`, { headers: { "User-Agent": USER_AGENT } }, 20000);
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
   const html = await res.text();
   // A changed page layout should show up as a failed source, not as "no results".
