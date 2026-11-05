@@ -82,6 +82,18 @@ export default function DatabasesPage() {
         </dl>
       </section>
 
+      <section className="panel mb-8" aria-labelledby="coverage-h">
+        <h2 id="coverage-h" className="text-lg">Coverage and reliability</h2>
+        <p className="mt-1 text-sm text-muted">
+          Breadth is not completeness. These {SOURCE_COUNT} sources are searched together, but no
+          search here is a systematic review. Metadata varies by database, and local repositories
+          change most often. Open the record page when a year, author or venue matters. Some
+          sources have free API limits or occasional outages; the daily health check catches
+          breakage, and the other sources keep working.{" "}
+          <Link href="/about" className="text-accent underline">Read the full limitations</Link>.
+        </p>
+      </section>
+
       {groups.map(({ field, list }) => (
         <section key={field} className="mb-8" aria-labelledby={`field-${field}`}>
           <h2 id={`field-${field}`} className="text-xl">

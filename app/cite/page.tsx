@@ -88,6 +88,10 @@ export default function CitePage() {
         <p className="mt-2 text-muted">
           Paste DOIs, get references in APA, MLA, IEEE or Chicago. Save any of them to your library.
         </p>
+        <p className="notice notice-info mt-4 text-sm">
+          These citations are generated from publisher metadata. Read the paper and check your
+          school&apos;s style guide before submitting; a generator is not a substitute for the source.
+        </p>
       </header>
 
       <form onSubmit={onSubmit} className="panel">

@@ -236,7 +236,10 @@ export default function SearchPage() {
             <Link href="/databases" className="underline decoration-dotted underline-offset-2 hover:text-text">
               {SOURCE_COUNT} free databases
             </Link>
-            , searched together and ranked by relevance.
+            , searched together and ranked by word match — not by quality.{" "}
+            <Link href="/about#search-results-are-candidates-not-a-reading-list" className="underline decoration-dotted underline-offset-2 hover:text-text">
+              How ranking works
+            </Link>
           </p>
         </header>
 

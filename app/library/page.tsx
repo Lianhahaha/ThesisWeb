@@ -278,9 +278,9 @@ export default function LibraryPage() {
       {!user && total > 0 && (
         <p className="notice notice-info mb-4">
           You are not signed in, so these papers live only in this browser. Clearing site data
-          deletes them. <Link href="/login" className="text-accent underline">Sign in</Link>{" "}
-          to keep
-          them on every device.
+          deletes them. <Link href="/login" className="text-accent underline">Sign in</Link> to keep
+          them on every device, or <Link href="/settings" className="text-accent underline">download a backup</Link>{" "}
+          before clearing browser data.
         </p>
       )}
 
