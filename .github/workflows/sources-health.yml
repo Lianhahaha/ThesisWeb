@@ -1,4 +1,4 @@
-# Every morning, ask each of the 50 databases about a topic it certainly
+# Every morning, ask each of the 57 databases about a topic it certainly
 # holds (tests/live/sources.test.ts). A database that fails or suddenly finds
 # nothing (often a site that changed its pages, which breaks a scraper) fails
 # this run, and GitHub emails the repository owner. Run it by hand from the
@@ -12,6 +12,9 @@ on:
   schedule:
     - cron: "0 22 * * *" # 06:00 in the Philippines
   workflow_dispatch:
+
+permissions:
+  contents: write
 
 jobs:
   live:
@@ -34,3 +37,16 @@ jobs:
           CINII_APP_ID: ${{ secrets.CINII_APP_ID }}
           IEEE_XPLORE_API_KEY: ${{ secrets.IEEE_XPLORE_API_KEY }}
           UNPAYWALL_EMAIL: ${{ secrets.UNPAYWALL_EMAIL }}
+          HEALTH_OUTPUT: public/source-health.json
+      - name: Save health report
+        if: always()
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add public/source-health.json
+          if git diff --cached --quiet; then
+            echo "No health changes to commit."
+            exit 0
+          fi
+          git commit -m "chore(status): update database health"
+          git push

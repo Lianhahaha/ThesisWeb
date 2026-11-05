@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { sourceLabel } from "@/lib/sources/meta";
 
 interface Health {
   status: string;
@@ -8,6 +9,36 @@ interface Health {
   sources: number;
   configured: Record<string, boolean>;
 }
+
+interface SourceHealth {
+  id: string;
+  status: "working" | "empty" | "unavailable" | "failed" | "skipped" | "not-run";
+  count?: number;
+  detail?: string;
+}
+
+interface HealthReport {
+  checkedAt: string | null;
+  results: SourceHealth[];
+}
+
+const STATUS_LABEL: Record<SourceHealth["status"], string> = {
+  working: "working",
+  empty: "no results",
+  unavailable: "unavailable",
+  failed: "failed",
+  skipped: "not configured",
+  "not-run": "not checked",
+};
+
+const STATUS_WEIGHT: Record<SourceHealth["status"], number> = {
+  failed: 0,
+  unavailable: 1,
+  empty: 2,
+  "not-run": 3,
+  skipped: 4,
+  working: 5,
+};
 
 const LABELS: Record<string, string> = {
   openalex: "OpenAlex key",
@@ -22,15 +53,20 @@ const LABELS: Record<string, string> = {
 
 export function StatusClient() {
   const [health, setHealth] = useState<Health | null>(null);
+  const [report, setReport] = useState<HealthReport | null>(null);
   const [failed, setFailed] = useState(false);
   const [checking, setChecking] = useState(false);
 
   const check = useCallback(async () => {
     setChecking(true);
     try {
-      const res = await fetch("/api/health", { cache: "no-store" });
+      const [res, reportRes] = await Promise.all([
+        fetch("/api/health", { cache: "no-store" }),
+        fetch("/source-health.json", { cache: "no-store" }),
+      ]);
       if (!res.ok) throw new Error("health check failed");
       setHealth((await res.json()) as Health);
+      if (reportRes.ok) setReport((await reportRes.json()) as HealthReport);
       setFailed(false);
     } catch {
       setFailed(true);
@@ -84,6 +120,56 @@ export function StatusClient() {
         Individual databases are checked daily by GitHub Actions. A missing key means that source
         is skipped or falls back to its anonymous limit; the rest of the app still works.
       </p>
+
+      <section className="mt-6 border-t border-border pt-4" aria-labelledby="db-health-h">
+        <div className="flex flex-wrap items-baseline justify-between gap-2">
+          <h2 id="db-health-h" className="font-semibold">Database health</h2>
+          <span className="text-xs text-subtle">
+            {report?.checkedAt
+              ? `Last checked ${new Date(report.checkedAt).toLocaleString("en-PH")}`
+              : "No daily report yet"}
+          </span>
+        </div>
+
+        {!report?.checkedAt || report.results.length === 0 ? (
+          <p className="mt-2 text-sm text-muted">
+            The first automated check will appear after the next scheduled run.
+          </p>
+        ) : (
+          <>
+            <p className="mt-1 text-sm text-muted">
+              {report.results.filter((r) => r.status === "working").length} working,{" "}
+              {report.results.filter((r) => r.status === "unavailable").length} unavailable,{" "}
+              {report.results.filter((r) => r.status === "skipped").length} without a key.
+            </p>
+            <ul className="mt-3 grid gap-1.5 text-sm sm:grid-cols-2">
+              {[...report.results]
+                .sort((a, b) => STATUS_WEIGHT[a.status] - STATUS_WEIGHT[b.status])
+                .map((item) => (
+                  <li
+                    key={item.id}
+                    className="flex items-center justify-between gap-3 border-b border-border pb-1"
+                    title={item.detail}
+                  >
+                    <span className="truncate text-muted">{sourceLabel(item.id)}</span>
+                    <span
+                      className={
+                        item.status === "working"
+                          ? "text-ok"
+                          : item.status === "failed" || item.status === "unavailable"
+                          ? "text-danger"
+                          : "text-subtle"
+                      }
+                    >
+                      {STATUS_LABEL[item.status]}
+                      {item.status === "working" && item.count != null ? ` (${item.count})` : ""}
+                    </span>
+                  </li>
+                ))}
+            </ul>
+          </>
+        )}
+      </section>
     </div>
   );
 }

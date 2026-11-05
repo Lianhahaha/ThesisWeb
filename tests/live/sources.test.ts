@@ -1,5 +1,7 @@
 /// <reference types="vite/client" />
-import { describe, expect, it } from "vitest";
+import { afterAll, describe, expect, it } from "vitest";
+import { mkdirSync, writeFileSync } from "node:fs";
+import { dirname, resolve } from "node:path";
 import { ADAPTERS } from "@/lib/sources/registry";
 import { normalizePaper } from "@/lib/sources/normalize";
 import type { SourceId } from "@/lib/sources/meta";
@@ -32,6 +34,20 @@ if (!process.env.CORE_API_KEY) SKIP.core = "CORE_API_KEY not configured";
  */
 const TRANSIENT = /rate limited|429|403|\b5\d\d\b|timed out|timeout|fetch failed|ECONN|ENOTFOUND|EAI_AGAIN|socket|network|inactive|rejected the key|not active|not configured/i;
 
+type HealthStatus = "working" | "empty" | "unavailable" | "failed" | "skipped" | "not-run";
+const health = new Map<SourceId, { status: HealthStatus; count?: number; detail?: string }>();
+for (const id of Object.keys(ADAPTERS) as SourceId[]) health.set(id, { status: "not-run" });
+for (const [id, detail] of Object.entries(SKIP) as [SourceId, string][]) health.set(id, { status: "skipped", detail });
+
+afterAll(() => {
+  const output = process.env.HEALTH_OUTPUT;
+  if (!LIVE || !output) return;
+  const path = resolve(process.cwd(), output);
+  const results = [...health.entries()].map(([id, result]) => ({ id, ...result }));
+  mkdirSync(dirname(path), { recursive: true });
+  writeFileSync(path, `${JSON.stringify({ checkedAt: new Date().toISOString(), results }, null, 2)}\n`);
+});
+
 /** A topic each database holds plenty of. Typed over every source, so a new one needs a probe. */
 const PROBES: Record<SourceId, string> = {
   openalex: "climate change", crossref: "climate change", semanticscholar: "climate change", doaj: "teacher education",
@@ -61,9 +77,11 @@ describe.skipIf(!LIVE)(QUERY ? `live sources: "${QUERY}"` : "live sources: probe
       } catch (e) {
         const message = e instanceof Error ? e.message : String(e);
         if (TRANSIENT.test(message)) {
+          health.set(id, { status: "unavailable", detail: message });
           console.warn(`${id}: unavailable (${message})`);
           return;
         }
+        health.set(id, { status: "failed", detail: message });
         throw e;
       }
       expect(Array.isArray(papers)).toBe(true);
@@ -71,6 +89,7 @@ describe.skipIf(!LIVE)(QUERY ? `live sources: "${QUERY}"` : "live sources: probe
         expect(normalizePaper(p, id), `${id} returned a record with no title`).not.toBeNull();
         expect(p.sources).toContain(id);
       }
+      health.set(id, { status: papers.length > 0 ? "working" : "empty", count: papers.length });
       if (!QUERY) expect(papers.length, `${id} found nothing for "${PROBES[id]}"; has its site changed?`).toBeGreaterThan(0);
       console.log(`${id}: ${papers.length} papers`);
     });
