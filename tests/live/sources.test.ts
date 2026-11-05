@@ -26,6 +26,7 @@ const SKIP: Partial<Record<SourceId, string>> = {};
 if (!process.env.IEEE_XPLORE_API_KEY) SKIP.ieee = "IEEE_XPLORE_API_KEY not configured";
 if (!process.env.CINII_APP_ID) SKIP.cinii = "CINII_APP_ID not configured";
 if (!process.env.CORE_API_KEY) SKIP.core = "CORE_API_KEY not configured";
+if (!process.env.GOOGLE_BOOKS_API_KEY) SKIP.googlebooks = "GOOGLE_BOOKS_API_KEY not configured";
 
 /**
  * A rate limit, anti-bot block, timeout or outage is not an adapter bug. It is
@@ -59,6 +60,7 @@ const PROBES: Record<SourceId, string> = {
   gbif: "biodiversity", lareferencia: "educación", bdtd: "educação", thesesfr: "climat", osf: "psychology",
   seafdec: "shrimp", ssoar: "migration", who: "dengue", nber: "inflation", openlibrary: "statistics",
   core: "climate change", ntu: "engineering", upspace: "education", upou: "distance education", upv: "fisheries",
+  googlebooks: "education",
   herdin: "dengue", serpp: "poverty", krishikosh: "rice", upd: "education",
   aiias: "education", actamedica: "dengue", pnu: "teachers", ejournalsph: "education",
   saliksik: "education", pcaarrd: "rice", scielo: "education", persee: "education",

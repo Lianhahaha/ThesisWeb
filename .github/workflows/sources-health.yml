@@ -34,6 +34,7 @@ jobs:
           SEMANTIC_SCHOLAR_API_KEY: ${{ secrets.SEMANTIC_SCHOLAR_API_KEY }}
           NCBI_API_KEY: ${{ secrets.NCBI_API_KEY }}
           CORE_API_KEY: ${{ secrets.CORE_API_KEY }}
+          GOOGLE_BOOKS_API_KEY: ${{ secrets.GOOGLE_BOOKS_API_KEY }}
           CINII_APP_ID: ${{ secrets.CINII_APP_ID }}
           IEEE_XPLORE_API_KEY: ${{ secrets.IEEE_XPLORE_API_KEY }}
           UNPAYWALL_EMAIL: ${{ secrets.UNPAYWALL_EMAIL }}

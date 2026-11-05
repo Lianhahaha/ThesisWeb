@@ -43,6 +43,7 @@ const STATUS_WEIGHT: Record<SourceHealth["status"], number> = {
 const LABELS: Record<string, string> = {
   openalex: "OpenAlex key",
   semanticScholar: "Semantic Scholar key",
+  googleBooks: "Google Books key",
   core: "CORE key",
   ieee: "IEEE Xplore key",
   cinii: "CiNii Application ID",

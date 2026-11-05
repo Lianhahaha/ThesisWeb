@@ -36,6 +36,7 @@ import { searchSsoar } from "@/lib/sources/adapters/ssoar";
 import { searchWho } from "@/lib/sources/adapters/who";
 import { searchNber } from "@/lib/sources/adapters/nber";
 import { searchOpenLibrary } from "@/lib/sources/adapters/openlibrary";
+import { searchGoogleBooks } from "@/lib/sources/adapters/googlebooks";
 import { searchCore } from "@/lib/sources/adapters/core";
 import { searchNtu } from "@/lib/sources/adapters/ntu";
 import { searchUpspace } from "@/lib/sources/adapters/upspace";
@@ -112,6 +113,7 @@ export const ADAPTERS: Record<SourceId, AdapterEntry> = {
   who:             { run: searchWho, boolean: false, deadlineMs: 16000 },
   nber:            { run: searchNber, boolean: false },
   openlibrary:     { run: searchOpenLibrary, boolean: false },
+  googlebooks:     { run: searchGoogleBooks, boolean: false },
   core:            { run: searchCore, boolean: true },
   ntu:             { run: searchNtu, boolean: false, country: "Singapore" },
   upspace:         { run: searchUpspace, boolean: false, country: "South Africa" },

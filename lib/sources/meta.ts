@@ -192,6 +192,10 @@ const META = {
     label: "Open Library", blurb: "30M+ books from library catalogues, for the textbooks and monographs an RRL cites; public-domain scans free to read (Internet Archive)", color: "#e1a95f",
     region: "Global (Internet Archive)", fields: ["all"], kind: "books", url: "https://openlibrary.org",
   },
+  googlebooks: {
+    label: "Google Books", blurb: "Books, textbooks and monographs across every field, with previews where the publisher allows them", color: "#4285f4",
+    region: "Global", fields: ["all"], kind: "books", url: "https://books.google.com",
+  },
   core: {
     label: "CORE", blurb: "300M+ open-access papers harvested from 10,000+ university repositories and journals worldwide, incl. Philippine ones (Open University & Jisc, UK)", color: "#b75400",
     region: "Global (UK)", fields: ["all"], kind: "index", url: "https://core.ac.uk",

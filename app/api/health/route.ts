@@ -18,6 +18,7 @@ export async function GET() {
       configured: {
         openalex: Boolean(process.env.OPENALEX_API_KEY),
         semanticScholar: Boolean(process.env.SEMANTIC_SCHOLAR_API_KEY),
+        googleBooks: Boolean(process.env.GOOGLE_BOOKS_API_KEY),
         core: Boolean(process.env.CORE_API_KEY),
         ieee: Boolean(process.env.IEEE_XPLORE_API_KEY),
         cinii: Boolean(process.env.CINII_APP_ID),
