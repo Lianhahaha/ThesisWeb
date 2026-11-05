@@ -1,10 +1,10 @@
 {
-  "checkedAt": "2026-11-05T14:09:07.285Z",
+  "checkedAt": "2026-11-05T14:34:27.455Z",
   "results": [
     {
       "id": "openalex",
       "status": "working",
-      "count": 8
+      "count": 10
     },
     {
       "id": "crossref",
@@ -183,8 +183,8 @@
     },
     {
       "id": "googlebooks",
-      "status": "skipped",
-      "detail": "GOOGLE_BOOKS_API_KEY not configured"
+      "status": "working",
+      "count": 10
     },
     {
       "id": "core",
