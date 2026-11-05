@@ -41,8 +41,8 @@ import { searchNtu } from "@/lib/sources/adapters/ntu";
 import { searchUpspace } from "@/lib/sources/adapters/upspace";
 import { searchUpou } from "@/lib/sources/adapters/upou";
 import { searchUpv } from "@/lib/sources/adapters/upv";
-import { searchWvsu } from "@/lib/sources/adapters/wvsu";
-import { searchThaijo } from "@/lib/sources/adapters/thaijo";
+import { searchPhilsci } from "@/lib/sources/adapters/philsci";
+import { searchPhileng } from "@/lib/sources/adapters/phileng";
 import { searchHerdin } from "@/lib/sources/adapters/herdin";
 import { searchSerpp } from "@/lib/sources/adapters/serpp";
 import { searchKrishikosh } from "@/lib/sources/adapters/krishikosh";
@@ -113,9 +113,9 @@ export const ADAPTERS: Record<SourceId, AdapterEntry> = {
   upspace:         { run: searchUpspace, boolean: false, country: "South Africa" },
   upou:            { run: searchUpou, boolean: false, country: "Philippines" },
   upv:             { run: searchUpv, boolean: false, country: "Philippines" },
-  wvsu:            { run: searchWvsu, boolean: false, country: "Philippines" },
-  // The ThaiJO search endpoint is often slow (8-12 s); give it more room.
-  thaijo:          { run: searchThaijo, boolean: false, country: "Thailand", deadlineMs: 18000 },
+  // Crossref journal subsets: DOI-backed records, so the source is verifiable.
+  philsci:         { run: searchPhilsci, boolean: false, country: "Philippines" },
+  phileng:         { run: searchPhileng, boolean: false, country: "Philippines" },
   herdin:          { run: searchHerdin, boolean: false, country: "Philippines" },
   serpp:           { run: searchSerpp, boolean: false, country: "Philippines" },
   krishikosh:      { run: searchKrishikosh, boolean: false, country: "India" },

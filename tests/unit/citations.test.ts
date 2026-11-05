@@ -99,7 +99,7 @@ describe("formatCitation by record type", () => {
   });
 
   it("guesses a thesis from its database when the record has no type", () => {
-    const p = paper({ type: undefined, venue: "West Visayas State University", sources: ["wvsu"], publisher: null, doi: null });
+    const p = paper({ type: undefined, venue: "West Visayas State University", sources: ["upd"], publisher: null, doi: null });
     expect(text(p, "apa")).toContain("[Thesis, West Visayas State University]");
   });
 

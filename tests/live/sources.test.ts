@@ -43,9 +43,10 @@ const PROBES: Record<SourceId, string> = {
   gbif: "biodiversity", lareferencia: "educación", bdtd: "educação", thesesfr: "climat", osf: "psychology",
   seafdec: "shrimp", ssoar: "migration", who: "dengue", nber: "inflation", openlibrary: "statistics",
   core: "climate change", ntu: "engineering", upspace: "education", upou: "distance education", upv: "fisheries",
-  wvsu: "teachers", thaijo: "nursing", herdin: "dengue", serpp: "poverty", krishikosh: "rice", upd: "education",
+  herdin: "dengue", serpp: "poverty", krishikosh: "rice", upd: "education",
   aiias: "education", actamedica: "dengue", pnu: "teachers", ejournalsph: "education",
   saliksik: "education", pcaarrd: "rice", scielo: "education", persee: "education",
+  philsci: "engineering", phileng: "engineering",
 };
 
 describe.skipIf(!LIVE)(QUERY ? `live sources: "${QUERY}"` : "live sources: probe topics", () => {

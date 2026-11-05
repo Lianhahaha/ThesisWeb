@@ -212,13 +212,13 @@ const META = {
     label: "UP Visayas", blurb: "UP Visayas theses and research: fisheries, ocean sciences, aquaculture, food science, management, social sciences", color: "#014421",
     region: "Philippines", fields: ["agriculture", "sciences", "social", "business"], kind: "repository", url: "https://repository.upv.edu.ph",
   },
-  wvsu: {
-    label: "WVSU Repository", blurb: "West Visayas State University theses and dissertations: education, nursing, management, public administration", color: "#0a3d91",
-    region: "Philippines", fields: ["education", "medicine", "business", "social"], kind: "theses", url: "https://repository.wvsu.edu.ph",
+  philsci: {
+    label: "Philippine Journal of Science", blurb: "The Philippines' oldest science journal, from DOST-STII: peer-reviewed science and engineering research with DOI-backed Crossref metadata", color: "#0b6e4f",
+    region: "Philippines", fields: ["sciences", "engineering", "agriculture"], kind: "journals", url: "https://philjournalsci.dost.gov.ph",
   },
-  thaijo: {
-    label: "ThaiJO (Thailand)", blurb: "1,000+ peer-reviewed Thai journals with English titles and abstracts: health, nursing, education, social sciences, agriculture (TCI)", color: "#241e4e",
-    region: "Thailand", fields: ["medicine", "education", "social", "agriculture", "engineering"], kind: "journals", url: "https://www.tci-thaijo.org",
+  phileng: {
+    label: "Philippine Engineering Journals", blurb: "Philippine engineering and applied-science journals indexed by Crossref: agricultural and biosystems engineering, science and engineering technology, crop science, Philippine science and technology", color: "#1f6f8b",
+    region: "Philippines", fields: ["engineering", "sciences", "agriculture", "computing"], kind: "journals", url: "https://search.crossref.org",
   },
   herdin: {
     label: "HERDIN", blurb: "Philippine national health research registry: journal articles, theses and reports on health research done in the Philippines (DOST-PCHRD)", color: "#00843d",

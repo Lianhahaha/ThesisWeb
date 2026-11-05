@@ -32,13 +32,14 @@ All free; only IEEE Xplore needs a free registration key. The in-app [Databases 
 | SEAFDEC/AQD | Philippine research: aquaculture and fisheries |
 | UP Open University | Philippine theses: online and distance education, development communication, health informatics |
 | UP Visayas | Philippine theses and research: fisheries, ocean sciences, food science, social sciences |
-| WVSU Repository | Philippine theses: education, nursing, management, public administration |
 | UP Diliman | Philippine theses and dissertations from every UP Diliman college, with abstracts |
 | AIIAS Repository | Philippine graduate theses: education, business, public health, nursing, theology |
 | Saliksik (UP Diliman Journals) | Philippine peer-reviewed journals: public administration, social sciences, humanities, education, science |
 | PCAARRD eLibrary | Philippine agriculture, aquatic and natural resources: theses, research papers, books, manuals |
+| Philippine Journal of Science | DOST-STII's peer-reviewed science and engineering journal, DOI-backed through Crossref |
+| Philippine Engineering Journals | Philippine engineering and applied-science journals indexed by Crossref (agricultural and biosystems engineering, science and engineering technology, crop science, Philippine science and technology) |
 | SSOAR | Social sciences, politics, psychology, communication (free full text) |
-| DOAJ, PLOS, J-STAGE, ThaiJO | Peer-reviewed open-access journals (ThaiJO = Thai journals, English abstracts) |
+| DOAJ, PLOS, J-STAGE | Peer-reviewed open-access journals |
 | Philippine E-Journals | Articles from hundreds of Philippine university journals, most with a free PDF |
 | PubMed, PubMed Central, Europe PMC | Medicine, nursing, health, life sciences |
 | HERDIN | Philippine health research: articles, theses and reports (DOST-PCHRD) |
@@ -152,7 +153,7 @@ lib/sources/         the databases (server, except meta.ts)
   adapters/          one file per database
   platforms/         shared clients: dspace7 (World Bank, CGSpace, IDRC, WHO, DR-NTU,
                      UPSpace, UPOU, UPV, Krishikosh, AIIAS), dspace6 (OpenSearch feed:
-                     SEAFDEC/AQD, SSOAR, WVSU), vufind (LA Referencia, BDTD),
+                     SEAFDEC/AQD, SSOAR), vufind (LA Referencia, BDTD),
                      ncbi (PubMed, PMC), ojs (Acta Medica Philippina, PNU)
 lib/search/          search page (browser): params.ts (URL <-> form, shared with
                      the API), rank.ts (merge + rank, shared with the API),

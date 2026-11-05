@@ -30,7 +30,7 @@ describe("looksLocal", () => {
 
   it("works for another country focus", () => {
     expect(looksLocal(paper({ title: "Rural schools in Indonesia" }), "Indonesia")).toBe(true);
-    expect(looksLocal(paper({ sources: ["thaijo"] }), "Thailand")).toBe(true);
+    expect(looksLocal(paper({ title: "Rural schools in Thailand" }), "Thailand")).toBe(true);
   });
 });
 
