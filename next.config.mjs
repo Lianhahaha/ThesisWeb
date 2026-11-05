@@ -11,20 +11,21 @@ const dev = process.env.NODE_ENV !== "production";
 
 const csp = [
   "default-src 'self'",
-  `script-src 'self' 'unsafe-inline'${dev ? " 'unsafe-eval'" : ""} https://apis.google.com https://www.googletagmanager.com https://va.vercel-scripts.com`,
+  `script-src 'self' 'unsafe-inline'${dev ? " 'unsafe-eval'" : ""} https://apis.google.com https://www.googletagmanager.com https://va.vercel-scripts.com https://www.google.com https://www.gstatic.com`,
   "style-src 'self' 'unsafe-inline'",
-  "img-src 'self' data: blob: https://www.google-analytics.com https://www.googletagmanager.com",
+  "img-src 'self' data: blob: https://www.google-analytics.com https://www.googletagmanager.com https://www.google.com https://www.gstatic.com",
   "font-src 'self' data:",
   [
     "connect-src 'self'",
     "https://*.googleapis.com",
     "https://*.google-analytics.com https://*.analytics.google.com https://www.googletagmanager.com https://www.google.com",
+    "https://content-firebaseappcheck.googleapis.com https://firebaseappcheck.googleapis.com https://www.gstatic.com",
     "https://va.vercel-scripts.com",
     ...(emulators || dev ? ["http://127.0.0.1:9099 http://127.0.0.1:8085 ws://127.0.0.1:8085"] : []),
     ...(dev ? ["ws://localhost:*"] : []),
   ].join(" "),
   // Google sign-in runs through an iframe on the Firebase auth domain.
-  "frame-src 'self' https://*.firebaseapp.com https://*.web.app https://accounts.google.com https://apis.google.com",
+  "frame-src 'self' https://*.firebaseapp.com https://*.web.app https://accounts.google.com https://apis.google.com https://www.google.com https://recaptcha.google.com",
   "worker-src 'self' blob:",
   "manifest-src 'self'",
   "object-src 'none'",

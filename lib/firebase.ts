@@ -2,6 +2,7 @@
 
 import { initializeApp, getApps } from "firebase/app";
 import { getAuth, connectAuthEmulator } from "firebase/auth";
+import { initializeAppCheck, ReCaptchaEnterpriseProvider } from "firebase/app-check";
 import {
   getFirestore,
   initializeFirestore,
@@ -25,6 +26,22 @@ const firebaseConfig = {
 
 // Initialize Firebase only once
 export const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
+
+// App Check attests that Firebase requests come from this app, not a script
+// using the (public) Firebase config. Skipped until the reCAPTCHA Enterprise
+// site key is configured, and against the emulators.
+const appCheckSiteKey = process.env.NEXT_PUBLIC_RECAPTCHA_ENTERPRISE_SITE_KEY?.trim();
+if (typeof window !== "undefined" && appCheckSiteKey && process.env.NEXT_PUBLIC_FIREBASE_EMULATORS !== "1") {
+  try {
+    initializeAppCheck(app, {
+      provider: new ReCaptchaEnterpriseProvider(appCheckSiteKey),
+      isTokenAutoRefreshEnabled: true,
+    });
+  } catch {
+    // Hot reload or a second initialization: the first one stays active.
+  }
+}
+
 export const auth = getAuth(app);
 
 // Search results often carry optional fields left undefined (no TL;DR, no

@@ -94,6 +94,7 @@ npm run test:live            # calls every real database once
 | `IEEE_XPLORE_API_KEY` | Optional | Adds IEEE Xplore (engineering and computing). Free at [developer.ieee.org/apps/register](https://developer.ieee.org/apps/register); the key allows 200 calls/day, so responses are cached for 24 h and the source stops when the daily budget is spent. A `403 Developer Inactive` reply means the key is not usable yet: finish the portal registration or get a new key |
 | `NEXT_PUBLIC_SITE_URL` | Optional | The public address used in canonical links, the sitemap and share cards (default `https://thesiswebph.vercel.app`; set it if you move to a custom domain) |
 | `NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION` | Optional | The code from Google Search Console's HTML-tag check, see *Search engines* below |
+| `NEXT_PUBLIC_RECAPTCHA_ENTERPRISE_SITE_KEY` | Optional | Public reCAPTCHA Enterprise site key for Firebase App Check; the app sends App Check tokens with Firebase requests once this is set |
 | `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN` | Optional | Rate limits shared by every server instance (Vercel's Upstash integration sets `KV_REST_API_URL`/`KV_REST_API_TOKEN`, also read) |
 
 **Firebase setup:**
