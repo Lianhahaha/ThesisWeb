@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { fetchWithTimeout } from "@/lib/server/http";
+import { redisPipeline } from "@/lib/server/redis";
 
 /**
  * Rate limiter for the API routes, so one browser or script can't hammer the
@@ -37,21 +37,18 @@ const LIMITS = {
 const GLOBAL_SEARCH: Rule = { limit: 120, windowMs: 60_000 };
 
 function clientIp(req: NextRequest): string {
-  // Vercel sets x-real-ip to the real client. Prefer it: a caller can send
-  // their own x-forwarded-for, and taking its first entry would let them
-  // rotate spoofed addresses to get a fresh rate-limit bucket on every request.
+  // Vercel sanitizes these headers before the function sees them, so a caller
+  // cannot rotate spoofed addresses to get a fresh bucket. Prefer its
+  // single-value headers; the leftmost x-forwarded-for entry is the client.
+  const vercel = req.headers.get("x-vercel-forwarded-for")?.split(",")[0]?.trim();
+  if (vercel) return vercel;
   const real = req.headers.get("x-real-ip")?.trim();
   if (real) return real;
-  const fwd = req.headers.get("x-forwarded-for");
-  return fwd?.split(",").pop()?.trim() || "unknown";
+  const fwd = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim();
+  return fwd || "unknown";
 }
 
 // ─── Shared counters (Upstash Redis, optional) ───────────────────────────────
-
-const REDIS_URL = (process.env.UPSTASH_REDIS_REST_URL || process.env.KV_REST_API_URL || "").trim().replace(/\/$/, "");
-const REDIS_TOKEN = (process.env.UPSTASH_REDIS_REST_TOKEN || process.env.KV_REST_API_TOKEN || "").trim();
-/** Longest a request waits for Redis before counting in memory instead. */
-const REDIS_MS = 800;
 
 /**
  * Seconds until a slot is free for the busiest of `checks`, counted in Redis
@@ -59,20 +56,14 @@ const REDIS_MS = 800;
  * when Redis isn't set up or didn't answer. Counts the request.
  */
 async function sharedWait(checks: [string, Rule][], now: number): Promise<number | null> {
-  if (!REDIS_URL || !REDIS_TOKEN) return null;
   const keys = checks.map(([key, rule]) => `tw:rl:${key}:${Math.floor(now / rule.windowMs)}`);
-  const commands = checks.flatMap(([, rule], i) => [
+  const commands: (string | number)[][] = checks.flatMap(([, rule], i) => [
     ["INCR", keys[i]],
     ["PEXPIRE", keys[i], String(rule.windowMs), "NX"],
   ]);
+  const replies = await redisPipeline(commands, 1200);
+  if (!replies) return null;
   try {
-    const res = await fetchWithTimeout(
-      `${REDIS_URL}/pipeline`,
-      { method: "POST", headers: { Authorization: `Bearer ${REDIS_TOKEN}` }, body: JSON.stringify(commands) },
-      REDIS_MS
-    );
-    if (!res.ok) return null;
-    const replies = (await res.json()) as { result?: unknown }[];
     let wait = 0;
     checks.forEach(([, rule], i) => {
       const count = replies[i * 2]?.result;
@@ -84,7 +75,7 @@ async function sharedWait(checks: [string, Rule][], now: number): Promise<number
     });
     return wait;
   } catch {
-    // Slow, down or misconfigured: never block a student on it.
+    // A malformed reply is as good as no Redis: count in memory instead.
     return null;
   }
 }

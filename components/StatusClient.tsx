@@ -8,6 +8,7 @@ interface Health {
   time: string;
   sources: number;
   configured: Record<string, boolean>;
+  reachable?: Record<string, boolean>;
 }
 
 interface SourceHealth {
@@ -110,12 +111,17 @@ export function StatusClient() {
         {health.sources} databases configured. Checked {new Date(health.time).toLocaleString("en-PH")}.
       </p>
       <dl className="mt-4 grid gap-2 text-sm sm:grid-cols-2">
-        {Object.entries(health.configured).map(([key, ok]) => (
-          <div key={key} className="flex items-center justify-between gap-3 border-b border-border pb-1">
-            <dt className="text-muted">{LABELS[key] ?? key}</dt>
-            <dd className={ok ? "text-ok" : "text-subtle"}>{ok ? "configured" : "not configured"}</dd>
-          </div>
-        ))}
+        {Object.entries(health.configured).map(([key, ok]) => {
+          const unreachable = ok && key === "redis" && health.reachable?.redis === false;
+          return (
+            <div key={key} className="flex items-center justify-between gap-3 border-b border-border pb-1">
+              <dt className="text-muted">{LABELS[key] ?? key}</dt>
+              <dd className={unreachable ? "text-danger" : ok ? "text-ok" : "text-subtle"}>
+                {unreachable ? "unreachable" : ok ? "configured" : "not configured"}
+              </dd>
+            </div>
+          );
+        })}
       </dl>
       <p className="mt-4 text-xs text-subtle">
         Individual databases are checked daily by GitHub Actions. A missing key means that source

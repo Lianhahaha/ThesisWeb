@@ -1,20 +1,24 @@
 import { NextResponse } from "next/server";
 import { SOURCE_COUNT } from "@/lib/sources/meta";
+import { redisConfigured, redisPing } from "@/lib/server/redis";
 
 export const dynamic = "force-dynamic";
 
 /**
  * Lightweight liveness/readiness probe for uptime monitors. It does not call
  * the academic databases (that is the daily GitHub health check); it reports
- * that the app is serving and which optional integrations are configured.
+ * that the app is serving, which optional integrations are configured, and
+ * whether Redis actually answers.
  */
 export async function GET() {
+  const reachable = { redis: redisConfigured ? await redisPing() : false };
   return NextResponse.json(
     {
       status: "ok",
       service: "Thesisweb",
       time: new Date().toISOString(),
       sources: SOURCE_COUNT,
+      reachable,
       configured: {
         openalex: Boolean(process.env.OPENALEX_API_KEY),
         semanticScholar: Boolean(process.env.SEMANTIC_SCHOLAR_API_KEY),

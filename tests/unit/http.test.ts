@@ -1,7 +1,10 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { fetchWithTimeout, readJson, sleep, waitTurn, withAbortSignal } from "@/lib/server/http";
 
-afterEach(() => vi.unstubAllGlobals());
+afterEach(() => {
+  vi.unstubAllGlobals();
+  vi.unstubAllEnvs();
+});
 
 describe("readJson", () => {
   it("parses a JSON body", async () => {
@@ -76,5 +79,19 @@ describe("waitTurn", () => {
     const waiting = withAbortSignal(controller.signal, () => waitTurn("test-slow", 10_000));
     controller.abort(new Error("source timed out"));
     await expect(waiting).rejects.toThrow("source timed out");
+  });
+
+  it("reserves a shared slot with SET NX PX when Redis is configured", async () => {
+    vi.resetModules();
+    vi.stubEnv("UPSTASH_REDIS_REST_URL", "https://redis.example");
+    vi.stubEnv("UPSTASH_REDIS_REST_TOKEN", "token");
+    const fetchMock = vi.fn(async (_url: string, _init: RequestInit) => Response.json([{ result: "OK" }]));
+    vi.stubGlobal("fetch", fetchMock);
+    const shared = await import("@/lib/server/http");
+    await shared.waitTurn("shared-test", 150);
+    const [url, init] = fetchMock.mock.calls[0];
+    expect(url).toBe("https://redis.example/pipeline");
+    const body = JSON.parse(String(init.body)) as string[][];
+    expect(body[0]).toEqual(["SET", "tw:pace:shared-test", expect.any(String), "NX", "PX", "150"]);
   });
 });

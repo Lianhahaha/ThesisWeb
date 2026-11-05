@@ -103,13 +103,24 @@ export async function searchSources(
   // Country-scoped variants of the query, per adapter capability.
   const booleanQuery = opts.country ? buildCountryQuery(query, opts.country) : query;
   const plainQuery = opts.country ? `${query} ${opts.country}` : query;
+
+  const mode = opts.sourceMode ?? "all";
+  const entries = Object.entries(ADAPTERS).filter(([id]) =>
+    mode === "all" || (mode === "core" ? CORE_SOURCE_IDS.has(id) : LOCAL_SOURCE_IDS.has(id))
+  );
+
+  // The key carries the exact source list and the deployment, so a newly added
+  // database, a removed one, or an adapter fix is never hidden by a six-hour-old
+  // answer. The version in redis-cache covers changes to the answer shape.
   const wholeSearchKey = searchCacheKey([
     query,
     opts.country ?? null,
     opts.fromYear ?? 0,
     opts.openAccessOnly === true,
     opts.perSource ?? 15,
-    opts.sourceMode ?? "all",
+    mode,
+    entries.map(([id]) => id),
+    process.env.VERCEL_GIT_COMMIT_SHA ?? process.env.VERCEL_DEPLOYMENT_ID ?? "dev",
   ]);
 
   // A whole answer cached in Redis is shared by every server instance. The
@@ -126,11 +137,6 @@ export async function searchSources(
       // Corrupt or old entry: fall through to a fresh search.
     }
   }
-
-  const mode = opts.sourceMode ?? "all";
-  const entries = Object.entries(ADAPTERS).filter(([id]) =>
-    mode === "all" || (mode === "core" ? CORE_SOURCE_IDS.has(id) : LOCAL_SOURCE_IDS.has(id))
-  );
 
   const results = await Promise.all(
     entries.map(async ([id, { run, boolean, deadlineMs, country }]): Promise<SourceResult> => {

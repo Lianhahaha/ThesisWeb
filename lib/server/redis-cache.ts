@@ -1,50 +1,30 @@
 import { createHash } from "node:crypto";
-import { fetchWithTimeout } from "@/lib/server/http";
+import { redisPipeline } from "@/lib/server/redis";
 
 /**
- * Optional Upstash Redis cache for full search answers. Vercel's Upstash
- * integration sets KV_REST_API_URL/KV_REST_API_TOKEN; the UPSTASH_* names
- * work too. One GET and one SET per search keeps the free command budget
- * usable, unlike caching every source separately.
+ * Optional Upstash Redis cache for full search answers. One GET and one SET
+ * per search keeps the free command budget usable, unlike caching every
+ * source separately.
  */
 
-const URL = (process.env.UPSTASH_REDIS_REST_URL || process.env.KV_REST_API_URL || "").trim().replace(/\/$/, "");
-const TOKEN = (process.env.UPSTASH_REDIS_REST_TOKEN || process.env.KV_REST_API_TOKEN || "").trim();
-
-/** A failed Redis call must not slow every search; skip it for a minute. */
-let disabledUntil = 0;
-const available = () => Boolean(URL && TOKEN) && Date.now() > disabledUntil;
+/**
+ * Bumped whenever the shape of a cached answer changes (or an adapter fix must
+ * invalidate old answers). The source list and deployment id are part of the
+ * key too, so adding a database can't replay an answer without it.
+ */
+const CACHE_VERSION = "v2";
 
 export function searchCacheKey(parts: unknown[]): string {
-  return `tw:search:v1:${createHash("sha256").update(JSON.stringify(parts)).digest("hex")}`;
+  return `tw:search:${CACHE_VERSION}:${createHash("sha256").update(JSON.stringify(parts)).digest("hex")}`;
 }
 
 export async function cacheGet(key: string): Promise<string | null> {
-  if (!available()) return null;
-  try {
-    const res = await fetchWithTimeout(`${URL}/get/${key}`, { headers: { Authorization: `Bearer ${TOKEN}` } }, 800);
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const data = (await res.json()) as { result?: unknown };
-    return typeof data.result === "string" ? data.result : null;
-  } catch {
-    disabledUntil = Date.now() + 60_000;
-    return null;
-  }
+  const replies = await redisPipeline([["GET", key]], 1200);
+  const result = replies?.[0]?.result;
+  return typeof result === "string" ? result : null;
 }
 
 export async function cacheSet(key: string, value: string, ttlSeconds: number): Promise<void> {
-  if (!available() || value.length > 900_000) return;
-  try {
-    await fetchWithTimeout(
-      `${URL}/pipeline`,
-      {
-        method: "POST",
-        headers: { Authorization: `Bearer ${TOKEN}` },
-        body: JSON.stringify([["SET", key, value, "EX", String(ttlSeconds)]]),
-      },
-      600
-    );
-  } catch {
-    disabledUntil = Date.now() + 60_000;
-  }
+  if (value.length > 900_000) return;
+  await redisPipeline([["SET", key, value, "EX", String(ttlSeconds)]], 1000);
 }

@@ -21,6 +21,7 @@ export default defineConfig(({ mode }) => {
       // Logic tests run in node; component tests opt into a browser DOM with
       // a "@vitest-environment jsdom" comment at the top of the file.
       environment: "node",
+      setupFiles: ["tests/setup.ts"],
       include: ["tests/**/*.test.{ts,tsx}"],
       env,
     },

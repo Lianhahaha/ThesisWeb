@@ -1,4 +1,5 @@
 import { AsyncLocalStorage } from "node:async_hooks";
+import { redisPipeline } from "@/lib/server/redis";
 
 /**
  * HTTP helpers for the server: the API routes and the database adapters.
@@ -60,16 +61,55 @@ export function sleep(ms: number): Promise<void> {
 const nextSlot = new Map<string, number>();
 
 /**
- * Wait for `api`'s next free slot, `gapMs` after the previous call, so
- * concurrent searches queue for a rate-limited API (NCBI, Semantic Scholar,
- * arXiv) instead of being refused. The slot is taken before waiting, so
- * callers line up in order; a source past its deadline stops waiting (sleep).
+ * Reserve the next shared slot for `api`, or null when Redis is unavailable.
+ * SET NX PX is atomic, so instances that don't see each other's `nextSlot` map
+ * still space their calls. The value is unused; the TTL is the gap.
  */
-export async function waitTurn(api: string, gapMs: number): Promise<void> {
+async function takeSharedSlot(api: string, gapMs: number): Promise<boolean | null> {
+  const replies = await redisPipeline(
+    [["SET", `tw:pace:${api}`, String(Date.now()), "NX", "PX", String(Math.max(1, Math.ceil(gapMs)))]],
+    700
+  );
+  if (!replies) return null;
+  const result = replies[0]?.result;
+  if (result === "OK") return true;
+  if (result === null) return false;
+  return null;
+}
+
+/** Take the next slot from this instance's counters, waiting if it is in use. */
+async function takeLocalSlot(api: string, gapMs: number): Promise<void> {
   const now = Date.now();
   const slot = Math.max(now, (nextSlot.get(api) ?? 0) + gapMs);
   nextSlot.set(api, slot);
   if (slot > now) await sleep(slot - now);
+}
+
+/**
+ * Wait for `api`'s next free slot, `gapMs` after the previous call, so
+ * concurrent searches queue for a rate-limited API (NCBI, Semantic Scholar,
+ * arXiv) instead of being refused. On Vercel the slot is shared through Redis;
+ * without Redis (or if it is down) each instance keeps its own queue. A source
+ * past its deadline stops waiting (sleep).
+ */
+export async function waitTurn(api: string, gapMs: number): Promise<void> {
+  const first = await takeSharedSlot(api, gapMs);
+  if (first === null) return takeLocalSlot(api, gapMs);
+  if (first) return;
+
+  // Another instance holds the slot. Poll at the gap (bounded, with jitter so
+  // concurrent callers don't all wake at once), then fall back to this
+  // instance's queue if Redis cannot confirm a slot.
+  const jitter = Math.random() * 50;
+  const step = Math.min(Math.max(gapMs, 50), 500);
+  const until = Date.now() + 10_000;
+  while (Date.now() < until) {
+    await sleep(step + jitter);
+    const next = await takeSharedSlot(api, gapMs);
+    if (next === null) break;
+    if (next) return;
+  }
+  await takeLocalSlot(api, gapMs);
 }
 
 /** Error for a failed call to an outside service, worded for the person using the app. */

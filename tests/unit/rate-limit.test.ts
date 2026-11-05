@@ -31,12 +31,26 @@ describe("rateLimit with shared Redis counters", () => {
     expect(body[2][1]).toMatch(/^tw:rl:search:\*:\d+$/);
   });
 
-  it("uses the proxy-set x-real-ip instead of a spoofable x-forwarded-for", async () => {
+  it("uses Vercel's sanitized headers instead of a spoofable x-forwarded-for", async () => {
     const { rateLimit, fetchMock } = await withRedis(() => Response.json([{ result: 1 }, { result: 0 }, { result: 1 }, { result: 0 }]));
     const spoofed = new NextRequest("http://localhost/api/search", {
-      headers: { "x-forwarded-for": "1.2.3.4, 198.51.100.7", "x-real-ip": "203.0.113.9" },
+      headers: {
+        "x-forwarded-for": "1.2.3.4, 198.51.100.7",
+        "x-real-ip": "203.0.113.9",
+        "x-vercel-forwarded-for": "198.51.100.7",
+      },
     });
     expect(await rateLimit(spoofed, "search")).toBeNull();
+    const body = JSON.parse(String(fetchMock.mock.calls[0][1].body)) as string[][];
+    expect(body[0][1]).toMatch(/^tw:rl:search:198\.51\.100\.7:\d+$/);
+  });
+
+  it("falls back to x-real-ip when Vercel's own header is absent", async () => {
+    const { rateLimit, fetchMock } = await withRedis(() => Response.json([{ result: 1 }, { result: 0 }, { result: 1 }, { result: 0 }]));
+    const proxied = new NextRequest("http://localhost/api/search", {
+      headers: { "x-forwarded-for": "1.2.3.4, 198.51.100.7", "x-real-ip": "203.0.113.9" },
+    });
+    expect(await rateLimit(proxied, "search")).toBeNull();
     const body = JSON.parse(String(fetchMock.mock.calls[0][1].body)) as string[][];
     expect(body[0][1]).toMatch(/^tw:rl:search:203\.0\.113\.9:\d+$/);
   });
