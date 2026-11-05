@@ -229,10 +229,6 @@ const META = {
     label: "NCJRS Virtual Library", blurb: "U.S. National Criminal Justice Reference Service: research reports, statistics, program evaluations and federal publications on policing, courts, corrections, victims, drugs and crime prevention", color: "#1f4e79",
     region: "United States", fields: ["social"], kind: "reports", url: "https://www.ojp.gov/ncjrs",
   },
-  zbmath: {
-    label: "zbMATH Open", blurb: "Mathematics reviews and abstracts: pure and applied mathematics, statistics, computer science and mathematical physics (FIZ Karlsruhe / EMS)", color: "#2f6f9f",
-    region: "Global (zbMATH)", fields: ["sciences", "computing", "engineering"], kind: "index", url: "https://zbmath.org",
-  },
   herdin: {
     label: "HERDIN", blurb: "Philippine national health research registry: journal articles, theses and reports on health research done in the Philippines (DOST-PCHRD)", color: "#00843d",
     region: "Philippines", fields: ["medicine", "social"], kind: "index", url: "https://www.herdin.ph",

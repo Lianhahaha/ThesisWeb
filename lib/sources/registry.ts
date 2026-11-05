@@ -45,7 +45,6 @@ import { searchPhiljournals } from "@/lib/sources/adapters/philjournals";
 import { searchPej } from "@/lib/sources/adapters/saliksik";
 import { searchAjol } from "@/lib/sources/adapters/ajol";
 import { searchNcjrs } from "@/lib/sources/adapters/ncjrs";
-import { searchZbmath } from "@/lib/sources/adapters/zbmath";
 import { searchHerdin } from "@/lib/sources/adapters/herdin";
 import { searchSerpp } from "@/lib/sources/adapters/serpp";
 import { searchKrishikosh } from "@/lib/sources/adapters/krishikosh";
@@ -123,7 +122,6 @@ export const ADAPTERS: Record<SourceId, AdapterEntry> = {
   // Search page, then one small journal page per unique journal for its title.
   ajol:            { run: searchAjol, boolean: false, deadlineMs: 18000 },
   ncjrs:           { run: searchNcjrs, boolean: false, country: "United States" },
-  zbmath:          { run: searchZbmath, boolean: false },
   herdin:          { run: searchHerdin, boolean: false, country: "Philippines" },
   serpp:           { run: searchSerpp, boolean: false, country: "Philippines" },
   krishikosh:      { run: searchKrishikosh, boolean: false, country: "India" },

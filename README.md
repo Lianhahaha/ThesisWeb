@@ -2,7 +2,7 @@
 
 A free web app that helps thesis students find related literature (RRL), keep it organised, and cite it correctly.
 
-- **Search** — one topic, 58 free academic databases at once, merged, de-duplicated and ranked, with preprint, retraction and expression-of-concern warnings. Save a search and the next time you open it, papers that weren't there before are marked *New*.
+- **Search** — one topic, 57 free academic databases at once, merged, de-duplicated and ranked, with preprint, retraction and expression-of-concern warnings. Save a search and the next time you open it, papers that weren't there before are marked *New*.
 - **Library** — save papers, group them by chapter, take notes, fill a synthesis matrix, or import a .bib/.ris file from Zotero, Mendeley or EndNote. Each paper is tagged **Local** or **Foreign** (guessed from the paper, changeable), to filter the library and split the exported reference list. **Share** a collection with your thesis group by link: they can read it, export it and copy it into their own library.
 - **Cite** — paste DOIs and get references in APA, MLA, IEEE or Chicago, or export your whole library.
 
@@ -55,7 +55,6 @@ All free; only IEEE Xplore needs a free registration key. The in-app [Databases 
 | OSTI.GOV, NASA NTRS, USGS | Engineering, energy, aerospace, earth science reports |
 | IEEE Xplore | Engineering and computing journal articles, conference papers and standards (free key, 200 calls/day) |
 | arXiv, INSPIRE-HEP | Physics, maths, computing (arXiv = preprints) |
-| zbMATH Open | Mathematics reviews and abstracts: pure/applied maths, statistics, computer science, mathematical physics |
 | OSF Preprints | Psychology, education, social sciences (preprints) |
 | IDRC Digital Library | Development research in Asia, Africa, Latin America |
 | CiNii Research | Japanese and Asian research |
