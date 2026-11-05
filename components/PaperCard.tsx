@@ -180,7 +180,7 @@ export function PaperCard({ paper, showScore, refNum, isNew }: Props) {
               Copy
             </button>
             <Link
-              href={`/suggestions?kind=problem&about=${encodeURIComponent(`/paper/${paper.id}`)}`}
+              href={`/suggestions?kind=problem&about=${encodeURIComponent(`/paper/${encodeURIComponent(paper.id)}`)}`}
               className="btn-ghost btn-sm"
               title="Report wrong metadata, a broken link, or another problem with this record"
             >
