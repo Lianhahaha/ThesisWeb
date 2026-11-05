@@ -228,6 +228,26 @@ const META = {
     label: "AJOL (African Journals Online)", blurb: "1,000+ peer-reviewed African journals: health, agriculture, engineering, education and social sciences, with English titles and abstracts", color: "#c65d21",
     region: "Africa", fields: ["all"], kind: "journals", url: "https://www.ajol.info",
   },
+  philedu: {
+    label: "Philippine Education Journals", blurb: "Teacher-education and school research from The Normal Lights, APHERJ, AsTEN, the UP College of Education's Philippine Journal of Education Studies and the Philippine Innovative Education Journal", color: "#7b5e2a",
+    region: "Philippines", fields: ["education", "social"], kind: "journals", url: "https://search.crossref.org",
+  },
+  philagri: {
+    label: "Philippine Agriculture & Fisheries Journals", blurb: "Philippine Journal of Fisheries, Philippine Journal of Crop Science and Philippine Journal of Agricultural and Biosystems Engineering, with DOI-backed Crossref metadata", color: "#3b7d23",
+    region: "Philippines", fields: ["agriculture", "sciences"], kind: "journals", url: "https://search.crossref.org",
+  },
+  philpsy: {
+    label: "Philippine Journal of Psychology", blurb: "The Psychological Association of the Philippines' peer-reviewed journal: psychology, mental health, education and social behavior, with DOI-backed metadata", color: "#6b4c9a",
+    region: "Philippines", fields: ["social", "medicine", "education"], kind: "journals", url: "https://search.crossref.org",
+  },
+  ncjrs: {
+    label: "NCJRS Virtual Library", blurb: "U.S. National Criminal Justice Reference Service: research reports, statistics, program evaluations and federal publications on policing, courts, corrections, victims, drugs and crime prevention", color: "#1f4e79",
+    region: "United States", fields: ["social"], kind: "reports", url: "https://www.ojp.gov/ncjrs",
+  },
+  zbmath: {
+    label: "zbMATH Open", blurb: "Mathematics reviews and abstracts: pure and applied mathematics, statistics, computer science and mathematical physics (FIZ Karlsruhe / EMS)", color: "#2f6f9f",
+    region: "Global (zbMATH)", fields: ["sciences", "computing", "engineering"], kind: "index", url: "https://zbmath.org",
+  },
   herdin: {
     label: "HERDIN", blurb: "Philippine national health research registry: journal articles, theses and reports on health research done in the Philippines (DOST-PCHRD)", color: "#00843d",
     region: "Philippines", fields: ["medicine", "social"], kind: "index", url: "https://www.herdin.ph",

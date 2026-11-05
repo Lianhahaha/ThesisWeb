@@ -45,6 +45,11 @@ import { searchPhilsci } from "@/lib/sources/adapters/philsci";
 import { searchPhileng } from "@/lib/sources/adapters/phileng";
 import { searchPej } from "@/lib/sources/adapters/saliksik";
 import { searchAjol } from "@/lib/sources/adapters/ajol";
+import { searchPhiledu } from "@/lib/sources/adapters/philedu";
+import { searchPhilagri } from "@/lib/sources/adapters/philagri";
+import { searchPhilpsy } from "@/lib/sources/adapters/philpsy";
+import { searchNcjrs } from "@/lib/sources/adapters/ncjrs";
+import { searchZbmath } from "@/lib/sources/adapters/zbmath";
 import { searchHerdin } from "@/lib/sources/adapters/herdin";
 import { searchSerpp } from "@/lib/sources/adapters/serpp";
 import { searchKrishikosh } from "@/lib/sources/adapters/krishikosh";
@@ -122,6 +127,11 @@ export const ADAPTERS: Record<SourceId, AdapterEntry> = {
   pej:             { run: searchPej, boolean: false, country: "Philippines", deadlineMs: 16000 },
   // Search page, then one small journal page per unique journal for its title.
   ajol:            { run: searchAjol, boolean: false, deadlineMs: 18000 },
+  philedu:         { run: searchPhiledu, boolean: false, country: "Philippines" },
+  philagri:        { run: searchPhilagri, boolean: false, country: "Philippines" },
+  philpsy:         { run: searchPhilpsy, boolean: false, country: "Philippines" },
+  ncjrs:           { run: searchNcjrs, boolean: false, country: "United States" },
+  zbmath:          { run: searchZbmath, boolean: false },
   herdin:          { run: searchHerdin, boolean: false, country: "Philippines" },
   serpp:           { run: searchSerpp, boolean: false, country: "Philippines" },
   krishikosh:      { run: searchKrishikosh, boolean: false, country: "India" },
