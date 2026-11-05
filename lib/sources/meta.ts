@@ -80,6 +80,14 @@ const META = {
     label: "ERIC", blurb: "Education research: articles, theses and reports (U.S. Dept. of Education)", color: "#e3b341",
     region: "United States", fields: ["education"], kind: "index", url: "https://eric.ed.gov",
   },
+  edarxiv: {
+    label: "EdArXiv", blurb: "Education research preprints from the EdArXiv community: teaching, learning, policy, assessment and educational technology. Not peer-reviewed", color: "#2f9e8f",
+    region: "Global (COS)", fields: ["education", "social"], kind: "preprints", url: "https://edarxiv.org",
+  },
+  zbmath: {
+    label: "zbMATH Open", blurb: "Mathematical reviews and abstracts across pure and applied mathematics, statistics, mathematical computer science and mathematical physics (FIZ Karlsruhe / EMS)", color: "#b06a2c",
+    region: "Global", fields: ["sciences", "computing", "engineering"], kind: "index", url: "https://zbmath.org",
+  },
   zenodo: {
     label: "Zenodo", blurb: "Open articles, theses, reports and preprints from every field (CERN)", color: "#58a6ff",
     region: "Global", fields: ["all"], kind: "repository", url: "https://zenodo.org",
@@ -298,7 +306,7 @@ export const SOURCE_COUNT = Object.keys(SOURCE_META).length;
  */
 export const CORE_SOURCE_IDS = new Set([
   "openalex", "crossref", "semanticscholar", "doaj", "europepmc", "pubmed",
-  "pmc", "arxiv", "eric", "core", "openaire", "ieee", "ajol", "scielo",
+  "pmc", "arxiv", "eric", "core", "openaire", "ieee", "ajol", "scielo", "zbmath",
 ]);
 
 /** Sources whose records are explicitly from the Philippines. */

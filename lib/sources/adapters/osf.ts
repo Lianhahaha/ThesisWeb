@@ -35,7 +35,12 @@ interface Card {
   };
 }
 
-export async function searchOsf(query: string, opts: AdapterOptions = {}): Promise<Paper[]> {
+async function searchShare(
+  query: string,
+  opts: AdapterOptions,
+  source: "osf" | "edarxiv",
+  publisher?: string
+): Promise<Paper[]> {
   const { fromYear, perSource = 15 } = opts;
 
   const params = new URLSearchParams({
@@ -44,6 +49,7 @@ export async function searchOsf(query: string, opts: AdapterOptions = {}): Promi
     "cardSearchFilter[resourceType]": "Preprint",
     "page[size]": String(fromYear ? perSource * 2 : perSource),
   });
+  if (publisher) params.set("cardSearchFilter[publisher]", publisher);
   const res = await fetchWithTimeout(`${BASE}?${params}`, {
     headers: { "User-Agent": USER_AGENT, Accept: "application/vnd.api+json" },
   });
@@ -82,9 +88,15 @@ export async function searchOsf(query: string, opts: AdapterOptions = {}): Promi
       keywords: (m.keyword ?? []).map((k) => k["@value"] ?? "").filter(Boolean).slice(0, 5),
       url: page,
       preprint: true,
-      sources: ["osf"],
+      sources: [source],
     });
     if (papers.length >= perSource) break;
   }
   return papers;
 }
+
+export const searchOsf = (query: string, opts: AdapterOptions = {}) =>
+  searchShare(query, opts, "osf");
+
+export const searchEdArxiv = (query: string, opts: AdapterOptions = {}) =>
+  searchShare(query, opts, "edarxiv", "https://osf.io/preprints/edarxiv");

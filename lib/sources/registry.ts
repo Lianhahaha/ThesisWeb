@@ -30,7 +30,8 @@ import { searchGbif } from "@/lib/sources/adapters/gbif";
 import { searchLaReferencia } from "@/lib/sources/adapters/lareferencia";
 import { searchBdtd } from "@/lib/sources/adapters/bdtd";
 import { searchThesesFr } from "@/lib/sources/adapters/thesesfr";
-import { searchOsf } from "@/lib/sources/adapters/osf";
+import { searchEdArxiv, searchOsf } from "@/lib/sources/adapters/osf";
+import { searchZbmath } from "@/lib/sources/adapters/zbmath";
 import { searchSeafdec } from "@/lib/sources/adapters/seafdec";
 import { searchSsoar } from "@/lib/sources/adapters/ssoar";
 import { searchWho } from "@/lib/sources/adapters/who";
@@ -80,6 +81,8 @@ export const ADAPTERS: Record<SourceId, AdapterEntry> = {
   pubmed:          { run: searchPubMed, boolean: true },
   arxiv:           { run: searchArxiv, boolean: true },
   eric:            { run: searchEric, boolean: false },
+  edarxiv:         { run: searchEdArxiv, boolean: false },
+  zbmath:          { run: searchZbmath, boolean: false, deadlineMs: 18000 },
   zenodo:          { run: searchZenodo, boolean: false },
   hal:             { run: searchHal, boolean: false },
   // The Graph API can take 8-12 s when its index is busy.
