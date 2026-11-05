@@ -43,6 +43,8 @@ import { searchUpou } from "@/lib/sources/adapters/upou";
 import { searchUpv } from "@/lib/sources/adapters/upv";
 import { searchPhilsci } from "@/lib/sources/adapters/philsci";
 import { searchPhileng } from "@/lib/sources/adapters/phileng";
+import { searchPej } from "@/lib/sources/adapters/saliksik";
+import { searchAjol } from "@/lib/sources/adapters/ajol";
 import { searchHerdin } from "@/lib/sources/adapters/herdin";
 import { searchSerpp } from "@/lib/sources/adapters/serpp";
 import { searchKrishikosh } from "@/lib/sources/adapters/krishikosh";
@@ -116,6 +118,10 @@ export const ADAPTERS: Record<SourceId, AdapterEntry> = {
   // Crossref journal subsets: DOI-backed records, so the source is verifiable.
   philsci:         { run: searchPhilsci, boolean: false, country: "Philippines" },
   phileng:         { run: searchPhileng, boolean: false, country: "Philippines" },
+  // A single journal from the Saliksik portal; same API, local engineering focus.
+  pej:             { run: searchPej, boolean: false, country: "Philippines", deadlineMs: 16000 },
+  // Search page, then one small journal page per unique journal for its title.
+  ajol:            { run: searchAjol, boolean: false, deadlineMs: 18000 },
   herdin:          { run: searchHerdin, boolean: false, country: "Philippines" },
   serpp:           { run: searchSerpp, boolean: false, country: "Philippines" },
   krishikosh:      { run: searchKrishikosh, boolean: false, country: "India" },

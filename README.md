@@ -2,7 +2,7 @@
 
 A free web app that helps thesis students find related literature (RRL), keep it organised, and cite it correctly.
 
-- **Search** — one topic, 55 free academic databases at once, merged, de-duplicated and ranked, with preprint, retraction and expression-of-concern warnings. Save a search and the next time you open it, papers that weren't there before are marked *New*.
+- **Search** — one topic, 57 free academic databases at once, merged, de-duplicated and ranked, with preprint, retraction and expression-of-concern warnings. Save a search and the next time you open it, papers that weren't there before are marked *New*.
 - **Library** — save papers, group them by chapter, take notes, fill a synthesis matrix, or import a .bib/.ris file from Zotero, Mendeley or EndNote. Each paper is tagged **Local** or **Foreign** (guessed from the paper, changeable), to filter the library and split the exported reference list. **Share** a collection with your thesis group by link: they can read it, export it and copy it into their own library.
 - **Cite** — paste DOIs and get references in APA, MLA, IEEE or Chicago, or export your whole library.
 
@@ -38,8 +38,10 @@ All free; only IEEE Xplore needs a free registration key. The in-app [Databases 
 | PCAARRD eLibrary | Philippine agriculture, aquatic and natural resources: theses, research papers, books, manuals |
 | Philippine Journal of Science | DOST-STII's peer-reviewed science and engineering journal, DOI-backed through Crossref |
 | Philippine Engineering Journals | Philippine engineering and applied-science journals indexed by Crossref (agricultural and biosystems engineering, science and engineering technology, crop science, Philippine science and technology) |
+| Philippine Engineering Journal | UP National Engineering Center's peer-reviewed engineering journal: civil, mechanical, electrical, industrial, chemical and mining engineering |
 | SSOAR | Social sciences, politics, psychology, communication (free full text) |
 | DOAJ, PLOS, J-STAGE | Peer-reviewed open-access journals |
+| AJOL (African Journals Online) | Peer-reviewed African journals across health, agriculture, engineering, education and social sciences |
 | Philippine E-Journals | Articles from hundreds of Philippine university journals, most with a free PDF |
 | PubMed, PubMed Central, Europe PMC | Medicine, nursing, health, life sciences |
 | HERDIN | Philippine health research: articles, theses and reports (DOST-PCHRD) |

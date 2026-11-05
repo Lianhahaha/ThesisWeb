@@ -220,6 +220,14 @@ const META = {
     label: "Philippine Engineering Journals", blurb: "Philippine engineering and applied-science journals indexed by Crossref: agricultural and biosystems engineering, science and engineering technology, crop science, Philippine science and technology", color: "#1f6f8b",
     region: "Philippines", fields: ["engineering", "sciences", "agriculture", "computing"], kind: "journals", url: "https://search.crossref.org",
   },
+  pej: {
+    label: "Philippine Engineering Journal", blurb: "The UP National Engineering Center's peer-reviewed engineering journal: civil, mechanical, electrical, industrial, chemical and mining engineering research from the Philippines", color: "#8a1538",
+    region: "Philippines", fields: ["engineering", "computing", "sciences"], kind: "journals", url: "https://saliksik.upd.edu.ph",
+  },
+  ajol: {
+    label: "AJOL (African Journals Online)", blurb: "1,000+ peer-reviewed African journals: health, agriculture, engineering, education and social sciences, with English titles and abstracts", color: "#c65d21",
+    region: "Africa", fields: ["all"], kind: "journals", url: "https://www.ajol.info",
+  },
   herdin: {
     label: "HERDIN", blurb: "Philippine national health research registry: journal articles, theses and reports on health research done in the Philippines (DOST-PCHRD)", color: "#00843d",
     region: "Philippines", fields: ["medicine", "social"], kind: "index", url: "https://www.herdin.ph",

@@ -125,7 +125,12 @@ function keywordsOf(value: SaliksikHit["keywords"]): string[] {
   return [...new Set(list.map((k) => k.trim()).filter(Boolean))].slice(0, 10);
 }
 
-export async function searchSaliksik(query: string, opts: AdapterOptions = {}): Promise<Paper[]> {
+export async function searchSaliksikJournal(
+  query: string,
+  opts: AdapterOptions = {},
+  journalIds?: string,
+  sourceId = "saliksik"
+): Promise<Paper[]> {
   const { fromYear, perSource = 15, openAccessOnly } = opts;
   const params = new URLSearchParams({
     search: query,
@@ -133,6 +138,7 @@ export async function searchSaliksik(query: string, opts: AdapterOptions = {}): 
     page: "1",
     pageSize: String(Math.min(perSource, 15)),
   });
+  if (journalIds) params.set("journalIds", journalIds);
 
   const [res, journals] = await Promise.all([
     fetchWithTimeout(
@@ -200,9 +206,18 @@ export async function searchSaliksik(query: string, opts: AdapterOptions = {}): 
       isOpenAccess: Boolean(pdf),
       keywords: keywordsOf(hit.keywords),
       url,
-      sources: ["saliksik"],
+      sources: [sourceId],
     });
   }
 
   return papers.slice(0, perSource);
+}
+
+export async function searchSaliksik(query: string, opts: AdapterOptions = {}): Promise<Paper[]> {
+  return searchSaliksikJournal(query, opts);
+}
+
+/** One UP Diliman journal only: the Philippine Engineering Journal. */
+export async function searchPej(query: string, opts: AdapterOptions = {}): Promise<Paper[]> {
+  return searchSaliksikJournal(query, opts, "PEJ-25", "pej");
 }
