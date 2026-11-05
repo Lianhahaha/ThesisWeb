@@ -288,6 +288,22 @@ export const SOURCE_META: Record<string, SourceMeta> = META;
 /** Number of databases every search goes to. */
 export const SOURCE_COUNT = Object.keys(SOURCE_META).length;
 
+/**
+ * The faster preset: major indexes and broad aggregators. Kept here so the
+ * UI, API and tests share one definition.
+ */
+export const CORE_SOURCE_IDS = new Set([
+  "openalex", "crossref", "semanticscholar", "doaj", "europepmc", "pubmed",
+  "pmc", "arxiv", "eric", "core", "openaire", "ieee", "ajol", "scielo",
+]);
+
+/** Sources whose records are explicitly from the Philippines. */
+export const LOCAL_SOURCE_IDS = new Set(
+  Object.entries(SOURCE_META)
+    .filter(([, meta]) => meta.region === "Philippines")
+    .map(([id]) => id)
+);
+
 export function sourceLabel(id: string): string {
   // "imported": added from a .bib/.ris file (lib/library/import.ts), not found by a search.
   return SOURCE_META[id]?.label ?? (id === "imported" ? "an imported file" : id);

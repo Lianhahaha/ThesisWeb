@@ -5,7 +5,7 @@ import { Search as SearchIcon, X } from "lucide-react";
 import { CountryCombobox } from "@/components/CountryCombobox";
 import { clearSearchHistory, getSearchHistory } from "@/lib/search/history";
 import { listSavedSearches, removeSavedSearch, SAVED_SEARCHES_EVENT, type SavedSearch } from "@/lib/search/saved";
-import { defaultFromYear, MIN_QUERY_LENGTH, type SearchInput } from "@/lib/search/params";
+import { defaultFromYear, MIN_QUERY_LENGTH, SOURCE_MODES, type SearchInput } from "@/lib/search/params";
 
 const CURRENT_YEAR = new Date().getFullYear();
 
@@ -120,6 +120,24 @@ export function SearchPanel({
         </button>
       </div>
       <p className="field-hint">Three to six topic words work best. Skip full sentences.</p>
+
+      <div className="mt-4">
+        <span className="field-label">Search scope</span>
+        <div className="seg w-full" role="group" aria-label="Search scope">
+          {SOURCE_MODES.map((mode) => (
+            <button
+              key={mode.value}
+              type="button"
+              className="flex-1"
+              data-on={(value.sourceMode ?? "all") === mode.value}
+              onClick={() => set({ sourceMode: mode.value })}
+              title={mode.hint}
+            >
+              {mode.label}
+            </button>
+          ))}
+        </div>
+      </div>
 
       <div className="mt-4 grid gap-3 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] sm:items-end">
         <div>

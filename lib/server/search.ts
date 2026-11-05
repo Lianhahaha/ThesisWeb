@@ -1,7 +1,9 @@
 import type { Paper, SearchResult } from "@/lib/types";
 import { matchesQuery, passesFilters, rankResults } from "@/lib/search/rank";
 import { ADAPTERS } from "@/lib/sources/registry";
+import { CORE_SOURCE_IDS, LOCAL_SOURCE_IDS } from "@/lib/sources/meta";
 import { normalizePaper } from "@/lib/sources/normalize";
+import type { SourceMode } from "@/lib/search/params";
 import type { AdapterOptions } from "@/lib/sources/types";
 import { countryTerms } from "@/lib/countries";
 import { withAbortSignal } from "@/lib/server/http";
@@ -10,6 +12,8 @@ import { cacheGet, cacheSet, searchCacheKey } from "@/lib/server/redis-cache";
 export interface SearchOpts extends AdapterOptions {
   /** ISO 3166-1 country name or demonym to inject into the query. e.g. "Philippines" */
   country?: string;
+  /** All sources, major indexes only, or Philippine sources only. */
+  sourceMode?: SourceMode;
 }
 
 /**
@@ -105,6 +109,7 @@ export async function searchSources(
     opts.fromYear ?? 0,
     opts.openAccessOnly === true,
     opts.perSource ?? 15,
+    opts.sourceMode ?? "all",
   ]);
 
   // A whole answer cached in Redis is shared by every server instance. The
@@ -122,8 +127,13 @@ export async function searchSources(
     }
   }
 
+  const mode = opts.sourceMode ?? "all";
+  const entries = Object.entries(ADAPTERS).filter(([id]) =>
+    mode === "all" || (mode === "core" ? CORE_SOURCE_IDS.has(id) : LOCAL_SOURCE_IDS.has(id))
+  );
+
   const results = await Promise.all(
-    Object.entries(ADAPTERS).map(async ([id, { run, boolean, deadlineMs, country }]): Promise<SourceResult> => {
+    entries.map(async ([id, { run, boolean, deadlineMs, country }]): Promise<SourceResult> => {
       const q = country && country === opts.country ? query : boolean ? booleanQuery : plainQuery;
       const key = sourceKey(id, q, opts);
 

@@ -1,5 +1,5 @@
 import { ALL_COUNTRIES } from "@/lib/countries";
-import { SOURCE_COUNT } from "@/lib/sources/meta";
+import { CORE_SOURCE_IDS, LOCAL_SOURCE_IDS, SOURCE_COUNT } from "@/lib/sources/meta";
 
 /**
  * The search form <-> URL query string, so a search survives a refresh and can
@@ -8,12 +8,22 @@ import { SOURCE_COUNT } from "@/lib/sources/meta";
  * same function, so the page and the server can't disagree on what is valid.
  */
 
+export type SourceMode = "all" | "core" | "local";
+
+export const SOURCE_MODES: { value: SourceMode; label: string; hint: string }[] = [
+  { value: "all", label: `All sources (${SOURCE_COUNT})`, hint: "Every database" },
+  { value: "core", label: `Core indexes (${CORE_SOURCE_IDS.size})`, hint: "Faster, major indexes only" },
+  { value: "local", label: `Philippines (${LOCAL_SOURCE_IDS.size})`, hint: "Philippine databases only" },
+];
+
 export interface SearchInput {
   query: string;
   /** 0 means "all years". */
   fromYear: number;
   openAccessOnly: boolean;
   country: string | null;
+  /** Which group of databases to search. Missing on old saved searches = all. */
+  sourceMode?: SourceMode;
 }
 
 export const MIN_QUERY_LENGTH = 3;
@@ -43,6 +53,7 @@ export function buildSearchParams(input: SearchInput): URLSearchParams {
   const params = new URLSearchParams({ q: input.query.trim(), from: String(input.fromYear) });
   if (input.openAccessOnly) params.set("oa", "1");
   if (input.country) params.set("country", input.country);
+  if (input.sourceMode && input.sourceMode !== "all") params.set("mode", input.sourceMode);
   return params;
 }
 
@@ -64,10 +75,12 @@ export function parseSearchParams(
   const from = fromRaw === null || fromRaw.trim() === "" ? NaN : Number(fromRaw);
   const validFrom = Number.isInteger(from) && (from === 0 || (from >= 1900 && from <= currentYear + 1));
 
+  const mode = p.get("mode");
   return {
     query,
     fromYear: validFrom ? from : defaults.fromYear,
     openAccessOnly: p.get("oa") === "1",
     country: canonicalCountry(p.get("country")),
+    sourceMode: mode === "core" || mode === "local" ? mode : "all",
   };
 }

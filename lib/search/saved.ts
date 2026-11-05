@@ -35,7 +35,7 @@ const MAX_SEEN = MAX_RESULTS * 2;
 /** The same words (any case or spacing) with the same filters are the same search. */
 export function savedSearchKey(input: SearchInput): string {
   const q = input.query.trim().replace(/\s+/g, " ").toLowerCase();
-  return [q, input.fromYear, input.openAccessOnly ? 1 : 0, input.country ?? ""].join("|");
+  return [q, input.fromYear, input.openAccessOnly ? 1 : 0, input.country ?? "", input.sourceMode ?? "all"].join("|");
 }
 
 /** Ids in `current` that are not in `seen`, in result order. */

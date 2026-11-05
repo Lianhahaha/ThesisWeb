@@ -38,6 +38,7 @@ export async function GET(req: NextRequest) {
     openAccessOnly: input.openAccessOnly,
     perSource: PER_SOURCE,
     country: input.country ?? undefined,
+    sourceMode: input.sourceMode,
   };
 
   // stream=1: one JSON line per database as it answers, then {"type":"done"},
