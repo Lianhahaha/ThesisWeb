@@ -212,12 +212,8 @@ const META = {
     label: "UP Visayas", blurb: "UP Visayas theses and research: fisheries, ocean sciences, aquaculture, food science, management, social sciences", color: "#014421",
     region: "Philippines", fields: ["agriculture", "sciences", "social", "business"], kind: "repository", url: "https://repository.upv.edu.ph",
   },
-  philsci: {
-    label: "Philippine Journal of Science", blurb: "The Philippines' oldest science journal, from DOST-STII: peer-reviewed science and engineering research with DOI-backed Crossref metadata", color: "#0b6e4f",
-    region: "Philippines", fields: ["sciences", "engineering", "agriculture"], kind: "journals", url: "https://philjournalsci.dost.gov.ph",
-  },
   philjournals: {
-    label: "Philippine Journals (Crossref)", blurb: "One search across major Philippine journals that deposit Crossref metadata: engineering and applied science, teacher education, agriculture and fisheries, and psychology", color: "#1f6f8b",
+    label: "Philippine Journals (Crossref)", blurb: "One search across major DOI-backed Philippine journals: Philippine Journal of Science, engineering and applied science, teacher education, agriculture and fisheries, and psychology", color: "#1f6f8b",
     region: "Philippines", fields: ["engineering", "education", "agriculture", "sciences", "social"], kind: "journals", url: "https://search.crossref.org",
   },
   pej: {

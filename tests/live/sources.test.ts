@@ -46,7 +46,7 @@ const PROBES: Record<SourceId, string> = {
   herdin: "dengue", serpp: "poverty", krishikosh: "rice", upd: "education",
   aiias: "education", actamedica: "dengue", pnu: "teachers", ejournalsph: "education",
   saliksik: "education", pcaarrd: "rice", scielo: "education", persee: "education",
-  philsci: "engineering", philjournals: "engineering", pej: "engineering", ajol: "engineering",
+  philjournals: "engineering", pej: "engineering", ajol: "engineering",
   ncjrs: "policing", zbmath: "algebra",
 };
 

@@ -141,51 +141,6 @@ export async function searchCrossref(
   return items.map((it) => itemToPaper(it));
 }
 
-/**
- * Search a curated set of journals by ISSN. Used for Philippine science and
- * engineering titles that Crossref indexes well but the global search can
- * bury under larger publishers. Each ISSN is one filtered Crossref request;
- * results are merged and de-duplicated inside the source.
- */
-export async function searchCrossrefJournals(
-  query: string,
-  issns: string[],
-  sourceId: string,
-  opts: AdapterOptions = {}
-): Promise<Paper[]> {
-  const { fromYear, perSource = 15, openAccessOnly } = opts;
-  const batches = await Promise.all(
-    issns.map(async (issn) => {
-      const filters = [`issn:${issn}`];
-      if (fromYear) filters.push(`from-pub-date:${fromYear}-01-01`);
-      if (openAccessOnly) filters.push(OPEN_LICENSE_FILTER);
-      const params = new URLSearchParams({
-        query,
-        rows: String(perSource),
-        mailto: MAILTO,
-        sort: "relevance",
-        filter: filters.join(","),
-      });
-      const res = await crossrefFetch(`${BASE}?${params}`);
-      if (!res.ok) throw new Error(`Crossref ${res.status}`);
-      const data = await readJson<{ message: { items: CrossrefItem[] } }>(res);
-      return (data?.message?.items ?? [])
-        // A few Crossref deposits have an empty title; normalizePaper would
-        // drop them later, and the live health check should not see them.
-        .filter((it) => Boolean(it.title?.[0]))
-        .filter((it) => !openAccessOnly || hasOpenLicense(it))
-        .map((it) => itemToPaper(it, sourceId));
-    })
-  );
-
-  const seen = new Set<string>();
-  return batches.flat().filter((p) => {
-    if (seen.has(p.id)) return false;
-    seen.add(p.id);
-    return true;
-  }).slice(0, perSource);
-}
-
 function itemToPaper(it: CrossrefItem, sourceId = "crossref"): Paper {
   // Crossref returns HTML entities and tags in titles ("Computers &amp; Education").
   const title = it.title?.[0] ? stripHtml(it.title[0]) : "Untitled";

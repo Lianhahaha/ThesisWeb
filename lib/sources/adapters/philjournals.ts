@@ -1,17 +1,18 @@
-import { searchCrossrefJournals } from "@/lib/sources/adapters/crossref";
+import { searchOpenAlexJournals } from "@/lib/sources/adapters/openalex";
 import type { AdapterOptions } from "@/lib/sources/types";
 
 /**
- * One Crossref request across the major Philippine journals that deposit
- * publisher metadata: engineering and applied science, teacher education,
- * agriculture and fisheries, and psychology. Keeping these in one source
- * avoids firing several parallel Crossref requests and getting a 429.
- * Every record is DOI-backed and can be checked at the publisher.
+ * Major Philippine journals that deposit Crossref metadata, searched through
+ * OpenAlex's ISSN filter in one request: engineering and applied science,
+ * teacher education, agriculture and fisheries, psychology, and the
+ * Philippine Journal of Science. Every record is DOI-backed and verifiable.
  */
 export const searchPhiljournals = (query: string, opts: AdapterOptions = {}) =>
-  searchCrossrefJournals(
+  searchOpenAlexJournals(
     query,
     [
+      // Philippine Journal of Science
+      "0031-7683",
       // Engineering and applied science
       "0119-7312", "3082-3056", "0115-463X", "2449-3767",
       // Teacher education

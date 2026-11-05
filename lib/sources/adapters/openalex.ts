@@ -78,7 +78,7 @@ export async function searchOpenAlex(
   const data = await readJson<{ results: OpenAlexWork[] }>(res);
   if (!data?.results) return [];
 
-  return data.results.map(workToPaper);
+  return data.results.map((w) => workToPaper(w));
 }
 
 /** OpenAlex work types as the app's record types; types not listed stay unknown. */
@@ -102,7 +102,7 @@ function workType(w: OpenAlexWork): WorkType | undefined {
 }
 
 /** Normalize one OpenAlex work into the app's Paper shape. */
-export function workToPaper(w: OpenAlexWork): Paper {
+export function workToPaper(w: OpenAlexWork, sourceId = "openalex"): Paper {
   const title = w.title || w.display_name || "Untitled";
   const doi = w.doi?.replace("https://doi.org/", "") || null;
   // Only a location OpenAlex marks as open is a free copy. The primary
@@ -138,8 +138,39 @@ export function workToPaper(w: OpenAlexWork): Paper {
         : w.type === "article" && w.primary_location?.source?.type === "journal"
         ? false
         : undefined,
-    sources: ["openalex"],
+    sources: [sourceId],
   };
+}
+
+/**
+ * Search a curated set of journal ISSNs through OpenAlex. Used for the
+ * Philippine journals source: one request, the same verified OpenAlex records,
+ * and no Crossref burst.
+ */
+export async function searchOpenAlexJournals(
+  query: string,
+  issns: string[],
+  sourceId: string,
+  opts: AdapterOptions = {}
+): Promise<Paper[]> {
+  const { fromYear, perSource = 15, openAccessOnly } = opts;
+  const filters = [`primary_location.source.issn:${issns.join("|")}`];
+  if (fromYear) filters.push(`from_publication_date:${fromYear}-01-01`);
+  if (openAccessOnly) filters.push("is_oa:true");
+  const params = new URLSearchParams({
+    search: query,
+    per_page: String(perSource),
+    mailto: MAILTO,
+    filter: filters.join(","),
+    sort: "relevance_score:desc",
+    ...(API_KEY ? { api_key: API_KEY } : {}),
+  });
+  const res = await fetchWithTimeout(`${BASE}?${params}`);
+  if (!res.ok) throw new Error(`OpenAlex ${res.status}`);
+  const data = await readJson<{ results?: OpenAlexWork[] }>(res, {});
+  return (data?.results ?? [])
+    .filter((w) => Boolean((w.title || w.display_name)?.trim()))
+    .map((w) => workToPaper(w, sourceId));
 }
 
 /**
@@ -169,7 +200,7 @@ async function worksByIds(ids: string[], limit: number): Promise<Paper[]> {
   const res = await fetchWithTimeout(`${BASE}?${params}`);
   if (!res.ok) throw upstreamError("OpenAlex", res.status);
   const data = await readJson<{ results?: OpenAlexWork[] }>(res);
-  return (data?.results ?? []).map(workToPaper);
+  return (data?.results ?? []).map((w) => workToPaper(w));
 }
 
 /**
@@ -207,7 +238,7 @@ export async function getRelatedPapers(doi: string, limit = 10): Promise<Related
   return {
     references,
     referencesTotal: work.referenced_works?.length ?? 0,
-    citedBy: (citedByRes?.results ?? []).map(workToPaper),
+    citedBy: (citedByRes?.results ?? []).map((w) => workToPaper(w)),
     citedByTotal: citedByRes?.meta?.count ?? 0,
     similar,
   };
