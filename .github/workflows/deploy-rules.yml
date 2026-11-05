@@ -16,6 +16,7 @@ jobs:
         id: auth
         with:
           credentials_json: ${{ secrets.GCP_SA_KEY }}
+          token_format: access_token
       - name: Create and release the Firestore ruleset
         env:
           TOKEN: ${{ steps.auth.outputs.access_token }}
