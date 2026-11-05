@@ -24,6 +24,11 @@ describe("readJson", () => {
   it("fails on a body that is neither JSON nor a page", async () => {
     await expect(readJson(new Response("Service Unavailable"))).rejects.toThrow("could not be read");
   });
+
+  it("refuses a body larger than the cap instead of buffering it", async () => {
+    const huge = new Response("{}", { headers: { "content-length": "999999999" } });
+    await expect(readJson(huge)).rejects.toThrow("too large");
+  });
 });
 
 describe("source deadlines", () => {

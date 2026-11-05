@@ -121,6 +121,30 @@ export function upstreamError(service: string, status: number): Error {
   );
 }
 
+/** A body larger than this is not an answer we can use; stop reading it. */
+const MAX_JSON_BYTES = 8_000_000;
+
+async function readBody(res: Response, max: number): Promise<string> {
+  const declared = Number(res.headers.get("content-length") ?? "");
+  if (Number.isFinite(declared) && declared > max) throw new Error("sent a response that is too large");
+  if (!res.body) return res.text();
+
+  const reader = res.body.getReader();
+  const chunks: Uint8Array[] = [];
+  let size = 0;
+  for (;;) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    size += value.byteLength;
+    if (size > max) {
+      await reader.cancel().catch(() => {});
+      throw new Error("sent a response that is too large");
+    }
+    chunks.push(value);
+  }
+  return Buffer.concat(chunks).toString("utf8");
+}
+
 /**
  * The JSON body of a response. Throws when the body isn't JSON: a database
  * that answers with a captcha, a block page or a maintenance notice must show
@@ -128,7 +152,7 @@ export function upstreamError(service: string, status: number): Error {
  * for a blank body, for an API that answers "no matches" with nothing at all.
  */
 export async function readJson<T = unknown>(res: Response, whenEmpty?: T): Promise<T> {
-  const text = await res.text();
+  const text = await readBody(res, MAX_JSON_BYTES);
   if (!text.trim()) {
     if (whenEmpty !== undefined) return whenEmpty;
     throw new Error("sent an empty answer");

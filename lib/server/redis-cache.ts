@@ -28,3 +28,18 @@ export async function cacheSet(key: string, value: string, ttlSeconds: number): 
   if (value.length > 900_000) return;
   await redisPipeline([["SET", key, value, "EX", String(ttlSeconds)]], 1000);
 }
+
+/** JSON variant for the small, per-DOI answers of /api/cite and /api/related. */
+export async function cacheGetJson<T>(key: string): Promise<T | null> {
+  const raw = await cacheGet(key);
+  if (!raw) return null;
+  try {
+    return JSON.parse(raw) as T;
+  } catch {
+    return null;
+  }
+}
+
+export async function cacheSetJson(key: string, value: unknown, ttlSeconds: number): Promise<void> {
+  await cacheSet(key, JSON.stringify(value), ttlSeconds);
+}
