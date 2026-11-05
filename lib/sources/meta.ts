@@ -216,9 +216,9 @@ const META = {
     label: "Philippine Journal of Science", blurb: "The Philippines' oldest science journal, from DOST-STII: peer-reviewed science and engineering research with DOI-backed Crossref metadata", color: "#0b6e4f",
     region: "Philippines", fields: ["sciences", "engineering", "agriculture"], kind: "journals", url: "https://philjournalsci.dost.gov.ph",
   },
-  phileng: {
-    label: "Philippine Engineering Journals", blurb: "Philippine engineering and applied-science journals indexed by Crossref: agricultural and biosystems engineering, science and engineering technology, crop science, Philippine science and technology", color: "#1f6f8b",
-    region: "Philippines", fields: ["engineering", "sciences", "agriculture", "computing"], kind: "journals", url: "https://search.crossref.org",
+  philjournals: {
+    label: "Philippine Journals (Crossref)", blurb: "One search across major Philippine journals that deposit Crossref metadata: engineering and applied science, teacher education, agriculture and fisheries, and psychology", color: "#1f6f8b",
+    region: "Philippines", fields: ["engineering", "education", "agriculture", "sciences", "social"], kind: "journals", url: "https://search.crossref.org",
   },
   pej: {
     label: "Philippine Engineering Journal", blurb: "The UP National Engineering Center's peer-reviewed engineering journal: civil, mechanical, electrical, industrial, chemical and mining engineering research from the Philippines", color: "#8a1538",
@@ -228,18 +228,7 @@ const META = {
     label: "AJOL (African Journals Online)", blurb: "1,000+ peer-reviewed African journals: health, agriculture, engineering, education and social sciences, with English titles and abstracts", color: "#c65d21",
     region: "Africa", fields: ["all"], kind: "journals", url: "https://www.ajol.info",
   },
-  philedu: {
-    label: "Philippine Education Journals", blurb: "Teacher-education and school research from The Normal Lights, APHERJ, AsTEN, the UP College of Education's Philippine Journal of Education Studies and the Philippine Innovative Education Journal", color: "#7b5e2a",
-    region: "Philippines", fields: ["education", "social"], kind: "journals", url: "https://search.crossref.org",
-  },
-  philagri: {
-    label: "Philippine Agriculture & Fisheries Journals", blurb: "Philippine Journal of Fisheries, Philippine Journal of Crop Science and Philippine Journal of Agricultural and Biosystems Engineering, with DOI-backed Crossref metadata", color: "#3b7d23",
-    region: "Philippines", fields: ["agriculture", "sciences"], kind: "journals", url: "https://search.crossref.org",
-  },
-  philpsy: {
-    label: "Philippine Journal of Psychology", blurb: "The Psychological Association of the Philippines' peer-reviewed journal: psychology, mental health, education and social behavior, with DOI-backed metadata", color: "#6b4c9a",
-    region: "Philippines", fields: ["social", "medicine", "education"], kind: "journals", url: "https://search.crossref.org",
-  },
+
   ncjrs: {
     label: "NCJRS Virtual Library", blurb: "U.S. National Criminal Justice Reference Service: research reports, statistics, program evaluations and federal publications on policing, courts, corrections, victims, drugs and crime prevention", color: "#1f4e79",
     region: "United States", fields: ["social"], kind: "reports", url: "https://www.ojp.gov/ncjrs",

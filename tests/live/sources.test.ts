@@ -46,8 +46,8 @@ const PROBES: Record<SourceId, string> = {
   herdin: "dengue", serpp: "poverty", krishikosh: "rice", upd: "education",
   aiias: "education", actamedica: "dengue", pnu: "teachers", ejournalsph: "education",
   saliksik: "education", pcaarrd: "rice", scielo: "education", persee: "education",
-  philsci: "engineering", phileng: "engineering", pej: "engineering", ajol: "engineering",
-  philedu: "teacher education", philagri: "rice", philpsy: "psychology", ncjrs: "policing", zbmath: "algebra",
+  philsci: "engineering", philjournals: "engineering", pej: "engineering", ajol: "engineering",
+  ncjrs: "policing", zbmath: "algebra",
 };
 
 describe.skipIf(!LIVE)(QUERY ? `live sources: "${QUERY}"` : "live sources: probe topics", () => {
