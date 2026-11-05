@@ -7,6 +7,7 @@ const PAGES = [
   { path: "/databases", heading: /databases/i },
   { path: "/login", heading: /sign in/i },
   { path: "/status", heading: /service status/i },
+  { path: "/suggestions", heading: /problems and suggestions/i },
 ];
 
 for (const entry of PAGES) {
@@ -19,6 +20,11 @@ for (const entry of PAGES) {
     expect(errors).toEqual([]);
   });
 }
+
+test("a missing page shows the custom 404", async ({ page }) => {
+  await page.goto("/this-page-does-not-exist");
+  await expect(page.getByRole("heading", { level: 1, name: /page not found/i })).toBeVisible();
+});
 
 test("public pages have no serious accessibility violations", async ({ page }) => {
   for (const path of ["/", "/about", "/databases", "/login"]) {
