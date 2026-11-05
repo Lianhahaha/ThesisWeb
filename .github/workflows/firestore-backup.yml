@@ -1,0 +1,26 @@
+name: Firestore backup
+
+# Manual runs work as soon as a GCS bucket and the GCP_SA_KEY secret exist.
+# Scheduled runs only start after the repo variable BACKUPS_ENABLED is set to
+# "true" (Firebase Blaze/billing and a backup bucket are required).
+on:
+  schedule:
+    - cron: "0 19 * * *" # 03:00 Philippine time
+  workflow_dispatch:
+
+jobs:
+  export:
+    if: github.event_name == 'workflow_dispatch' || vars.BACKUPS_ENABLED == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+    steps:
+      - uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+      - uses: google-github-actions/setup-gcloud@v2
+      - name: Export Firestore
+        run: |
+          STAMP=$(date -u +%Y-%m-%dT%H-%M-%SZ)
+          gcloud firestore export "gs://${{ secrets.FIRESTORE_BACKUP_BUCKET }}/$STAMP" --project=webthesisph

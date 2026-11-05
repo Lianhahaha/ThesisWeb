@@ -110,6 +110,14 @@ Rules restrict each user to their own `users/{uid}` data, cap field sizes, and a
 
 **Deploy:** import to Vercel → add the env vars → add the Vercel domain to Firebase authorized domains → redeploy.
 
+**Production operations:**
+- `/api/health` is the liveness probe; `/status` shows the app and integration state.
+- GitHub Actions runs lint, types, unit tests, Playwright smoke/accessibility checks and a production build on every push and PR (`.github/workflows/ci.yml`).
+- The daily database health check remains `.github/workflows/sources-health.yml`.
+- Upstash Redis (`KV_REST_API_URL`, `KV_REST_API_TOKEN`) makes rate limits global and shares the whole-search cache across server instances.
+- Vercel alerts notify the team owner of server-error anomalies. Add an external uptime monitor pointed at `/api/health` if you want minute-level checks.
+- Firestore backups need Firebase Blaze/billing and a GCS bucket. Add the `GCP_SA_KEY` and `FIRESTORE_BACKUP_BUCKET` repo secrets, then set the repo variable `BACKUPS_ENABLED=true`; `.github/workflows/firestore-backup.yml` exports daily. Run it manually once to verify before enabling the schedule.
+
 **Search engines:** the site serves [`/sitemap.xml`](app/sitemap.ts) (the public pages), [`/robots.txt`](app/robots.ts) (everything but `/api/`), a share-card image ([`app/opengraph-image.tsx`](app/opengraph-image.tsx)), per-page titles, descriptions and canonical links ([`lib/site.ts`](lib/site.ts)), and schema.org JSON-LD for the site and app. Personal pages (library, settings, paper and shared pages, sign-in) carry `noindex`. To get listed on Google:
 1. Open [Google Search Console](https://search.google.com/search-console) → **Add property** → **URL prefix** → `https://thesiswebph.vercel.app`.
 2. Choose **HTML tag**, copy only the `content="…"` value, add it in Vercel as `NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION`, redeploy, then press **Verify**.
