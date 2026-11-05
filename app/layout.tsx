@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { EB_Garamond } from "next/font/google";
+import localFont from "next/font/local";
 import "./globals.css";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
@@ -10,11 +10,13 @@ import { Analytics } from "@vercel/analytics/react";
 import { THEME_SCRIPT } from "@/lib/theme";
 import { SITE_DESCRIPTION, SITE_IMAGE, SITE_JSON_LD, SITE_NAME, SITE_OPEN_GRAPH, SITE_TAGLINE, SITE_URL } from "@/lib/site";
 
-// Self-hosted at build time, so there is no layout shift or runtime font request.
-const serif = EB_Garamond({
-  subsets: ["latin"],
-  weight: ["400", "500", "600"],
-  style: ["normal", "italic"],
+// EB Garamond, self-hosted so the build never depends on Google Fonts (and
+// Turbopack's Google-font resolver cannot fail a production build).
+const serif = localFont({
+  src: [
+    { path: "./fonts/EBGaramond-normal.woff2", weight: "400 600", style: "normal" },
+    { path: "./fonts/EBGaramond-italic.woff2", weight: "400 600", style: "italic" },
+  ],
   variable: "--font-serif",
   display: "swap",
 });
