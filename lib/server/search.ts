@@ -5,6 +5,7 @@ import { normalizePaper } from "@/lib/sources/normalize";
 import type { AdapterOptions } from "@/lib/sources/types";
 import { countryTerms } from "@/lib/countries";
 import { withAbortSignal } from "@/lib/server/http";
+import { cacheGet, cacheSet, searchCacheKey } from "@/lib/server/redis-cache";
 
 export interface SearchOpts extends AdapterOptions {
   /** ISO 3166-1 country name or demonym to inject into the query. e.g. "Philippines" */
@@ -98,8 +99,30 @@ export async function searchSources(
   // Country-scoped variants of the query, per adapter capability.
   const booleanQuery = opts.country ? buildCountryQuery(query, opts.country) : query;
   const plainQuery = opts.country ? `${query} ${opts.country}` : query;
+  const wholeSearchKey = searchCacheKey([
+    query,
+    opts.country ?? null,
+    opts.fromYear ?? 0,
+    opts.openAccessOnly === true,
+    opts.perSource ?? 15,
+  ]);
 
-  return Promise.all(
+  // A whole answer cached in Redis is shared by every server instance. The
+  // per-source memory cache below still absorbs bursts on one instance.
+  const cached = await cacheGet(wholeSearchKey);
+  if (cached) {
+    try {
+      const results = JSON.parse(cached) as SourceResult[];
+      if (Array.isArray(results) && results.every((r) => r && typeof r.id === "string" && Array.isArray(r.papers))) {
+        for (const result of results) onSource?.(result);
+        return results;
+      }
+    } catch {
+      // Corrupt or old entry: fall through to a fresh search.
+    }
+  }
+
+  const results = await Promise.all(
     Object.entries(ADAPTERS).map(async ([id, { run, boolean, deadlineMs, country }]): Promise<SourceResult> => {
       const q = country && country === opts.country ? query : boolean ? booleanQuery : plainQuery;
       const key = sourceKey(id, q, opts);
@@ -158,6 +181,14 @@ export async function searchSources(
       return result;
     })
   );
+
+  if (!signal?.aborted) {
+    // Errors are useful to remember for a couple of minutes (a failing source
+    // stays fast), while a clean answer is good for the full six hours.
+    const ttl = results.some((r) => r.status === "error") ? 120 : CACHE_TTL_MS / 1000;
+    await cacheSet(wholeSearchKey, JSON.stringify(results), ttl);
+  }
+  return results;
 }
 
 /**
