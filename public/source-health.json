@@ -1,5 +1,5 @@
 {
-  "checkedAt": "2026-11-05T14:34:27.455Z",
+  "checkedAt": "2026-11-05T15:12:51.119Z",
   "results": [
     {
       "id": "openalex",
@@ -13,8 +13,8 @@
     },
     {
       "id": "semanticscholar",
-      "status": "working",
-      "count": 10
+      "status": "unavailable",
+      "detail": "rate limited (429)"
     },
     {
       "id": "doaj",
@@ -38,6 +38,16 @@
     },
     {
       "id": "eric",
+      "status": "working",
+      "count": 10
+    },
+    {
+      "id": "edarxiv",
+      "status": "working",
+      "count": 10
+    },
+    {
+      "id": "zbmath",
       "status": "working",
       "count": 10
     },
@@ -148,8 +158,8 @@
     },
     {
       "id": "thesesfr",
-      "status": "unavailable",
-      "detail": "fetch failed"
+      "status": "working",
+      "count": 10
     },
     {
       "id": "osf",
