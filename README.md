@@ -2,7 +2,7 @@
 
 A free web app that helps thesis students find related literature (RRL), keep it organised, and cite it correctly.
 
-- **Search** — one topic, 57 free academic databases at once, merged, de-duplicated and ranked, with preprint, retraction and expression-of-concern warnings. Save a search and the next time you open it, papers that weren't there before are marked *New*.
+- **Search** — one topic, 58 free academic databases at once, merged, de-duplicated and ranked, with preprint, retraction and expression-of-concern warnings. Save a search and the next time you open it, papers that weren't there before are marked *New*.
 - **Library** — save papers, group them by chapter, take notes, fill a synthesis matrix, or import a .bib/.ris file from Zotero, Mendeley or EndNote. Each paper is tagged **Local** or **Foreign** (guessed from the paper, changeable), to filter the library and split the exported reference list. **Share** a collection with your thesis group by link: they can read it, export it and copy it into their own library.
 - **Cite** — paste DOIs and get references in APA, MLA, IEEE or Chicago, or export your whole library.
 
@@ -12,8 +12,8 @@ No account needed to search. Only links to legal open-access full text. Light an
 
 ## How to use it
 
-1. **Search.** Type 3–6 words (e.g. `reading comprehension strategies`), set *Published since* (defaults to last 5 years), an optional *Country focus*, and *Free full text only* if you want it. **Recent** (your last 8 searches) and **Try** (random example topics) are below the form.
-2. **Narrow.** Sort by match, citations or date. **Refine** by record type (journal articles, theses, reports, books, preprints), local studies only, or a minimum citation count. The **Databases** list shows how many results each one returned — click to filter to it. **Narrow with** adds a suggested term. The search stays in the URL, so it's shareable.
+1. **Search.** Type 3–6 words (e.g. `reading comprehension strategies`), set *Published since* (defaults to last 5 years), a **Search scope** (all sources, core indexes, or Philippine sources), an optional *Country focus*, and *Free full text only* if you want it. **Recent** (your last 8 searches) and **Try** (random example topics) are below the form.
+2. **Narrow.** Sort by match, citations or date. **Refine** by record type (journal articles, theses, reports, books, preprints), local studies only, a minimum citation count, retracted/concern status, or peer review. The **Databases** list shows how many results each one returned — click to filter to it. **Narrow with** adds a suggested term. The search stays in the URL, so it's shareable.
 3. **Read.** Open a title for its abstract, a free-PDF link, a ready citation, related papers (cited-by / references / similar) and a notes box. **Abstract ≠ RRL** — it's the authors' own summary; use it to judge fit, then read the paper and write your RRL in your own words. Copying abstracts is plagiarism.
 4. **Save & organise.** Press **Save** on any result. In **Library**, group papers into collections and fill the **synthesis matrix** (Method, Findings, Limitations, Relevance) — this becomes your written RRL. Download the matrix for Excel/Google Sheets (.csv) or as a Word table (.rtf) for your adviser. Signed out, the library lives in that browser only; sign in to sync it, or copy it into your account later.
 5. **Cite.** Export your library as APA/MLA/IEEE/Chicago (copy it, or download an .rtf that opens in Word or Google Docs with hanging indents and italics), BibTeX or RIS — or paste DOIs into **Cite** to generate references without saving anything first.
@@ -65,7 +65,7 @@ All free; only IEEE Xplore needs a free registration key. The in-app [Databases 
 | Persée | French humanities and social science journals, books and reviews |
 | Zenodo, Figshare, HAL | Repository copies, reports, small-journal papers |
 | DataCite Theses, theses.fr, BDTD (Brazil) | Theses and dissertations |
-| Open Library | Books and textbooks (catalogue records; public-domain scans free) |
+| Open Library, Google Books | Books and textbooks (catalogue records and previews; Google Books needs a free API key) |
 
 **Trust signals:** results come straight from these databases; nothing is generated. Preprints carry a *Preprint · not peer-reviewed* badge. After results load, every DOI is checked against Crossref (which includes Retraction Watch) for retractions and expressions of concern. Semantic Scholar's one-line summaries are labelled *AI summary*.
 
@@ -91,6 +91,7 @@ npm run test:live            # calls every real database once
 | `NEXT_PUBLIC_FIREBASE_*` (7) | Yes | Firebase config for accounts/library |
 | `CONTACT_EMAIL`, `UNPAYWALL_EMAIL` | Recommended | Polite-pool access; PDF lookup |
 | `SEMANTIC_SCHOLAR_API_KEY`, `OPENALEX_API_KEY` | Recommended | Higher rate limits on the two biggest sources |
+| `GOOGLE_BOOKS_API_KEY` | Optional | Adds Google Books (textbooks and monographs). Requires a free key; without it the source is skipped instead of using Google's shared anonymous quota |
 | `NCBI_API_KEY` | Optional | 10 instead of 3 requests/s to PubMed and PubMed Central |
 | `CORE_API_KEY` | Optional | Higher CORE rate limit (works without, but may fail when busy). Free at [core.ac.uk/services/api](https://core.ac.uk/services/api); a revoked or expired key gets `401` and CORE shows as failed until it is replaced |
 | `CINII_APP_ID` | Optional | Adds CiNii Research (Japanese and Asian articles, theses and books). Its OpenSearch endpoint requires a free Application ID (`appid`); without it the API answers `403`. Register at [support.nii.ac.jp/en/cir/r_opensearch](https://support.nii.ac.jp/en/cir/r_opensearch) |
@@ -114,9 +115,10 @@ Rules restrict each user to their own `users/{uid}` data, cap field sizes, and a
 **Deploy:** import to Vercel → add the env vars → add the Vercel domain to Firebase authorized domains → redeploy.
 
 **Production operations:**
-- `/api/health` is the liveness probe; `/status` shows the app and integration state.
+- `/api/health` is the liveness probe; `/status` shows the app, integration state and the latest per-database health report (`public/source-health.json`, refreshed by the daily workflow).
 - GitHub Actions runs lint, types, unit tests, Playwright smoke/accessibility checks and a production build on every push and PR (`.github/workflows/ci.yml`).
-- The daily database health check remains `.github/workflows/sources-health.yml`.
+- The daily database health check remains `.github/workflows/sources-health.yml` and commits the report it produces.
+- Dependabot, CodeQL and `npm audit --omit=dev --audit-level=high` run automatically.
 - Upstash Redis (`KV_REST_API_URL`, `KV_REST_API_TOKEN`) makes rate limits global and shares the whole-search cache across server instances.
 - Vercel alerts notify the team owner of server-error anomalies, and `.github/workflows/uptime.yml` checks `/api/health` every ten minutes (GitHub emails the owner on failure). Add an external uptime monitor for faster, minute-level checks if needed.
 - Firestore backups need Firebase Blaze/billing and a GCS bucket. Add the `GCP_SA_KEY` and `FIRESTORE_BACKUP_BUCKET` repo secrets, then set the repo variable `BACKUPS_ENABLED=true`; `.github/workflows/firestore-backup.yml` exports daily. Run it manually once to verify before enabling the schedule.
@@ -132,7 +134,7 @@ Rules restrict each user to their own `users/{uid}` data, cap field sizes, and a
 **Project structure:** grouped by where code runs, so a bug can be traced from the page to the data.
 
 ```
-app/                 pages: home, search/, library/, paper/[id]/, cite/, databases/,
+app/                 pages: home, search/, library/, paper/[id]/, cite/, databases/, suggestions/,
                      shared/[id]/ (a group library opened by link), login/,
                      forgot-password/, settings/, privacy/, terms/; manifest.ts
 app/api/             search, cite, related, pdf, retractions, summarize (server)
