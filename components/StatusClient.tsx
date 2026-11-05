@@ -17,6 +17,7 @@ const LABELS: Record<string, string> = {
   cinii: "CiNii Application ID",
   unpaywall: "Unpaywall email",
   appCheck: "App Check",
+  redis: "Shared rate limits (Redis)",
 };
 
 export function StatusClient() {

@@ -23,6 +23,10 @@ export async function GET() {
         cinii: Boolean(process.env.CINII_APP_ID),
         unpaywall: Boolean(process.env.UNPAYWALL_EMAIL),
         appCheck: Boolean(process.env.NEXT_PUBLIC_RECAPTCHA_ENTERPRISE_SITE_KEY),
+        redis: Boolean(
+          (process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL) &&
+            (process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN)
+        ),
       },
     },
     { headers: { "Cache-Control": "no-store" } }
