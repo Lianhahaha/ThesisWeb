@@ -50,11 +50,18 @@ export async function searchThaijo(query: string, opts: AdapterOptions = {}): Pr
   const { fromYear, perSource = 15 } = opts;
   const size = fromYear ? Math.min(perSource * 2, 50) : perSource;
 
-  const res = await fetchWithTimeout("https://www.tci-thaijo.org/api/articles/search/", {
-    method: "POST",
-    headers: { "User-Agent": USER_AGENT, "Content-Type": "application/json", Accept: "application/json" },
-    body: JSON.stringify({ term: query, page: 1, size, strict: true, title: true, author: true, abstract: true }),
-  });
+  // The ThaiJO search endpoint regularly takes 8-12 s from outside Thailand;
+  // the default 8 s cut it off. The registry gives this adapter a matching
+  // deadline so the rest of the search still moves on.
+  const res = await fetchWithTimeout(
+    "https://www.tci-thaijo.org/api/articles/search/",
+    {
+      method: "POST",
+      headers: { "User-Agent": USER_AGENT, "Content-Type": "application/json", Accept: "application/json" },
+      body: JSON.stringify({ term: query, page: 1, size, strict: true, title: true, author: true, abstract: true }),
+    },
+    15000
+  );
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
   const data = await readJson<{ result?: ThaijoArticle[] }>(res);
 

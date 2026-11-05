@@ -114,7 +114,8 @@ export const ADAPTERS: Record<SourceId, AdapterEntry> = {
   upou:            { run: searchUpou, boolean: false, country: "Philippines" },
   upv:             { run: searchUpv, boolean: false, country: "Philippines" },
   wvsu:            { run: searchWvsu, boolean: false, country: "Philippines" },
-  thaijo:          { run: searchThaijo, boolean: false, country: "Thailand" },
+  // The ThaiJO search endpoint is often slow (8-12 s); give it more room.
+  thaijo:          { run: searchThaijo, boolean: false, country: "Thailand", deadlineMs: 18000 },
   herdin:          { run: searchHerdin, boolean: false, country: "Philippines" },
   serpp:           { run: searchSerpp, boolean: false, country: "Philippines" },
   krishikosh:      { run: searchKrishikosh, boolean: false, country: "India" },
