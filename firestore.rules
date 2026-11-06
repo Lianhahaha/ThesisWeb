@@ -77,6 +77,27 @@ service cloud.firestore {
       allow update, delete: if false;
     }
 
+    // Replies to a feedback comment. Public to read; signed-in users can
+    // reply. No uid or email is stored here either.
+    match /suggestions/{suggestionId}/replies/{replyId} {
+      function validReply() {
+        let d = request.resource.data;
+        return d.keys().hasOnly(['body', 'nickname', 'anonymous', 'createdAt'])
+          && d.body is string && d.body.size() >= 2 && d.body.size() <= 1000
+          && d.anonymous is bool
+          && d.createdAt is number
+          && (d.anonymous == true
+            ? d.nickname == ''
+            : d.nickname is string && d.nickname.size() >= 1 && d.nickname.size() <= 40);
+      }
+
+      allow read: if true;
+      allow create: if signedIn()
+        && exists(/databases/$(database)/documents/suggestions/$(suggestionId))
+        && validReply();
+      allow update, delete: if false;
+    }
+
     // ── Shared group libraries ───────────────────────────────────────────
     // A copy of some papers, readable by anyone who has the link (the id is
     // random). Only the owner can list, change or remove their shares.
