@@ -159,17 +159,20 @@ export function StatusClient() {
                     title={item.detail}
                   >
                     <span className="truncate text-muted">{sourceLabel(item.id)}</span>
-                    <span
-                      className={
-                        item.status === "working"
-                          ? "text-ok"
-                          : item.status === "failed" || item.status === "unavailable"
-                          ? "text-danger"
-                          : "text-subtle"
-                      }
-                    >
-                      {STATUS_LABEL[item.status]}
-                      {item.status === "working" && item.count != null ? ` (${item.count})` : ""}
+                    <span className="flex shrink-0 items-center gap-1.5">
+                      <span aria-hidden className="text-subtle">|</span>
+                      <span
+                        className={
+                          item.status === "working"
+                            ? "text-ok"
+                            : item.status === "failed" || item.status === "unavailable"
+                            ? "text-danger"
+                            : "text-subtle"
+                        }
+                      >
+                        {STATUS_LABEL[item.status]}
+                        {item.status === "working" && item.count != null ? ` (${item.count})` : ""}
+                      </span>
                     </span>
                   </li>
                 ))}
