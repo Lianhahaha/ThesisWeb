@@ -79,10 +79,13 @@ service cloud.firestore {
 
     // Replies to a feedback comment. Public to read; signed-in users can
     // reply. No uid or email is stored here either.
-    match /suggestions/{suggestionId}/replies/{replyId} {
+    match /replies/{replyId} {
       function validReply() {
         let d = request.resource.data;
-        return d.keys().hasOnly(['body', 'nickname', 'anonymous', 'createdAt'])
+        return d.keys().hasOnly(['suggestionId', 'body', 'nickname', 'anonymous', 'createdAt'])
+          && d.suggestionId is string
+          && d.suggestionId.size() >= 1 && d.suggestionId.size() <= 128
+          && d.suggestionId.matches('^[A-Za-z0-9]+$')
           && d.body is string && d.body.size() >= 2 && d.body.size() <= 1000
           && d.anonymous is bool
           && d.createdAt is number
@@ -93,7 +96,7 @@ service cloud.firestore {
 
       allow read: if true;
       allow create: if signedIn()
-        && exists(/databases/$(database)/documents/suggestions/$(suggestionId))
+        && exists(/databases/$(database)/documents/suggestions/$(request.resource.data.suggestionId))
         && validReply();
       allow update, delete: if false;
     }

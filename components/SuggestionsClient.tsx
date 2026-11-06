@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { addDoc, collection, collectionGroup, limit, onSnapshot, orderBy, query } from "firebase/firestore";
+import { addDoc, collection, limit, onSnapshot, orderBy, query } from "firebase/firestore";
 import { Flag, Loader2, MessageSquarePlus, Reply, Send } from "lucide-react";
 import { db } from "@/lib/firebase";
 import { useAuth } from "@/lib/auth/store";
@@ -113,7 +113,7 @@ export function SuggestionsClient() {
   }, [user]);
 
   useEffect(() => {
-    const feed = query(collectionGroup(db, "replies"), limit(500));
+    const feed = query(collection(db, "replies"), limit(500));
     const unsubscribe = onSnapshot(
       feed,
       (snapshot) => {
@@ -122,7 +122,7 @@ export function SuggestionsClient() {
             const data = doc.data();
             return {
               id: doc.id,
-              suggestionId: doc.ref.parent.parent?.id ?? "",
+              suggestionId: typeof data.suggestionId === "string" ? data.suggestionId : "",
               body: typeof data.body === "string" ? data.body : "",
               nickname: typeof data.nickname === "string" ? data.nickname : "",
               anonymous: data.anonymous === true,
@@ -237,7 +237,8 @@ export function SuggestionsClient() {
 
     setReplySending(true);
     try {
-      await addDoc(collection(db, "suggestions", suggestionId, "replies"), {
+      await addDoc(collection(db, "replies"), {
+        suggestionId,
         body: text,
         nickname: replyAnonymous ? "" : name.slice(0, MAX_NICKNAME),
         anonymous: replyAnonymous,
