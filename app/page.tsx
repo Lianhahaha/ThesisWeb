@@ -88,10 +88,27 @@ export default function HomePage() {
             ))}
           </ol>
 
-          <p className="mt-4 border-t border-border pt-3 text-sm text-muted">
-            Free, legal sources only. Preprints are not peer-reviewed. Use abstracts to choose papers,
-            not as your RRL, and always check citations against your school&apos;s guide.
-          </p>
+          <div className="mt-4 border-t border-border pt-3">
+            <p className="text-sm font-semibold">Good to know</p>
+            <ul className="mt-1.5 list-disc space-y-1 pl-5 text-sm text-muted">
+              <li>
+                <strong>Abstract ≠ RRL.</strong>{" "}
+                The abstract is the authors&apos; own summary — use it to judge whether a paper fits your study, then
+                read the paper and write your RRL in your own words. Copying abstracts into your chapter counts as
+                plagiarism.
+              </li>
+              <li>Only free, legal sources. Full-text links go to publishers, repositories and preprint servers.</li>
+              <li>Some databases are slow or down at times. The Databases list shows which ones answered.</li>
+              <li>Preprints (arXiv, some Zenodo records) are not peer-reviewed. Check before you cite.</li>
+              <li>Always check a generated citation against your school&apos;s style guide.</li>
+              <li>
+                Signing in? <em>Continue with Google</em> means no new password to forget. With email and
+                password, confirm your address: that is where a reset link goes.
+              </li>
+              <li>No results? Drop a word, widen <em>Published since</em>, or untick <em>Free full text only</em>.</li>
+              <li>Search with keywords, not a full question. &ldquo;Senior high school anxiety&rdquo; beats a sentence.</li>
+            </ul>
+          </div>
         </div>
       </section>
     </div>
