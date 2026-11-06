@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ChevronRight } from "lucide-react";
 import { SearchPanel, DEFAULT_FROM_YEAR } from "@/components/SearchPanel";
@@ -10,39 +9,18 @@ import { SOURCE_COUNT } from "@/lib/sources/meta";
 import { buildSearchParams, type SearchInput } from "@/lib/search/params";
 import { fromYearFor, getPreferences } from "@/lib/preferences";
 
-const STEPS: { title: string; body: React.ReactNode }[] = [
+const STEPS: { title: string; body: string }[] = [
   {
     title: "Search and narrow",
-    body: (
-      <>
-        Type three to six words about your topic. Set <em>Published since</em>{" "}(most rubrics want
-        the last 5 years), a <em>Country focus</em>{" "}for local studies, or tick{" "}
-        <em>Free full text only</em>. On the results, sort by best match, citations or date, pick a
-        single database from the <em>Databases</em>{" "}list, or add a <em>Narrow with</em>{" "}term.
-      </>
-    ),
+    body: "Type 3–6 words, set a year and scope, then search.",
   },
   {
     title: "Read and save",
-    body: (
-      <>
-        Open a title for its abstract, a free PDF link (or <em>Find free PDF</em>), a ready
-        citation, related papers and a notes box. Press <em>Save</em>{" "}to keep it. Your library
-        lives in this browser; sign in to keep it on every device.
-      </>
-    ),
+    body: "Open a result, read the abstract or free PDF, and press Save.",
   },
   {
     title: "Organise and cite",
-    body: (
-      <>
-        In <Link href="/library" className="underline">Library</Link>, group papers into
-        collections (e.g. <em>Local studies</em>) and fill the synthesis matrix: method, findings,
-        limitations, relevance. <em>Export references</em>{" "}gives APA, MLA, IEEE or Chicago, plus
-        .bib and .ris for Zotero or Mendeley. Have DOIs already? Paste them into{" "}
-        <Link href="/cite" className="underline">Cite</Link>.
-      </>
-    ),
+    body: "Fill the matrix, then export APA, MLA, IEEE, Chicago, BibTeX or RIS.",
   },
 ];
 
@@ -110,27 +88,10 @@ export default function HomePage() {
             ))}
           </ol>
 
-          <div className="mt-4 border-t border-border pt-3">
-            <p className="text-sm font-semibold">Good to know</p>
-            <ul className="mt-1.5 list-disc space-y-1 pl-5 text-sm text-muted">
-              <li>
-                <strong>Abstract ≠ RRL.</strong>{" "}
-                The abstract is the authors&apos; own summary — use it to judge whether a paper fits your study, then
-                read the paper and write your RRL in your own words. Copying abstracts into your chapter counts as
-                plagiarism.
-              </li>
-              <li>Only free, legal sources. Full-text links go to publishers, repositories and preprint servers.</li>
-              <li>Some databases are slow or down at times. The Databases list shows which ones answered.</li>
-              <li>Preprints (arXiv, some Zenodo records) are not peer-reviewed. Check before you cite.</li>
-              <li>Always check a generated citation against your school&apos;s style guide.</li>
-              <li>
-                Signing in? <em>Continue with Google</em> means no new password to forget. With email and
-                password, confirm your address: that is where a reset link goes.
-              </li>
-              <li>No results? Drop a word, widen <em>Published since</em>, or untick <em>Free full text only</em>.</li>
-              <li>Search with keywords, not a full question. &ldquo;Senior high school anxiety&rdquo; beats a sentence.</li>
-            </ul>
-          </div>
+          <p className="mt-4 border-t border-border pt-3 text-sm text-muted">
+            Free, legal sources only. Preprints are not peer-reviewed. Use abstracts to choose papers,
+            not as your RRL, and always check citations against your school&apos;s guide.
+          </p>
         </div>
       </section>
     </div>

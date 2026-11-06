@@ -266,6 +266,39 @@
     line-height: 1.75;
   }
 
+  .prose-read > :where(*) + :where(*) {
+    margin-top: 0.85rem;
+  }
+
+  .prose-read h2 {
+    margin-top: 1.9rem;
+    margin-bottom: 0.35rem;
+    font-size: 1.25rem;
+    font-weight: 600;
+    line-height: 1.3;
+  }
+
+  .prose-read h3 {
+    margin-top: 1.4rem;
+    margin-bottom: 0.3rem;
+    font-size: 1.05rem;
+    font-weight: 600;
+  }
+
+  .prose-read ul,
+  .prose-read ol {
+    padding-left: 1.25rem;
+    list-style: disc;
+  }
+
+  .prose-read ol {
+    list-style: decimal;
+  }
+
+  .prose-read li + li {
+    margin-top: 0.35rem;
+  }
+
   .skip-link { @apply sr-only; }
   .skip-link:focus {
     @apply not-sr-only fixed left-4 top-4 z-[100] rounded-lg px-4 py-2 text-sm font-medium;
