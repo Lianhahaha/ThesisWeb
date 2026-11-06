@@ -1,5 +1,5 @@
 {
-  "checkedAt": "2026-11-05T15:12:51.119Z",
+  "checkedAt": "2026-11-06T02:04:38.013Z",
   "results": [
     {
       "id": "openalex",
@@ -13,8 +13,8 @@
     },
     {
       "id": "semanticscholar",
-      "status": "unavailable",
-      "detail": "rate limited (429)"
+      "status": "working",
+      "count": 10
     },
     {
       "id": "doaj",
@@ -83,8 +83,8 @@
     },
     {
       "id": "osti",
-      "status": "working",
-      "count": 10
+      "status": "unavailable",
+      "detail": "The operation was aborted due to timeout"
     },
     {
       "id": "cinii",
@@ -158,8 +158,8 @@
     },
     {
       "id": "thesesfr",
-      "status": "working",
-      "count": 10
+      "status": "unavailable",
+      "detail": "fetch failed"
     },
     {
       "id": "osf",
