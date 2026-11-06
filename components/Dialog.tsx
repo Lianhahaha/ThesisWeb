@@ -19,6 +19,7 @@ export function Dialog({
   children,
   footer,
   className = "max-h-[92vh] max-w-2xl",
+  placement = "sheet",
 }: {
   title: React.ReactNode;
   onClose: () => void;
@@ -26,6 +27,8 @@ export function Dialog({
   footer?: React.ReactNode;
   /** Size of the panel: max width and height classes. */
   className?: string;
+  /** A bottom sheet on phones, or a centred panel on every screen. */
+  placement?: "sheet" | "center";
 }) {
   const titleId = useId();
   const panel = useRef<HTMLDivElement>(null);
@@ -74,7 +77,9 @@ export function Dialog({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 p-0 sm:items-center sm:p-4"
+      className={`fixed inset-0 z-50 flex justify-center bg-black/50 ${
+        placement === "center" ? "items-center p-3" : "items-end p-0 sm:items-center sm:p-4"
+      }`}
       onClick={() => close.current()}
     >
       <div
@@ -83,7 +88,9 @@ export function Dialog({
         aria-modal="true"
         aria-labelledby={titleId}
         onClick={(e) => e.stopPropagation()}
-        className={`flex w-full flex-col rounded-t-2xl border border-border bg-surface text-left sm:rounded-2xl ${className}`}
+        className={`flex w-full flex-col border border-border bg-surface text-left ${
+          placement === "center" ? "rounded-2xl" : "rounded-t-2xl sm:rounded-2xl"
+        } ${className}`}
       >
         <header className="flex items-center justify-between border-b border-border p-4">
           <h2 id={titleId} className="text-lg">{title}</h2>

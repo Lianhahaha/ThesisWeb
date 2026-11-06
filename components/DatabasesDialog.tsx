@@ -15,22 +15,23 @@ export function DatabasesDialog({ onClose }: { onClose: () => void }) {
     <Dialog
       title={`${SOURCE_COUNT} databases searched`}
       onClose={onClose}
-      className="max-h-[85vh] max-w-2xl"
+      className="max-h-[70vh] max-w-2xl"
+      placement="center"
       footer={
         <Link href="/databases" className="text-accent underline" onClick={onClose}>
           What each database covers
         </Link>
       }
     >
-      <ul className="divide-y divide-border">
+      <ul className="grid grid-cols-2 gap-x-4">
         {ALPHABETICAL.map((s) => (
-          <li key={s.label} className="py-3">
+          <li key={s.label} className="min-w-0 border-b border-border py-3">
             <a
               href={s.url}
               target="_blank"
               rel="noopener noreferrer"
               title={s.blurb}
-              className="text-sm font-medium hover:underline"
+              className="break-words text-sm font-medium hover:underline"
             >
               {s.label}
               <ExternalLink className="ml-1 inline h-3 w-3 align-[-1px] text-subtle" aria-hidden />
