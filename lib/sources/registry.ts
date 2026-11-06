@@ -32,6 +32,8 @@ import { searchBdtd } from "@/lib/sources/adapters/bdtd";
 import { searchThesesFr } from "@/lib/sources/adapters/thesesfr";
 import { searchEdArxiv, searchOsf } from "@/lib/sources/adapters/osf";
 import { searchZbmath } from "@/lib/sources/adapters/zbmath";
+import { searchHuggingFace } from "@/lib/sources/adapters/huggingface";
+import { searchOpenReview } from "@/lib/sources/adapters/openreview";
 import { searchSeafdec } from "@/lib/sources/adapters/seafdec";
 import { searchSsoar } from "@/lib/sources/adapters/ssoar";
 import { searchWho } from "@/lib/sources/adapters/who";
@@ -82,6 +84,8 @@ export const ADAPTERS: Record<SourceId, AdapterEntry> = {
   arxiv:           { run: searchArxiv, boolean: true },
   eric:            { run: searchEric, boolean: false },
   edarxiv:         { run: searchEdArxiv, boolean: false },
+  huggingface:     { run: searchHuggingFace, boolean: false },
+  openreview:      { run: searchOpenReview, boolean: false, deadlineMs: 18000 },
   zbmath:          { run: searchZbmath, boolean: false, deadlineMs: 18000 },
   zenodo:          { run: searchZenodo, boolean: false },
   hal:             { run: searchHal, boolean: false },

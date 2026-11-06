@@ -53,7 +53,8 @@ afterAll(() => {
 const PROBES: Record<SourceId, string> = {
   openalex: "climate change", crossref: "climate change", semanticscholar: "climate change", doaj: "teacher education",
   europepmc: "dengue", pubmed: "dengue", arxiv: "neural network", eric: "reading comprehension",
-  edarxiv: "teacher education", zbmath: "algebra", zenodo: "climate change",
+  edarxiv: "teacher education", huggingface: "large language models",
+  openreview: "large language models", zbmath: "algebra", zenodo: "climate change",
   hal: "climate change", openaire: "climate change", inspire: "dark matter", plos: "malaria", datacite: "education",
   osti: "solar energy", cinii: "education", jstage: "education", figshare: "climate change", worldbank: "poverty",
   cgspace: "rice", idrc: "climate change", pmc: "dengue", ntrs: "aerospace", econbiz: "inflation", usgs: "earthquake",

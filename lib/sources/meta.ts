@@ -84,6 +84,14 @@ const META = {
     label: "EdArXiv", blurb: "Education research preprints from the EdArXiv community: teaching, learning, policy, assessment and educational technology. Not peer-reviewed", color: "#2f9e8f",
     region: "Global (COS)", fields: ["education", "social"], kind: "preprints", url: "https://edarxiv.org",
   },
+  huggingface: {
+    label: "Hugging Face Papers", blurb: "The AI community's daily research feed: machine learning, language models, computer vision, agents, AI safety and applications, with free arXiv PDFs", color: "#f0b429",
+    region: "Global", fields: ["computing", "sciences", "engineering", "social"], kind: "preprints", url: "https://huggingface.co/papers",
+  },
+  openreview: {
+    label: "OpenReview", blurb: "Open peer review for AI and machine-learning conferences and workshops: ICLR, NeurIPS, ICML, CoRL and more, with free PDFs", color: "#8b5cf6",
+    region: "Global", fields: ["computing", "sciences", "engineering"], kind: "journals", url: "https://openreview.net",
+  },
   zbmath: {
     label: "zbMATH Open", blurb: "Mathematical reviews and abstracts across pure and applied mathematics, statistics, mathematical computer science and mathematical physics (FIZ Karlsruhe / EMS)", color: "#b06a2c",
     region: "Global", fields: ["sciences", "computing", "engineering"], kind: "index", url: "https://zbmath.org",
