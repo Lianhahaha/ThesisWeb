@@ -44,14 +44,14 @@ export default function TermsPage() {
         <li>Try to reach another user&apos;s account, library or data.</li>
         <li>Use it to obtain paywalled material you are not entitled to read.</li>
         <li>Upload notes containing anything unlawful.</li>
-        <li>Post private information, spam or abusive content on the public feedback board.</li>
+        <li>Comment private information, spam or abusive content on the public feedback board.</li>
       </ul>
 
-      <h2 className="mt-8 text-xl">Public posts</h2>
+      <h2 className="mt-8 text-xl">Public comments</h2>
       <p className="mt-2">
         The <Link href="/suggestions" className="underline">Suggestions</Link> board is public.
-        Anyone can read a post, including posts made anonymously, so do not put private or personal
-        information there. Posts that are abusive, spam or unrelated may be removed.
+        Anyone can read a comment, including comments made anonymously, so do not put private or personal
+        information there. Comments that are abusive, spam or unrelated may be removed.
       </p>
 
       <h2 className="mt-8 text-xl">Your account</h2>

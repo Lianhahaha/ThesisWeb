@@ -22,6 +22,21 @@ interface Suggestion {
 const MIN_BODY = 10;
 const MAX_BODY = 2000;
 const MAX_NICKNAME = 40;
+const COMMENT_COLORS = ["--comment-1", "--comment-2", "--comment-3", "--comment-4", "--comment-5"];
+
+function commentColors(items: Suggestion[]): string[] {
+  let previous = -1;
+  return items.map((item) => {
+    const key = item.anonymous ? item.id : item.nickname || item.id;
+    let hash = 0;
+    for (let i = 0; i < key.length; i++) hash = (hash * 31 + key.charCodeAt(i)) >>> 0;
+    let index = hash % COMMENT_COLORS.length;
+    // Adjacent comments should never share a colour, even on a hash collision.
+    if (index === previous) index = (index + 1) % COMMENT_COLORS.length;
+    previous = index;
+    return `rgb(var(${COMMENT_COLORS[index]}))`;
+  });
+}
 
 function formatDate(value: number): string {
   return new Intl.DateTimeFormat("en-PH", { dateStyle: "medium", timeStyle: "short" }).format(new Date(value));
@@ -44,6 +59,7 @@ export function SuggestionsClient() {
   const [sending, setSending] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const colors = items ? commentColors(items) : [];
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -89,7 +105,7 @@ export function SuggestionsClient() {
     setMessage(null);
 
     if (!user) {
-      setError("Sign in first so the post can be saved.");
+      setError("Sign in first so the comment can be saved.");
       return;
     }
     const text = body.trim();
@@ -118,9 +134,9 @@ export function SuggestionsClient() {
         createdAt: Date.now(),
       });
       setBody("");
-      setMessage("Posted. Thank you for helping improve Thesisweb.");
+      setMessage("Comment posted. Thank you for helping improve Thesisweb.");
     } catch {
-      setError("The post was not saved. Please try again.");
+      setError("The comment was not saved. Please try again.");
     } finally {
       setSending(false);
     }
@@ -132,13 +148,13 @@ export function SuggestionsClient() {
         <p className="eyebrow">Feedback</p>
         <h1 className="mt-2 text-3xl font-semibold tracking-tight">Problems and suggestions</h1>
         <p className="mt-2 text-muted">
-          Report a broken result, a wrong link, or an idea for the site. Posts are public so everyone can
-          follow the response. Do not include private or personal details.
+          Report a broken result, a wrong link, or an idea for the site. Comments are public so everyone
+          can follow the response. Do not include private or personal details.
         </p>
       </header>
 
-      <section className="panel" aria-labelledby="post-h">
-        <h2 id="post-h" className="text-lg font-semibold">Leave a post</h2>
+      <section className="panel" aria-labelledby="comment-h">
+        <h2 id="comment-h" className="text-lg font-semibold">Leave a comment</h2>
 
         {!initialized ? (
           <p className="mt-3 flex items-center gap-2 text-sm text-muted">
@@ -146,14 +162,14 @@ export function SuggestionsClient() {
           </p>
         ) : !user ? (
           <div className="mt-3 rounded-lg border border-border bg-surface2 p-4 text-sm text-muted">
-            <p>Sign in to post. You can still choose anonymous below.</p>
+            <p>Sign in to comment. You can still choose anonymous below.</p>
             <Link href="/login?next=/suggestions" className="btn-secondary btn-sm mt-3 inline-flex">
               Sign in
             </Link>
           </div>
         ) : (
           <form onSubmit={submit} className="mt-4 space-y-4">
-            <div className="flex flex-wrap gap-2" role="group" aria-label="Post type">
+            <div className="flex flex-wrap gap-2" role="group" aria-label="Comment type">
               <button
                 type="button"
                 onClick={() => setKind("suggestion")}
@@ -205,7 +221,7 @@ export function SuggestionsClient() {
                 className="h-4 w-4 rounded"
                 style={{ accentColor: "rgb(var(--accent))" }}
               />
-              Post anonymously
+              Comment anonymously
             </label>
 
             {!anonymous && (
@@ -227,7 +243,7 @@ export function SuggestionsClient() {
 
             <button type="submit" disabled={sending || body.trim().length < MIN_BODY} className="btn-primary">
               {sending ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> : <Send className="h-4 w-4" aria-hidden />}
-              {sending ? "Posting..." : "Post"}
+              {sending ? "Commenting..." : "Comment"}
             </button>
           </form>
         )}
@@ -235,26 +251,26 @@ export function SuggestionsClient() {
 
       <section aria-labelledby="board-h">
         <div className="flex items-baseline justify-between gap-3">
-          <h2 id="board-h" className="text-lg font-semibold">Recent posts</h2>
+          <h2 id="board-h" className="text-lg font-semibold">Recent comments</h2>
           <span className="text-xs text-subtle">Latest 100</span>
         </div>
 
         {loadError && <p className="mt-3 text-sm" style={{ color: "rgb(var(--danger))" }}>{loadError}</p>}
         {items === null && !loadError && (
           <p className="mt-3 flex items-center gap-2 text-sm text-muted">
-            <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> Loading posts...
+            <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> Loading comments...
           </p>
         )}
-        {items?.length === 0 && <p className="mt-3 text-sm text-muted">No posts yet. Be the first.</p>}
+        {items?.length === 0 && <p className="mt-3 text-sm text-muted">No comments yet. Be the first.</p>}
 
         {items && items.length > 0 && (
           <ul className="mt-3 divide-y divide-border border-y border-border">
-            {items.map((item) => {
+            {items.map((item, index) => {
               const href = internalPath(item.page);
               return (
                 <li key={item.id} className="py-4 sm:py-5">
                   <div className="flex flex-wrap items-center gap-2 text-sm">
-                    <span className="text-base font-semibold" style={{ color: "rgb(var(--sender))" }}>
+                    <span className="text-base font-semibold" style={{ color: colors[index] }}>
                       {item.anonymous ? "Anonymous" : item.nickname || "Reader"}
                     </span>
                     <span className="chip" title={item.kind === "problem" ? "Problem report" : "Suggestion"}>
