@@ -6,6 +6,7 @@ import { addDoc, collection, limit, onSnapshot, orderBy, query } from "firebase/
 import { Flag, Loader2, MessageSquarePlus, Reply, Send } from "lucide-react";
 import { db } from "@/lib/firebase";
 import { useAuth } from "@/lib/auth/store";
+import { getCachedUsername, USERNAME_EVENT } from "@/lib/auth/username-cache";
 
 type Kind = "problem" | "suggestion";
 
@@ -71,15 +72,14 @@ export function SuggestionsClient() {
   const [kind, setKind] = useState<Kind>("suggestion");
   const [about, setAbout] = useState("");
   const [body, setBody] = useState("");
-  const [nickname, setNickname] = useState("");
   const [anonymous, setAnonymous] = useState(false);
   const [sending, setSending] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [accountName, setAccountName] = useState("");
   const [replies, setReplies] = useState<CommentReply[] | null>(null);
   const [replyingTo, setReplyingTo] = useState<string | null>(null);
   const [replyBody, setReplyBody] = useState("");
-  const [replyNickname, setReplyNickname] = useState("");
   const [replyAnonymous, setReplyAnonymous] = useState(false);
   const [replySending, setReplySending] = useState(false);
   const [replyError, setReplyError] = useState<string | null>(null);
@@ -103,13 +103,14 @@ export function SuggestionsClient() {
   }, []);
 
   useEffect(() => {
-    if (!user) return;
-    setNickname((current) => current || user.displayName || user.email?.split("@")[0] || "");
-  }, [user]);
-
-  useEffect(() => {
-    if (!user) return;
-    setReplyNickname((current) => current || user.displayName || user.email?.split("@")[0] || "");
+    if (!user) { setAccountName(""); return; }
+    const update = () =>
+      setAccountName(
+        getCachedUsername(user.uid) || user.displayName || user.email?.split("@")[0] || ""
+      );
+    update();
+    window.addEventListener(USERNAME_EVENT, update);
+    return () => window.removeEventListener(USERNAME_EVENT, update);
   }, [user]);
 
   useEffect(() => {
@@ -172,7 +173,7 @@ export function SuggestionsClient() {
       return;
     }
     const text = body.trim();
-    const name = nickname.trim();
+    const name = accountName.trim();
     if (text.length < MIN_BODY) {
       setError(`Write at least ${MIN_BODY} characters.`);
       return;
@@ -182,7 +183,7 @@ export function SuggestionsClient() {
       return;
     }
     if (!anonymous && name.length === 0) {
-      setError("Add a nickname or choose anonymous.");
+      setError("Set a display name in Settings or choose anonymous.");
       return;
     }
 
@@ -209,7 +210,6 @@ export function SuggestionsClient() {
     setReplyingTo(suggestionId);
     setReplyBody("");
     setReplyAnonymous(false);
-    setReplyNickname(user?.displayName || user?.email?.split("@")[0] || nickname);
     setReplyError(null);
   }
 
@@ -221,7 +221,7 @@ export function SuggestionsClient() {
       return;
     }
     const text = replyBody.trim();
-    const name = replyNickname.trim();
+    const name = accountName.trim();
     if (text.length < MIN_REPLY) {
       setReplyError(`Write at least ${MIN_REPLY} characters.`);
       return;
@@ -231,7 +231,7 @@ export function SuggestionsClient() {
       return;
     }
     if (!replyAnonymous && name.length === 0) {
-      setReplyError("Add a nickname or reply anonymously.");
+      setReplyError("Set a display name in Settings or reply anonymously.");
       return;
     }
 
@@ -336,17 +336,10 @@ export function SuggestionsClient() {
             </label>
 
             {!anonymous && (
-              <div>
-                <label htmlFor="nickname" className="field-label">Nickname</label>
-                <input
-                  id="nickname"
-                  value={nickname}
-                  onChange={(event) => setNickname(event.target.value)}
-                  maxLength={MAX_NICKNAME}
-                  className="input"
-                  placeholder="How your name appears on the board"
-                />
-              </div>
+              <p className="text-xs text-muted">
+                Commenting as <strong>{accountName || "your account"}</strong>.{" "}
+                <Link href="/settings" className="underline">Change your name in Settings</Link>.
+              </p>
             )}
 
             {error && <p className="text-sm" style={{ color: "rgb(var(--danger))" }} role="alert">{error}</p>}
@@ -445,14 +438,10 @@ export function SuggestionsClient() {
                               Reply anonymously
                             </label>
                             {!replyAnonymous && (
-                              <input
-                                value={replyNickname}
-                                onChange={(event) => setReplyNickname(event.target.value)}
-                                maxLength={MAX_NICKNAME}
-                                className="input !min-h-[32px] !w-40 !py-1 text-xs"
-                                aria-label="Reply nickname"
-                                placeholder="Nickname"
-                              />
+                              <p className="text-xs text-muted">
+                                Replying as <strong>{accountName || "your account"}</strong>.{" "}
+                                <Link href="/settings" className="underline">Change in Settings</Link>.
+                              </p>
                             )}
                           </div>
                           {replyError && (
