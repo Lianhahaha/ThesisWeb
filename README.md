@@ -1,5 +1,7 @@
 # Thesisweb
 
+**Created and maintained by Lian Justine Cruz.**
+
 A free web app that helps thesis students find related literature (RRL), keep it organised, and cite it correctly.
 
 - **Search** — one topic, 60 free academic databases at once, merged, de-duplicated and ranked, with preprint, retraction and expression-of-concern warnings. Save a search and the next time you open it, papers that weren't there before are marked *New*.
@@ -200,3 +202,11 @@ Signed out: papers live in that browser's IndexedDB. Signed in: papers/notes liv
 ## Ethics
 
 Free, public academic APIs only; links only to open-access copies. Always cite what you use and follow your school's academic-integrity rules.
+
+## Author
+
+Thesisweb was created by **Lian Justine Cruz**.
+
+## License
+
+MIT License. Copyright (c) 2026 Lian Justine Cruz. See [`LICENSE`](LICENSE).

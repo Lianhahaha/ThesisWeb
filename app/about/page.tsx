@@ -78,6 +78,12 @@ export default function AboutPage() {
         copies and does not bypass paywalls.
       </p>
 
+      <h2>Who made this</h2>
+      <p>
+        Thesisweb was created by <strong>Lian Justine Cruz</strong>. The project is shared under the
+        MIT License.
+      </p>
+
       <h2>Report a problem</h2>
       <p>
         If a record is wrong, a citation is malformed, or a database has stopped returning results,
