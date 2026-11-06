@@ -1,5 +1,5 @@
 {
-  "checkedAt": "2026-11-06T02:04:38.013Z",
+  "checkedAt": "2026-11-06T04:32:22.224Z",
   "results": [
     {
       "id": "openalex",
@@ -47,6 +47,16 @@
       "count": 10
     },
     {
+      "id": "huggingface",
+      "status": "working",
+      "count": 10
+    },
+    {
+      "id": "openreview",
+      "status": "working",
+      "count": 10
+    },
+    {
       "id": "zbmath",
       "status": "working",
       "count": 10
@@ -83,8 +93,8 @@
     },
     {
       "id": "osti",
-      "status": "unavailable",
-      "detail": "The operation was aborted due to timeout"
+      "status": "working",
+      "count": 10
     },
     {
       "id": "cinii",
@@ -103,8 +113,8 @@
     },
     {
       "id": "worldbank",
-      "status": "working",
-      "count": 10
+      "status": "unavailable",
+      "detail": "fetch failed"
     },
     {
       "id": "cgspace",
@@ -168,8 +178,8 @@
     },
     {
       "id": "seafdec",
-      "status": "working",
-      "count": 10
+      "status": "unavailable",
+      "detail": "The operation was aborted due to timeout"
     },
     {
       "id": "ssoar",
@@ -243,8 +253,8 @@
     },
     {
       "id": "herdin",
-      "status": "working",
-      "count": 10
+      "status": "unavailable",
+      "detail": "The operation was aborted due to timeout"
     },
     {
       "id": "serpp",
