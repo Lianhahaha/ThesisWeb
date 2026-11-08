@@ -71,15 +71,50 @@ export default function TermsPage() {
         works it lists. Your notes and matrix entries stay yours.
       </p>
 
-      <h2 className="mt-8 text-xl">No guarantees</h2>
+      <h2 className="mt-8 text-xl">No warranty</h2>
       <p className="mt-2">
-        The app is provided as it is, with no warranty. Results depend on databases that are
-        sometimes slow, incomplete or unavailable, and a topic missing from them is not a topic that
-        does not exist. Preprints listed here have not been peer reviewed. Nothing found through
-        Thesisweb is academic, legal or medical advice, and the author is not liable for any loss
-        arising from use of the app, including work lost to a fault in it. Export a backup of your
-        library from <Link href="/settings" className="underline">Settings</Link> if it matters to
-        you.
+        The app is provided <strong>&ldquo;as is&rdquo;</strong> and{" "}
+        <strong>&ldquo;as available&rdquo;</strong>, without warranties of any kind, express or
+        implied, including accuracy, completeness, fitness for a particular purpose, or
+        non-infringement. Results depend on databases that are sometimes slow, incomplete, wrong or
+        unavailable, and a topic missing from them is not a topic that does not exist. Preprints
+        listed here have not been peer reviewed. Nothing found through Thesisweb is academic, legal
+        or medical advice.
+      </p>
+
+      <h2 className="mt-8 text-xl">Citations and your academic work</h2>
+      <p className="mt-2">
+        Citations, abstracts, metadata and links are generated from third-party database and
+        publisher records. They can be incomplete, outdated or wrong. Check every citation against
+        the publisher and your school&apos;s style guide before you submit, and read the paper
+        before relying on it. Thesisweb does not write your review, does not check plagiarism, and
+        does not decide what belongs in your RRL. You are responsible for the work you submit and
+        for following your school&apos;s academic-integrity rules.
+      </p>
+
+      <h2 className="mt-8 text-xl">Limitation of liability</h2>
+      <p className="mt-2">
+        To the maximum extent permitted by law, the developer and operator of Thesisweb are not
+        liable for any loss, damage, claim or expense arising from your use of, or inability to use,
+        the app. This includes wrong, incomplete or missing citations, academic penalties or failing
+        grades, lost or corrupted notes or libraries, service interruption, and any direct,
+        indirect, incidental, consequential or punitive damages, even if advised of the possibility.
+        You use the app at your own risk. Nothing in these terms limits liability that cannot be
+        limited under applicable law.
+      </p>
+
+      <h2 className="mt-8 text-xl">Indemnity</h2>
+      <p className="mt-2">
+        You agree to indemnify and hold the developer and operator harmless from any claim, loss or
+        expense (including reasonable legal fees) arising from your use of the app, the content you
+        submit, or your breach of these terms.
+      </p>
+
+      <h2 className="mt-8 text-xl">Backups</h2>
+      <p className="mt-2">
+        Export a backup of your library from{" "}
+        <Link href="/settings" className="underline">Settings</Link> if it matters to you. The app
+        is free and runs on free hosting tiers, so no copy of your data is guaranteed.
       </p>
 
       <h2 className="mt-8 text-xl">Availability</h2>
@@ -90,7 +125,9 @@ export default function TermsPage() {
 
       <h2 className="mt-8 text-xl">Changes and contact</h2>
       <p className="mt-2">
-        These terms may change, and the date at the top will say when. Questions go to{" "}
+        These terms may change, and the date at the top will say when. Continued use after a change
+        means you accept the updated terms. If any part of these terms is unenforceable, the rest
+        remains in effect. Questions go to{" "}
         <a href={`mailto:${CONTACT_EMAIL}`} className="underline">{CONTACT_EMAIL}</a>.
       </p>
 
