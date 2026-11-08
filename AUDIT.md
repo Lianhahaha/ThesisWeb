@@ -19,6 +19,36 @@ That is a strong baseline. Most projects at this size do not build, lint, test a
 
 ---
 
+## 0. Remediation status (2026-11-08)
+
+Each batch below was re-verified with `npx tsc --noEmit`, `npm run lint` and `npm test` before being committed and pushed.
+
+| Finding | Status | Commit / change |
+|---|---|---|
+| H1 shared-machine residue | Fixed | `abbf4eb` — sign-out now clears Dexie, search history, saved searches, tab caches, cached names and private Cache Storage entries |
+| H2 analytics search terms | Fixed | `abbf4eb` — no `search_term`, query string stripped from `page_location`; privacy page updated |
+| H3 rate-limit identity/global caps | Fixed | `3cdb597` — site-wide bucket on cite/related/pdf/abstract/summarize/retractions; trusted-proxy note added |
+| H4 segmented-control states | Fixed | `9030b8a` — `aria-pressed` on every segmented control; results count is `aria-live`/`aria-busy` |
+| M1 filters before merge | Fixed | `45c3cd2` — topic matching removed from the per-source pass; applied after merge |
+| M2 merge drops concern/dates | Fixed | `45c3cd2` — unions `concern`, backfills `year`/`publishedDate` |
+| M3 unicode dedupe / unstable ids | Fixed | `45c3cd2` — Unicode-aware match key; ids derived from the record, not arrival order |
+| M4 non-Latin query ranking | Fixed | `45c3cd2` — Unicode tokenizer + substring fallback for CJK/accented terms |
+| M6 unbounded `fsAllPapers`/delete | Partly fixed | `9aa56b1` — paged reads/deletes; `safeId` collision and concurrent-write merge still open |
+| M7 shared-copy trust | Fixed | `2679c02` — share id normalized from DOI/title; unknown fields stripped |
+| M9 redirect SSRF | Verified safe | No change — final URL was already checked before the body was read |
+| M10 unbounded HTML/XML reads | Fixed | `2679c02` — `readText()` caps every adapter page at 5 MB |
+| M12 service-worker caching | Fixed | `abbf4eb` — private routes never cached; public pages keyed by full URL; cache version bumped |
+
+**Still open (deliberate, needs a design/product decision or migration):**
+- **H5 Firebase eager bundle** — needs the Header account widget moved into a lazy chunk.
+- **M5 per-user document quotas** — needs agreed limits and possibly a rules test.
+- **M6 remainder** — `safeId` cannot change without migrating every saved DOI paper; concurrent whole-document writes need Firestore transactions.
+- **M8 cache stampede / non-stream payload cap** — needs a shared in-flight lock and an agreed result cap.
+- **M11 partial cite results** — needs a streaming or partial-response design.
+- **M13–M18** — rules tests + emulator CI, auth/search e2e, SHA-pinned Actions/OIDC, dependency pinning, schema versioning.
+
+---
+
 ## 1. What this system is
 
 A free, local-first academic discovery tool for thesis writers:
