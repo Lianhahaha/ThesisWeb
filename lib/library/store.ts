@@ -6,6 +6,10 @@ import { mergeSavedPaper } from "@/lib/library/merge";
 import { auth } from "@/lib/firebase";
 import * as fs from "@/lib/library/firestore";
 import { setSavedState } from "@/lib/library/saved-ids";
+import { LIBRARY_EVENT, PAPER_UPDATED_EVENT, type LibraryChange, type PaperUpdate } from "@/lib/library/events";
+
+export { LIBRARY_EVENT, PAPER_UPDATED_EVENT };
+export type { LibraryChange, PaperUpdate };
 
 /**
  * Hybrid local + cloud persistence.
@@ -37,20 +41,8 @@ export function getDb(): ThesisDB {
  * `removed` names a paper taken out of the library; `local` marks a change
  * to this browser's copies only.
  */
-export const LIBRARY_EVENT = "tw:library";
-export interface LibraryChange {
-  removed?: string;
-  local?: boolean;
-}
 function changed(detail: LibraryChange = {}): void {
   if (typeof window !== "undefined") window.dispatchEvent(new CustomEvent<LibraryChange>(LIBRARY_EVENT, { detail }));
-}
-
-/** Fired after updatePaper, with { id, changes }, so in-memory copies can patch themselves. */
-export const PAPER_UPDATED_EVENT = "tw:paper-updated";
-export interface PaperUpdate {
-  id: string;
-  changes: Partial<SavedPaper>;
 }
 
 /**

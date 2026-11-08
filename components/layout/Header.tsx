@@ -5,12 +5,9 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Search, Library, Quote, Home, LogOut, Settings, MessageSquarePlus } from "lucide-react";
 import { useLiveQuery } from "dexie-react-hooks";
-import { getDb, LIBRARY_EVENT } from "@/lib/library/store";
+import { LIBRARY_EVENT } from "@/lib/library/events";
 import { useAuth } from "@/lib/auth/store";
 import { cacheUsername, getCachedUsername, USERNAME_EVENT } from "@/lib/auth/username-cache";
-import { db } from "@/lib/firebase";
-import { signOutAndForget } from "@/lib/auth/sign-out";
-import { doc, getDoc } from "firebase/firestore";
 import { ThemeToggle } from "@/components/layout/ThemeToggle";
 
 const NAV = [
@@ -27,6 +24,9 @@ function useSavedCount() {
 
   const local = useLiveQuery(async () => {
     if (typeof window === "undefined") return 0;
+    // Loaded on demand so the header does not pull the Firebase-backed store
+    // (and Firestore) into the first bundle.
+    const { getDb } = await import("@/lib/library/store");
     return getDb().papers.count();
   }, []);
 
@@ -131,15 +131,29 @@ function UserArea() {
     // visit), so a rename made on another device shows up here too.
     const cached = getCachedUsername(user.uid);
     if (cached) setUsername(cached);
-    getDoc(doc(db, "users", user.uid, "profile", "main"))
-      .then((snap) => {
+    // Firebase is imported on demand: the header is on every page, and this
+    // keeps Firestore out of the first bundle for visitors who never sign in.
+    let cancelled = false;
+    void (async () => {
+      try {
+        const [{ db }, { doc, getDoc }] = await Promise.all([
+          import("@/lib/firebase"),
+          import("firebase/firestore"),
+        ]);
+        const snap = await getDoc(doc(db, "users", user.uid, "profile", "main"));
+        if (cancelled) return;
         const name = snap.exists() ? (snap.data().username as string | undefined) : undefined;
         // Cache only a real name. Right after sign-up the profile may not be
         // written yet; caching the email here would stick it in as the name.
         if (name) cacheUsername(user.uid, name);
         else if (!cached) setUsername(user.email || "");
-      })
-      .catch(() => { if (!cached) setUsername(user.email || ""); });
+      } catch {
+        if (!cancelled && !cached) setUsername(user.email || "");
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
   }, [user]);
 
   // Settings renames the account; reflect it without a reload.
@@ -177,7 +191,9 @@ function UserArea() {
         <span className="truncate">{username || user.email || "Account"}</span>
       </Link>
       <button
-        onClick={() => signOutAndForget(user.uid)}
+        onClick={() => {
+          void import("@/lib/auth/sign-out").then(({ signOutAndForget }) => signOutAndForget(user.uid));
+        }}
         className="btn-ghost btn-sm !px-2"
         aria-label="Sign out"
         title="Sign out"

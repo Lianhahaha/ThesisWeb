@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { getDb } from "@/lib/library/store";
 
 /**
  * Dexie only exists in the browser (IndexedDB). We gate rendering of children
@@ -12,14 +11,23 @@ export function DexieHooksProvider({ children }: { children: React.ReactNode }) 
   const [ready, setReady] = useState(false);
   const [error, setError] = useState<string | null>(null);
   useEffect(() => {
-    try {
-      getDb();
-      setReady(true);
-    } catch (e) {
-      console.error("Failed to initialize IndexedDB:", e);
-      setError(e instanceof Error ? e.message : "Failed to initialize local database");
-      // Don't set ready=true — children won't mount, preventing silent useLiveQuery failures
-    }
+    let cancelled = false;
+    // Imported on demand: the store also imports the Firebase-backed cloud
+    // path, and the header is on every page, so this keeps that chunk out of
+    // the first bundle until the browser is ready to use it.
+    void import("@/lib/library/store")
+      .then(({ getDb }) => {
+        getDb();
+        if (!cancelled) setReady(true);
+      })
+      .catch((e: unknown) => {
+        console.error("Failed to initialize IndexedDB:", e);
+        if (!cancelled) setError(e instanceof Error ? e.message : "Failed to initialize local database");
+        // Don't set ready=true — children won't mount, preventing silent useLiveQuery failures
+      });
+    return () => {
+      cancelled = true;
+    };
   }, []);
   // Check the error first: on failure `ready` stays false, so testing `ready`
   // first would return null forever and the warning would never render.
