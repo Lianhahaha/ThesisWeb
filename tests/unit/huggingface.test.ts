@@ -6,7 +6,7 @@ const response = [
     paper: {
       id: "2509.26495",
       title: "A Large Language Model Study",
-      authors: [{ name: "Ana Cruz" }, { name: "Lian Cruz" }],
+      authors: [{ name: "Ana Cruz" }, { name: "Lia Cruz" }],
       publishedAt: "2025-09-30T16:39:17.000Z",
       summary: "An AI-generated summary.",
     },
@@ -24,7 +24,7 @@ describe("searchHuggingFace", () => {
     expect(String(fetchMock.mock.calls[0][0])).toContain("limit=10");
     expect(paper).toMatchObject({
       title: "A Large Language Model Study",
-      authors: ["Ana Cruz", "Lian Cruz"],
+      authors: ["Ana Cruz", "Lia Cruz"],
       year: 2025,
       type: "preprint",
       preprint: true,

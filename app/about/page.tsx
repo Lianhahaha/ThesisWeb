@@ -80,7 +80,7 @@ export default function AboutPage() {
 
       <h2>Who made this</h2>
       <p>
-        Thesisweb was created by <strong>Lian Justine Cruz</strong>. The project is shared under the
+        Thesisweb was created by <strong>peonnn</strong>. The project is shared under the
         MIT License.
       </p>
 
