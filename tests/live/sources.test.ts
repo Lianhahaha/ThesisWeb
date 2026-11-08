@@ -24,7 +24,6 @@ const ONLY = (process.env.LIVE_ONLY || "").split(",").filter(Boolean);
 /** Sources that need a key are skipped, not failed, when the key is absent. */
 const SKIP: Partial<Record<SourceId, string>> = {};
 if (!process.env.IEEE_XPLORE_API_KEY) SKIP.ieee = "IEEE_XPLORE_API_KEY not configured";
-if (!process.env.CINII_APP_ID) SKIP.cinii = "CINII_APP_ID not configured";
 if (!process.env.CORE_API_KEY) SKIP.core = "CORE_API_KEY not configured";
 if (!process.env.GOOGLE_BOOKS_API_KEY) SKIP.googlebooks = "GOOGLE_BOOKS_API_KEY not configured";
 

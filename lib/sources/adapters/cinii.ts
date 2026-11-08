@@ -10,7 +10,9 @@ import type { AdapterOptions } from "@/lib/sources/types";
  * - Articles, theses, books and research data from Japanese universities
  *   and publishers, plus international journals indexed alongside them.
  *   Strong on Asian research; many records are in English.
- * - Free Application ID (appid) required by the OpenSearch endpoint.
+ * - A free Application ID (appid) raises the rate limit, but the endpoint
+ *   also answers anonymously; if the appid is rejected (not activated yet),
+ *   the adapter retries without it instead of taking the source down.
  * Docs: https://support.nii.ac.jp/en/cir/r_opensearch
  */
 
@@ -36,12 +38,18 @@ export async function searchCinii(
   opts: AdapterOptions = {}
 ): Promise<Paper[]> {
   const { fromYear, perSource = 15 } = opts;
-  if (!APP_ID) throw new Error("CiNii needs a free Application ID (CINII_APP_ID)");
 
-  const params = new URLSearchParams({ q: query, format: "json", count: String(perSource), appid: APP_ID });
+  const params = new URLSearchParams({ q: query, format: "json", count: String(perSource) });
+  if (APP_ID) params.set("appid", APP_ID);
   if (fromYear && fromYear > 0) params.set("from", String(fromYear));
 
-  const res = await fetchWithTimeout(`${BASE}?${params}`, { headers: { "User-Agent": USER_AGENT } });
+  let res = await fetchWithTimeout(`${BASE}?${params}`, { headers: { "User-Agent": USER_AGENT } });
+  if (res.status === 403 && APP_ID) {
+    // A new appid can take a while to activate; anonymous access still works.
+    console.warn("[cinii] CINII_APP_ID was refused; searching anonymously");
+    params.delete("appid");
+    res = await fetchWithTimeout(`${BASE}?${params}`, { headers: { "User-Agent": USER_AGENT } });
+  }
   if (!res.ok) throw new Error(`CiNii ${res.status}`);
   const data = await readJson<{ items?: CiniiItem[] }>(res);
 
