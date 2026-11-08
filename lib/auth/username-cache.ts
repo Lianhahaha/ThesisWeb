@@ -39,3 +39,17 @@ export function clearCachedUsername(uid: string): void {
     // Ignore.
   }
 }
+
+/** Remove every account's cached name, not just the one signing out. */
+export function clearAllCachedUsernames(): void {
+  try {
+    const remove: string[] = [];
+    for (let i = 0; i < localStorage.length; i += 1) {
+      const k = localStorage.key(i);
+      if (k?.startsWith("tw_username_")) remove.push(k);
+    }
+    for (const k of remove) localStorage.removeItem(k);
+  } catch {
+    // Storage blocked: nothing to clear.
+  }
+}

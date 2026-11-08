@@ -103,7 +103,8 @@ export default function PrivacyPage() {
       <p className="mt-2">
         The app uses Firebase Analytics and Vercel Analytics to count page views and to see which
         features get used. Firebase Analytics also records when an account is created, when someone
-        signs in, and the topic words of a search together with the number of results. It is used in
+        signs in, and how many results a search returned. It never receives the search words
+        themselves, and the query string is stripped from page-view addresses. It is used in
         aggregate, to decide what to improve. If you would rather not be counted, a content blocker
         or a private window will stop both, and the app works normally without them.
       </p>

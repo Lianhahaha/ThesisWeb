@@ -125,7 +125,9 @@ export default function SearchPage() {
         "success"
       );
     else toast(`${data.papers.length} papers in ${(data.tookMs / 1000).toFixed(1)}s`, "success");
-    trackEvent("search", { search_term: input.query, results: data.papers.length });
+    // No search_term: the words a student types are their thesis topic and must
+    // not leave the browser through analytics. Only the result count is useful here.
+    trackEvent("search", { results: data.papers.length });
   }
 
   /**

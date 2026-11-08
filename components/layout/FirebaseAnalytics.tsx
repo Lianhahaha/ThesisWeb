@@ -20,10 +20,11 @@ function PageViews() {
   useEffect(() => {
     const analytics = getFirebaseAnalytics();
     if (!analytics) return;
-    const query = searchParams.toString();
+    // Never send the query string: a search URL contains the student's
+    // research topic. Only the route and page title are logged.
     logEvent(analytics, "page_view", {
-      page_path: query ? `${pathname}?${query}` : pathname,
-      page_location: window.location.href,
+      page_path: pathname,
+      page_location: `${window.location.origin}${pathname}`,
       page_title: document.title,
     });
   }, [pathname, searchParams]);

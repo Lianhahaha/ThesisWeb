@@ -89,6 +89,16 @@ export function removeSavedSearch(key: string): void {
   write(read().filter((s) => s.key !== key));
 }
 
+/** Forget every pinned search. Used when signing out on a shared computer. */
+export function clearSavedSearches(): void {
+  try {
+    localStorage.removeItem(KEY);
+  } catch {
+    // Storage blocked: nothing to clear.
+  }
+  if (typeof window !== "undefined") window.dispatchEvent(new Event(SAVED_SEARCHES_EVENT));
+}
+
 /**
  * Record that a saved search was run again. Returns the papers new since the
  * last time and when that was, or null if the search isn't saved.

@@ -197,3 +197,25 @@ export async function allPapers(): Promise<SavedPaper[]> {
   return all.sort((a, b) => b.savedAt - a.savedAt);
 }
 
+/**
+ * Delete this browser's whole library (papers, notes, matrix).
+ *
+ * Called when signing out on a shared computer: the next person must not find
+ * the previous student's thesis topic or notes in IndexedDB. The database is
+ * not namespaced per account, so the only safe action is to remove it.
+ */
+export async function clearLocalLibrary(): Promise<void> {
+  try {
+    _db?.close();
+  } catch {
+    // Already closed, or another tab holds it.
+  }
+  try {
+    await Dexie.delete("thesisweb");
+  } catch {
+    // Storage blocked: nothing to clear.
+  }
+  _db = null;
+  changed({ local: true });
+}
+

@@ -73,6 +73,15 @@ export function recallSearch(qs: string, now = Date.now()): RecalledSearch | nul
   }
 }
 
+/** Forget this tab's last search. Used when signing out on a shared computer. */
+export function forgetLastSearch(): void {
+  try {
+    sessionStorage.removeItem(KEY);
+  } catch {
+    // Storage blocked: nothing to clear.
+  }
+}
+
 /** Where "Back to search" goes: the last search's results, or the empty search page. */
 export function lastSearchHref(now = Date.now()): string {
   try {

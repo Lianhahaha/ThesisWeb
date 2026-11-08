@@ -72,6 +72,15 @@ export function mergeRecentPapers(papers: Paper[]): void {
   }
 }
 
+/** Forget the papers stashed for this tab. Used when signing out on a shared computer. */
+export function clearRecentPapers(): void {
+  try {
+    sessionStorage.removeItem(KEY);
+  } catch {
+    // Storage blocked: nothing to clear.
+  }
+}
+
 export function getRecentPaper(id: string): Paper | null {
   if (typeof window === "undefined") return null;
   try {
