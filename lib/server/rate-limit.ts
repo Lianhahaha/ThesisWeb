@@ -33,13 +33,28 @@ const LIMITS = {
   retractions: { limit: 40, windowMs: 60_000 },
 } satisfies Record<string, Rule>;
 
-/** All visitors combined, for the fan-out route. */
-const GLOBAL_SEARCH: Rule = { limit: 120, windowMs: 60_000 };
+/**
+ * All visitors combined, per route. These bound the total number of upstream
+ * calls, so a script that rotates source IPs still cannot burn the free API
+ * quotas (search fans out to ~60 databases; cite/related/retractions call
+ * Crossref, OpenAlex and Semantic Scholar).
+ */
+const GLOBAL: Partial<Record<keyof typeof LIMITS, Rule>> = {
+  search: { limit: 120, windowMs: 60_000 },
+  cite: { limit: 120, windowMs: 60_000 },
+  related: { limit: 300, windowMs: 60_000 },
+  pdf: { limit: 300, windowMs: 60_000 },
+  abstract: { limit: 300, windowMs: 60_000 },
+  summarize: { limit: 300, windowMs: 60_000 },
+  retractions: { limit: 400, windowMs: 60_000 },
+};
 
 function clientIp(req: NextRequest): string {
-  // Vercel sanitizes these headers before the function sees them, so a caller
-  // cannot rotate spoofed addresses to get a fresh bucket. Prefer its
-  // single-value headers; the leftmost x-forwarded-for entry is the client.
+  // On Vercel the platform overwrites these headers, so a caller cannot rotate
+  // spoofed addresses to get a fresh bucket. Behind another proxy, make sure
+  // the edge sets x-real-ip / x-vercel-forwarded-for and strips client-supplied
+  // copies; otherwise rotate to a fresh bucket is possible. No IP means one
+  // shared "unknown" bucket, which is safe (just stricter).
   const vercel = req.headers.get("x-vercel-forwarded-for")?.split(",")[0]?.trim();
   if (vercel) return vercel;
   const real = req.headers.get("x-real-ip")?.trim();
@@ -86,7 +101,10 @@ const hits = new Map<string, number[]>();
 let lastSweep = Date.now();
 
 /** Longest window of any rule; a key idle this long holds nothing that counts. */
-const MAX_WINDOW_MS = Math.max(GLOBAL_SEARCH.windowMs, ...Object.values(LIMITS).map((r) => r.windowMs));
+const MAX_WINDOW_MS = Math.max(
+  ...Object.values(LIMITS).map((r) => r.windowMs),
+  ...Object.values(GLOBAL).map((r) => r?.windowMs ?? 0)
+);
 
 /** Seconds until `key` has a free slot under `rule`, or 0 if it has one now. Records nothing. */
 function waitFor(key: string, rule: Rule, now: number): number {
@@ -123,7 +141,8 @@ function localWait(checks: [string, Rule][], now: number): number {
 export async function rateLimit(req: NextRequest, name: keyof typeof LIMITS): Promise<NextResponse | null> {
   const now = Date.now();
   const checks: [string, Rule][] = [[`${name}:${clientIp(req)}`, LIMITS[name]]];
-  if (name === "search") checks.push(["search:*", GLOBAL_SEARCH]);
+  const global = GLOBAL[name];
+  if (global) checks.push([`${name}:*`, global]);
 
   const wait = (await sharedWait(checks, now)) ?? localWait(checks, now);
   if (!wait) return null;
