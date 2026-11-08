@@ -29,6 +29,9 @@ Each batch below was re-verified with `npx tsc --noEmit`, `npm run lint` and `np
 | H2 analytics search terms | Fixed | `abbf4eb` — no `search_term`, query string stripped from `page_location`; privacy page updated |
 | H3 rate-limit identity/global caps | Fixed | `3cdb597` — site-wide bucket on cite/related/pdf/abstract/summarize/retractions; trusted-proxy note added |
 | H4 segmented-control states | Fixed | `9030b8a` — `aria-pressed` on every segmented control; results count is `aria-live`/`aria-busy` |
+| H5 Firebase eager bundle | Partly fixed | `69860e7` — header, auth, analytics and the Dexie provider load Firebase on demand; the library store still imports it for signed-in cloud paths |
+| Citation accuracy (Chicago) | Fixed | `6937992` — three authors are listed in-text; `et al.` starts at four |
+| Record accuracy | Improved | `601509b` — `normalizePaper` strips HTML/entities; live checks reject implausible years, malformed DOIs and markup |
 | M1 filters before merge | Fixed | `45c3cd2` — topic matching removed from the per-source pass; applied after merge |
 | M2 merge drops concern/dates | Fixed | `45c3cd2` — unions `concern`, backfills `year`/`publishedDate` |
 | M3 unicode dedupe / unstable ids | Fixed | `45c3cd2` — Unicode-aware match key; ids derived from the record, not arrival order |
@@ -40,7 +43,7 @@ Each batch below was re-verified with `npx tsc --noEmit`, `npm run lint` and `np
 | M12 service-worker caching | Fixed | `abbf4eb` — private routes never cached; public pages keyed by full URL; cache version bumped |
 
 **Still open (deliberate, needs a design/product decision or migration):**
-- **H5 Firebase eager bundle** — needs the Header account widget moved into a lazy chunk.
+- **H5 Firebase eager bundle (remainder)** — the store still imports Firestore/Auth statically; splitting local Dexie from the cloud path would remove Firebase entirely from the shared chunk.
 - **M5 per-user document quotas** — needs agreed limits and possibly a rules test.
 - **M6 remainder** — `safeId` cannot change without migrating every saved DOI paper; concurrent whole-document writes need Firestore transactions.
 - **M8 cache stampede / non-stream payload cap** — needs a shared in-flight lock and an agreed result cap.
