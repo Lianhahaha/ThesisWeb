@@ -1,5 +1,5 @@
 import type { Paper, SearchResult } from "@/lib/types";
-import { matchesQuery, passesFilters, rankResults } from "@/lib/search/rank";
+import { passesFilters, rankResults } from "@/lib/search/rank";
 import { ADAPTERS } from "@/lib/sources/registry";
 import { CORE_SOURCE_IDS, LOCAL_SOURCE_IDS } from "@/lib/sources/meta";
 import { normalizePaper } from "@/lib/sources/normalize";
@@ -166,12 +166,15 @@ export async function searchSources(
       try {
         const raw = await withDeadline(() => run(q, opts), deadlineMs ?? DEFAULT_DEADLINE_MS, signal);
         if (!Array.isArray(raw)) throw new Error("adapter returned no list");
-        // Many databases can't filter by year or free full text themselves, and
-        // records that miss the topic would be dropped by the ranking anyway;
-        // leaving them out here keeps the streamed answer small.
+        // Many databases can't filter by year or free full text themselves, so
+        // apply those here to keep the streamed answer small. Topic matching is
+        // deliberately NOT applied per source: a record with a weak title can
+        // still share a DOI with a better copy from another database, and
+        // dropping it here would lose that merge. rankResults() filters on the
+        // merged list instead.
         const papers = raw
           .map((p) => normalizePaper(p, id))
-          .filter((p): p is Paper => p !== null && passesFilters(p, opts) && matchesQuery(p, query));
+          .filter((p): p is Paper => p !== null && passesFilters(p, opts));
         result = { id, status: papers.length > 0 ? "ok" : "empty", papers, error: "" };
         if (!signal?.aborted) {
           if (cache.size >= CACHE_MAX) cache.clear();

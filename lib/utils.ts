@@ -15,6 +15,23 @@ export function normalizeTitle(s: string): string {
     .trim();
 }
 
+/**
+ * Unicode-aware normalization for matching (dedupe keys and ranking).
+ * Folds Latin accents (é → e) but keeps other scripts (Greek, Cyrillic, CJK,
+ * Arabic), so a title in any language still produces words to compare.
+ * `normalizeTitle` above stays ASCII-only because `paperId` hashes it and
+ * changing it would change ids that saved papers already use.
+ */
+export function normalizeForMatch(s: string): string {
+  return s
+    .normalize("NFKD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^\p{L}\p{N}\s]/gu, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
 /** Build a stable id for a paper from its DOI or title hash. */
 export function paperId(doi?: string | null, title?: string | null): string {
   if (doi) return "doi:" + doi.toLowerCase();

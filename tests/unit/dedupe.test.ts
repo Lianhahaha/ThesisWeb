@@ -23,6 +23,28 @@ describe("dedupePapers", () => {
     expect(out[0].retracted).toBe(true);
   });
 
+  it("keeps an expression of concern from any source", () => {
+    const out = dedupePapers([p({ doi: "10.1/a" }), p({ doi: "10.1/a", concern: true })]);
+    expect(out[0].concern).toBe(true);
+  });
+
+  it("fills a missing year from a duplicate record", () => {
+    const out = dedupePapers([p({ doi: "10.1/a", year: null }), p({ doi: "10.1/a", year: 2021 })]);
+    expect(out[0].year).toBe(2021);
+  });
+
+  it("matches accented and unaccented titles", () => {
+    const out = dedupePapers([p({ id: "tit:x", title: "Educación y pobreza" }), p({ id: "tit:y", title: "Educacion y pobreza" })]);
+    expect(out).toHaveLength(1);
+  });
+
+  it("assigns colliding ids the same values regardless of source order", () => {
+    const a = p({ id: "tit:x", title: "Same", year: 2025 });
+    const b = p({ id: "tit:x", title: "Same", year: 2026 });
+    const ids = (list: Paper[]) => new Map(list.map((x) => [x.year, x.id]));
+    expect(ids(dedupePapers([a, b]))).toEqual(ids(dedupePapers([b, a])));
+  });
+
   it("lets a known journal version win over a preprint copy", () => {
     expect(dedupePapers([p({ preprint: true }), p({ preprint: false })])[0].preprint).toBe(false);
     expect(dedupePapers([p({ preprint: false }), p({ preprint: true })])[0].preprint).toBe(false);
@@ -68,5 +90,13 @@ describe("rankResults", () => {
 
   it("keeps only free full text when asked", () => {
     expect(rankResults(records(), "teacher burnout", { openAccessOnly: true }).map((x) => x.id)).toEqual(["doi:10.1/a"]);
+  });
+
+  it("ranks a non-Latin query instead of returning input order", () => {
+    const out = rankResults(
+      [p({ id: "a", title: "气候变化的政策" }), p({ id: "b", title: "教育政策研究" })],
+      "教育"
+    );
+    expect(out.map((x) => x.title)).toEqual(["教育政策研究"]);
   });
 });

@@ -1,5 +1,5 @@
 import type { Paper } from "@/lib/types";
-import { normalizeTitle } from "@/lib/utils";
+import { normalizeForMatch, paperId } from "@/lib/utils";
 
 /**
  * Merging and ranking search results. Pure functions, used by the server for a
@@ -44,7 +44,7 @@ export function dedupePapers(papers: Paper[]): Paper[] {
 
   for (const p of papers) {
     const doiKey = p.doi ? p.doi.toLowerCase() : null;
-    const titleKey = normalizeTitle(p.title).slice(0, 80);
+    const titleKey = normalizeForMatch(p.title).slice(0, 80);
     // Placeholder titles say nothing about identity — never match on them.
     const tyKey = titleKey && titleKey !== "untitled" ? `${titleKey}|${p.year ?? ""}` : null;
 
@@ -80,18 +80,32 @@ export function dedupePapers(papers: Paper[]): Paper[] {
  * get the year (then a counter) appended.
  */
 function uniqueIds(papers: Paper[]): Paper[] {
-  const seen = new Set<string>();
+  // Ids must be the same no matter what order sources answer in, so the
+  // suffix comes from the record itself (year/title/venue/DOI), not from
+  // whichever copy happened to arrive first.
+  const groups = new Map<string, Paper[]>();
   for (const p of papers) {
-    if (!seen.has(p.id)) {
-      seen.add(p.id);
-      continue;
-    }
-    let id = `${p.id}-${p.year ?? "nd"}`;
-    for (let n = 2; seen.has(id); n++) id = `${p.id}-${p.year ?? "nd"}-${n}`;
-    p.id = id;
-    seen.add(id);
+    const group = groups.get(p.id);
+    if (group) group.push(p);
+    else groups.set(p.id, [p]);
+  }
+  for (const [base, group] of groups) {
+    if (group.length === 1) continue;
+    const sorted = [...group].sort((a, b) => stableKey(a).localeCompare(stableKey(b)));
+    sorted.forEach((p, i) => {
+      if (i === 0) return;
+      const suffix = paperId(null, stableKey(p)).slice(4, 12);
+      let id = `${base}-${suffix}`;
+      for (let n = 2; group.some((q) => q !== p && q.id === id); n++) id = `${base}-${suffix}-${n}`;
+      p.id = id;
+    });
   }
   return papers;
+}
+
+/** A record's identity, independent of source order. */
+function stableKey(p: Paper): string {
+  return `${p.year ?? 0}|${normalizeForMatch(p.title)}|${p.venue ?? ""}|${p.doi ?? ""}`;
 }
 
 function mergeInto(dest: Paper, src: Paper): void {
@@ -102,8 +116,12 @@ function mergeInto(dest: Paper, src: Paper): void {
   if (src.isOpenAccess && src.openAccessUrl && !dest.isOpenAccess) dest.openAccessUrl = src.openAccessUrl;
   if (!dest.url && src.url) dest.url = src.url;
   if (src.isOpenAccess) dest.isOpenAccess = true;
-  // A retraction reported by any source must survive the merge.
+  // A retraction or expression of concern reported by any source must survive.
   if (src.retracted) dest.retracted = true;
+  if (src.concern) dest.concern = true;
+  // Dates are often missing from one database's copy and present in another's.
+  if (!dest.year && src.year) dest.year = src.year;
+  if (!dest.publishedDate && src.publishedDate) dest.publishedDate = src.publishedDate;
   // Any source that knows of a journal version wins over a preprint copy (the
   // arXiv record of a since-published paper); unknown never clears a flag.
   if (dest.preprint === false || src.preprint === false) dest.preprint = false;
@@ -199,15 +217,15 @@ function stem(word: string): string {
 // ─── Tokenization helpers ───────────────────────────────────────────────────
 
 function tokenizeQuery(query: string): string[] {
-  return query
-    .toLowerCase()
+  return normalizeForMatch(query)
     .split(/\s+/)
-    .map((t) => t.replace(/[^a-z0-9]/g, ""))
-    .filter((t) => t.length > 2 && !STOP_WORDS.has(t));
+    // Two-letter Latin words are too common ("of", "in"), but a short CJK or
+    // other non-Latin term is a real word and must not be dropped.
+    .filter((t) => (t.length > 2 || /[^\x00-\x7F]/.test(t)) && !STOP_WORDS.has(t));
 }
 
 function stemTokenize(text: string): Set<string> {
-  const words = normalizeTitle(text)
+  const words = normalizeForMatch(text)
     .split(/\s+/)
     .filter((t) => t.length > 2);
   // Return both original and stemmed forms for matching
@@ -220,7 +238,7 @@ function stemTokenize(text: string): Set<string> {
 }
 
 function bigrams(text: string): string[] {
-  const words = normalizeTitle(text)
+  const words = normalizeForMatch(text)
     .split(/\s+/)
     .filter((t) => t.length > 2);
   const pairs: string[] = [];
@@ -235,8 +253,12 @@ function bigrams(text: string): string[] {
 /** Share of the query's words (exact or stemmed) found in the title and in the abstract. */
 function coverage(p: Paper, qTerms: string[]): { title: number; abstract: number } {
   const share = (text: string) => {
-    const tokens = stemTokenize(text.toLowerCase());
-    return qTerms.filter((t) => tokens.has(t) || tokens.has(stem(t))).length / qTerms.length;
+    const norm = normalizeForMatch(text);
+    const tokens = stemTokenize(norm);
+    const hits = qTerms.filter(
+      (t) => tokens.has(t) || tokens.has(stem(t)) || (/[^\x00-\x7F]/.test(t) && norm.includes(t))
+    ).length;
+    return hits / qTerms.length;
   };
   return { title: share(p.title || ""), abstract: share(p.abstract || "") };
 }
@@ -264,7 +286,7 @@ export function matchesQuery(p: Paper, query: string): boolean {
  */
 export function scoreRelevance(papers: Paper[], query: string): Paper[] {
   const qTerms = tokenizeQuery(query);
-  const qLower = query.toLowerCase().trim();
+  const qLower = normalizeForMatch(query);
   const qTermCount = qTerms.length;
   if (qTermCount === 0) return papers;
 
@@ -276,8 +298,8 @@ export function scoreRelevance(papers: Paper[], query: string): Paper[] {
 
   return papers
     .map((p) => {
-      const titleLower = (p.title || "").toLowerCase();
-      const absLower = (p.abstract || "").toLowerCase();
+      const titleLower = normalizeForMatch(p.title || "");
+      const absLower = normalizeForMatch(p.abstract || "");
 
       // ── 1–2. Title (0-40 points) and abstract (0-15 points) term coverage with stemming ──
       const { title: titleCoverage, abstract: absCoverage } = coverage(p, qTerms);
