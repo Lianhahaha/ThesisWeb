@@ -13,6 +13,11 @@ import {
   deleteField,
   writeBatch,
   getCountFromServer,
+  limit,
+  startAfter,
+  type DocumentSnapshot,
+  type Query,
+  type QuerySnapshot,
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import type { SavedPaper } from "@/lib/types";
@@ -135,10 +140,23 @@ export async function fsSaveMany(uid: string, papers: SavedPaper[]): Promise<str
   return saved;
 }
 
+/** Read a whole library in pages, so a large account never loads in one query. */
+const PAGE_SIZE = 500;
+
 export async function fsAllPapers(uid: string): Promise<SavedPaper[]> {
-  const q = query(collection(db, "users", uid, "papers"), orderBy("savedAt", "desc"));
-  const snap = await getDocs(q);
-  return snap.docs.map(d => d.data() as SavedPaper);
+  const papers: SavedPaper[] = [];
+  const base = collection(db, "users", uid, "papers");
+  let after: DocumentSnapshot | null = null;
+  for (;;) {
+    const q: Query = after
+      ? query(base, orderBy("savedAt", "desc"), startAfter(after), limit(PAGE_SIZE))
+      : query(base, orderBy("savedAt", "desc"), limit(PAGE_SIZE));
+    const snap: QuerySnapshot = await getDocs(q);
+    papers.push(...snap.docs.map((d) => d.data() as SavedPaper));
+    if (snap.size < PAGE_SIZE) break;
+    after = snap.docs[snap.docs.length - 1];
+  }
+  return papers;
 }
 
 /** Count without downloading: billed as one read per 1,000 papers. */
@@ -149,10 +167,14 @@ export async function fsCountPapers(uid: string): Promise<number> {
 
 /** Delete every saved paper (account deletion). Batches hold at most 500 writes. */
 export async function fsDeleteAllPapers(uid: string): Promise<void> {
-  const snap = await getDocs(collection(db, "users", uid, "papers"));
-  for (let i = 0; i < snap.docs.length; i += 400) {
+  const base = collection(db, "users", uid, "papers");
+  // Delete one batch at a time; deleted documents leave the next page, so this
+  // terminates even for an account with more papers than one query returns.
+  for (;;) {
+    const snap = await getDocs(query(base, limit(400)));
+    if (snap.empty) return;
     const batch = writeBatch(db);
-    for (const d of snap.docs.slice(i, i + 400)) batch.delete(d.ref);
+    for (const d of snap.docs) batch.delete(d.ref);
     await batch.commit();
   }
 }
