@@ -3,7 +3,7 @@ import { MATRIX_KEYS, type SavedPaper } from "@/lib/types";
 const isBlank = (v: unknown) => v === undefined || v === null || v === "" || (Array.isArray(v) && v.length === 0);
 
 /** Both notes when they differ, so neither copy's text is lost. */
-function joinNotes(kept?: string, incoming?: string): string | undefined {
+export function joinNotes(kept?: string, incoming?: string): string | undefined {
   if (!kept) return incoming || undefined;
   if (!incoming || kept.includes(incoming)) return kept;
   if (incoming.includes(kept)) return incoming;

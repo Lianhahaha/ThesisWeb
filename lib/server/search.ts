@@ -75,6 +75,9 @@ const CACHE_TTL_MS = 6 * 60 * 60 * 1000;
 const CACHE_MAX = 300;
 const cache = new Map<string, { at: number; result: SourceResult }>();
 
+/** A whole search currently running on this instance, by cache key. */
+const inFlight = new Map<string, Promise<SourceResult[]>>();
+
 /**
  * Repeated failures put a source on a short cooldown instead of hitting it
  * again for every search. It is retried after five minutes and recovers on
@@ -138,6 +141,26 @@ export async function searchSources(
     }
   }
 
+  // One fan-out per identical search. A second visitor (or a double-submit)
+  // waits for the same job instead of calling ~66 databases again. This is
+  // per server instance; Redis still serves completed answers across instances.
+  const running = inFlight.get(wholeSearchKey);
+  if (running) {
+    const results = await running;
+    for (const result of results) onSource?.(result);
+    return results;
+  }
+  let resolveJob!: (results: SourceResult[]) => void;
+  let rejectJob!: (error: unknown) => void;
+  inFlight.set(
+    wholeSearchKey,
+    new Promise<SourceResult[]>((resolve, reject) => {
+      resolveJob = resolve;
+      rejectJob = reject;
+    })
+  );
+
+  try {
   const results = await Promise.all(
     entries.map(async ([id, { run, boolean, deadlineMs, country }]): Promise<SourceResult> => {
       const q = country && country === opts.country ? query : boolean ? booleanQuery : plainQuery;
@@ -207,7 +230,14 @@ export async function searchSources(
     const ttl = results.some((r) => r.status === "error") ? 120 : CACHE_TTL_MS / 1000;
     await cacheSet(wholeSearchKey, JSON.stringify(results), ttl);
   }
+  resolveJob(results);
   return results;
+  } catch (error) {
+    rejectJob(error);
+    throw error;
+  } finally {
+    inFlight.delete(wholeSearchKey);
+  }
 }
 
 /**

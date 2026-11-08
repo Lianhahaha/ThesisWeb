@@ -9,26 +9,37 @@ import {
   where,
   documentId,
   orderBy,
-  updateDoc,
   deleteField,
   writeBatch,
   getCountFromServer,
   limit,
   startAfter,
+  runTransaction,
   type DocumentSnapshot,
   type Query,
   type QuerySnapshot,
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import type { SavedPaper } from "@/lib/types";
+import { joinNotes, mergeSavedPaper } from "@/lib/library/merge";
 
 /**
  * Firestore document IDs cannot contain "/" (treated as path separator).
- * DOIs always contain slashes (e.g. "doi:10.1109/tmi.2021.3090082").
- * We replace every "/" with "--" to produce a safe, reversible key.
+ * DOIs always contain slashes (e.g. "doi:10.1109/tmi.2021.3090082"), so the
+ * original mapping replaced them with "--". That is not injective: "a/b" and
+ * "a--b" both become "a--b". Ids without "--" keep the old key (no migration);
+ * only ambiguous ids use a prefixed, percent-encoded key.
  */
-function safeId(id: string): string {
+function legacySafeId(id: string): string {
   return id.replace(/\//g, "--");
+}
+
+function safeIdV2(id: string): string {
+  return "~" + encodeURIComponent(id).replace(/~/g, "%7E");
+}
+
+function safeId(id: string): string {
+  return id.includes("--") || id.startsWith("~") ? safeIdV2(id) : legacySafeId(id);
 }
 
 /**
@@ -56,27 +67,66 @@ function clampValue(key: string, value: unknown): unknown {
 function forFirestore(p: SavedPaper, id: string): Record<string, unknown> {
   const out: Record<string, unknown> = { _fsId: id };
   for (const [k, v] of Object.entries(p)) {
-    if (v === undefined) continue;
+    if (v === undefined || k === "_fsId") continue;
     if (Object.keys(out).length >= MAX_KEYS) break;
     out[k] = clampValue(k, v);
   }
   return out;
 }
 
+/** The document for `id`, reading the legacy key too when the mappings differ. */
+async function docsFor(uid: string, id: string) {
+  const primary = doc(db, "users", uid, "papers", safeId(id));
+  const legacyKey = legacySafeId(id);
+  const legacy = legacyKey !== primary.id ? doc(db, "users", uid, "papers", legacyKey) : null;
+  return { primary, legacy };
+}
+
+function samePaper(snap: DocumentSnapshot, id: string): boolean {
+  const stored = snap.data()?.id;
+  // Old records may predate the id field; the document key is the fallback.
+  return stored === undefined || stored === id;
+}
+
+/**
+ * Save one paper. A transaction reads the current copy and merges, so two tabs
+ * saving the same paper cannot erase each other's notes or matrix cells.
+ */
 export async function fsSavePaper(uid: string, p: SavedPaper): Promise<void> {
-  const id = safeId(p.id);
-  await setDoc(doc(db, "users", uid, "papers", id), forFirestore(p, id));
+  const { primary, legacy } = await docsFor(uid, p.id);
+  await runTransaction(db, async (tx) => {
+    let kept: SavedPaper | undefined;
+    const snap = await tx.get(primary);
+    if (snap.exists()) kept = snap.data() as SavedPaper;
+    if (!kept && legacy) {
+      const old = await tx.get(legacy);
+      if (old.exists() && samePaper(old, p.id)) {
+        kept = old.data() as SavedPaper;
+        tx.delete(legacy);
+      }
+    }
+    tx.set(primary, forFirestore(mergeSavedPaper(kept, p), primary.id));
+  });
 }
 
 export async function fsUnsavePaper(uid: string, id: string): Promise<void> {
-  const ref = doc(db, "users", uid, "papers", safeId(id));
-  await deleteDoc(ref);
+  const { primary, legacy } = await docsFor(uid, id);
+  const refs = legacy ? [primary, legacy] : [primary];
+  for (const ref of refs) {
+    const snap = await getDoc(ref);
+    // Never delete a colliding legacy document that belongs to another paper.
+    if (snap.exists() && samePaper(snap, id)) await deleteDoc(ref);
+  }
 }
 
 export async function fsGetPaper(uid: string, id: string): Promise<SavedPaper | undefined> {
-  const ref = doc(db, "users", uid, "papers", safeId(id));
-  const snap = await getDoc(ref);
-  if (snap.exists()) return snap.data() as SavedPaper;
+  const { primary, legacy } = await docsFor(uid, id);
+  const snap = await getDoc(primary);
+  if (snap.exists() && samePaper(snap, id)) return snap.data() as SavedPaper;
+  if (legacy) {
+    const old = await getDoc(legacy);
+    if (old.exists() && samePaper(old, id)) return old.data() as SavedPaper;
+  }
   return undefined;
 }
 
@@ -90,27 +140,55 @@ const IN_LIMIT = 30;
  * saved ones, not 300.
  */
 export async function fsSavedAmong(uid: string, ids: string[]): Promise<Set<string>> {
-  const bySafeId = new Map(ids.map((id) => [safeId(id), id]));
-  const keys = [...bySafeId.keys()];
+  // Include the legacy key so an ambiguous id saved before this change is
+  // still found; the stored `id` field decides which paper a key belongs to.
+  const byKey = new Map<string, string>();
+  for (const id of ids) {
+    byKey.set(safeId(id), id);
+    byKey.set(legacySafeId(id), id);
+  }
+  const keys = [...byKey.keys()];
   const chunks: string[][] = [];
   for (let i = 0; i < keys.length; i += IN_LIMIT) chunks.push(keys.slice(i, i + IN_LIMIT));
   const snaps = await Promise.all(
     chunks.map((chunk) => getDocs(query(collection(db, "users", uid, "papers"), where(documentId(), "in", chunk))))
   );
   const found = new Set<string>();
-  for (const snap of snaps) for (const d of snap.docs) found.add(bySafeId.get(d.id) ?? d.id);
+  for (const snap of snaps) {
+    for (const d of snap.docs) {
+      const original = byKey.get(d.id);
+      if (original && samePaper(d, original)) found.add(original);
+    }
+  }
   return found;
 }
 
 export async function fsUpdatePaper(uid: string, id: string, changes: Partial<SavedPaper>): Promise<void> {
-  const ref = doc(db, "users", uid, "papers", safeId(id));
-  // undefined means "clear this field" (e.g. remove from a collection). The
-  // SDK is set to ignore undefined, so say so explicitly.
-  const patch: Record<string, unknown> = {};
-  for (const [k, v] of Object.entries(changes)) {
-    patch[k] = v === undefined ? deleteField() : clampValue(k, v);
-  }
-  await updateDoc(ref, patch);
+  const { primary, legacy } = await docsFor(uid, id);
+  await runTransaction(db, async (tx) => {
+    let ref = primary;
+    let snap = await tx.get(primary);
+    if (!snap.exists() && legacy) {
+      const old = await tx.get(legacy);
+      if (old.exists() && samePaper(old, id)) {
+        ref = legacy;
+        snap = old;
+      }
+    }
+    // undefined means "clear this field" (e.g. remove from a collection).
+    const patch: Record<string, unknown> = {};
+    for (const [k, v] of Object.entries(changes)) {
+      if (k === "notes" && typeof v === "string") {
+        // Two tabs editing notes must keep both texts, not overwrite one.
+        const kept = snap.exists() ? (snap.data().notes as string | undefined) : undefined;
+        patch[k] = clampValue(k, joinNotes(kept, v) ?? "");
+      } else {
+        patch[k] = v === undefined ? deleteField() : clampValue(k, v);
+      }
+    }
+    if (snap.exists()) tx.update(ref, patch);
+    else tx.set(ref, patch, { merge: true });
+  });
 }
 
 /**
@@ -121,15 +199,32 @@ export async function fsUpdatePaper(uid: string, id: string, changes: Partial<Sa
  */
 export async function fsSaveMany(uid: string, papers: SavedPaper[]): Promise<string[]> {
   const saved: string[] = [];
-  for (let i = 0; i < papers.length; i += 400) {
-    const chunk = papers.slice(i, i + 400);
-    const batch = writeBatch(db);
-    for (const p of chunk) {
-      const id = safeId(p.id);
-      batch.set(doc(db, "users", uid, "papers", id), forFirestore(p, id));
-    }
+  // Transactions are heavier than batches, so keep the chunk small.
+  for (let i = 0; i < papers.length; i += 100) {
+    const chunk = papers.slice(i, i + 100);
+    const entries = chunk.map((p) => {
+      const primary = doc(db, "users", uid, "papers", safeId(p.id));
+      const legacyKey = legacySafeId(p.id);
+      return { p, primary, legacy: legacyKey !== primary.id ? doc(db, "users", uid, "papers", legacyKey) : null };
+    });
     try {
-      await batch.commit();
+      await runTransaction(db, async (tx) => {
+        // All reads must happen before the first write.
+        const snaps = await Promise.all(entries.map((e) => tx.get(e.primary)));
+        const legacySnaps = await Promise.all(
+          entries.map((e, n) => (e.legacy && !snaps[n].exists() ? tx.get(e.legacy) : Promise.resolve(null)))
+        );
+        entries.forEach((e, n) => {
+          let kept: SavedPaper | undefined;
+          if (snaps[n].exists()) kept = snaps[n].data() as SavedPaper;
+          const old = legacySnaps[n];
+          if (!kept && old?.exists() && samePaper(old, e.p.id)) {
+            kept = old.data() as SavedPaper;
+            tx.delete(e.legacy!);
+          }
+          tx.set(e.primary, forFirestore(mergeSavedPaper(kept, e.p), e.primary.id));
+        });
+      });
       saved.push(...chunk.map((p) => p.id));
     } catch {
       for (const p of chunk) {

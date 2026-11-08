@@ -76,9 +76,9 @@ export async function countPapers(): Promise<number> {
 export async function savePaper(p: SavedPaper): Promise<void> {
   const uid = auth.currentUser?.uid;
   if (uid) {
-    // If this read fails (offline), the save fails too rather than risk
-    // overwriting a saved paper blind.
-    await fs.fsSavePaper(uid, mergeSavedPaper(await fs.fsGetPaper(uid, p.id), p));
+    // fsSavePaper reads and merges inside a transaction, so a concurrent save
+    // from another tab cannot lose this one's notes.
+    await fs.fsSavePaper(uid, p);
     setSavedState(uid, [p.id], true);
   } else {
     const local = getDb();
@@ -100,8 +100,8 @@ export async function savePapers(papers: SavedPaper[]): Promise<number> {
   const uid = auth.currentUser?.uid;
   let count = papers.length;
   if (uid) {
-    const existing = new Map((await fs.fsAllPapers(uid)).map((p) => [p.id, p]));
-    const saved = await fs.fsSaveMany(uid, papers.map((p) => mergeSavedPaper(existing.get(p.id), p)));
+    // fsSaveMany merges each record transactionally, so no pre-read is needed.
+    const saved = await fs.fsSaveMany(uid, papers);
     setSavedState(uid, saved, true);
     count = saved.length;
   } else {
@@ -126,8 +126,7 @@ export async function moveLocalPapersToAccount(): Promise<number> {
   if (!uid) return 0;
   const local = await localPapers();
   if (local.length === 0) return 0;
-  const cloud = new Map((await fs.fsAllPapers(uid)).map((p) => [p.id, p]));
-  const saved = await fs.fsSaveMany(uid, local.map((p) => mergeSavedPaper(cloud.get(p.id), p)));
+  const saved = await fs.fsSaveMany(uid, local);
   setSavedState(uid, saved, true);
   await removeLocalPapers(saved);
   changed();
