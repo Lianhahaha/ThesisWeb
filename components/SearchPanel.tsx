@@ -130,6 +130,7 @@ export function SearchPanel({
               type="button"
               className="flex-1"
               data-on={(value.sourceMode ?? "all") === mode.value}
+              aria-pressed={(value.sourceMode ?? "all") === mode.value}
               onClick={() => set({ sourceMode: mode.value })}
               title={mode.hint}
             >

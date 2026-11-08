@@ -100,6 +100,7 @@ export function PreferencesSection() {
                   key={s.id}
                   type="button"
                   data-on={prefs.citationStyle === s.id}
+                  aria-pressed={prefs.citationStyle === s.id}
                   onClick={() => setPrefs({ ...prefs, citationStyle: s.id })}
                 >
                   {s.label}
@@ -116,7 +117,7 @@ export function PreferencesSection() {
                 ["dark", "Dark"],
                 ["system", "Match device"],
               ] as [ThemeChoice, string][]).map(([t, label]) => (
-                <button key={t} type="button" data-on={theme === t} onClick={() => chooseTheme(t)}>
+                <button key={t} type="button" data-on={theme === t} aria-pressed={theme === t} onClick={() => chooseTheme(t)}>
                   {label}
                 </button>
               ))}

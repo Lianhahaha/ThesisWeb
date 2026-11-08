@@ -140,10 +140,10 @@ export default function LoginPage() {
       </p>
 
       <div className="seg mt-6 w-full" role="group" aria-label="Sign in or sign up">
-        <button type="button" className="flex-1" data-on={mode === "login"} onClick={() => setMode("login")}>
+        <button type="button" className="flex-1" data-on={mode === "login"} aria-pressed={mode === "login"} onClick={() => setMode("login")}>
           Sign in
         </button>
-        <button type="button" className="flex-1" data-on={mode === "signup"} onClick={() => setMode("signup")}>
+        <button type="button" className="flex-1" data-on={mode === "signup"} aria-pressed={mode === "signup"} onClick={() => setMode("signup")}>
           Sign up
         </button>
       </div>

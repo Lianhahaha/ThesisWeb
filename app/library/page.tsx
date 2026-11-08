@@ -331,10 +331,10 @@ export default function LibraryPage() {
             </div>
 
             <div className="seg" role="group" aria-label="View">
-              <button type="button" data-on={view === "list"} onClick={() => setView("list")}>
+              <button type="button" data-on={view === "list"} aria-pressed={view === "list"} onClick={() => setView("list")}>
                 List
               </button>
-              <button type="button" data-on={view === "matrix"} onClick={() => setView("matrix")}>
+              <button type="button" data-on={view === "matrix"} aria-pressed={view === "matrix"} onClick={() => setView("matrix")}>
                 Synthesis matrix
               </button>
             </div>

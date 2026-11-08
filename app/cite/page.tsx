@@ -113,7 +113,7 @@ export default function CitePage() {
         <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
           <div className="seg" role="group" aria-label="Citation style">
             {CITATION_STYLES.map((s) => (
-              <button key={s.id} type="button" data-on={style === s.id} onClick={() => setStyle(s.id)}>
+              <button key={s.id} type="button" data-on={style === s.id} aria-pressed={style === s.id} onClick={() => setStyle(s.id)}>
                 {s.label}
               </button>
             ))}

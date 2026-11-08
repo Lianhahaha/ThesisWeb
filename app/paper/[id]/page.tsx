@@ -437,7 +437,7 @@ export default function PaperDetailPage({ params }: { params: Promise<{ id: stri
           <h2 id="cite" className="text-lg">Cite this paper</h2>
           <div className="seg" role="group" aria-label="Citation style">
             {CITATION_STYLES.map((s) => (
-              <button key={s.id} type="button" data-on={style === s.id} onClick={() => setStyle(s.id)}>
+              <button key={s.id} type="button" data-on={style === s.id} aria-pressed={style === s.id} onClick={() => setStyle(s.id)}>
                 {s.label}
               </button>
             ))}

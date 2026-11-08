@@ -293,9 +293,9 @@ export default function SearchPage() {
         )}
 
         {result && showResults && (
-          <section aria-label="Results">
+          <section aria-label="Results" aria-busy={pending}>
             <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border pb-3">
-              <h2 className="text-xl">
+              <h2 className="text-xl" aria-live="polite">
                 {visible.length}
                 {visible.length !== result.papers.length && (
                   <span className="text-muted"> of {result.papers.length}</span>

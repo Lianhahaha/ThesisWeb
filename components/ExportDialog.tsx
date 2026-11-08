@@ -79,6 +79,7 @@ export function ExportDialog({
             key={s.id}
             type="button"
             data-on={style === s.id}
+            aria-pressed={style === s.id}
             onClick={() => setStyle(s.id)}
           >
             {s.label}

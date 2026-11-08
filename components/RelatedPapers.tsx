@@ -70,7 +70,7 @@ export function RelatedPapers({ doi }: { doi: string }) {
         <>
           <div className="seg mt-3" role="group" aria-label="Citation neighbourhood">
             {tabs.map((t) => (
-              <button key={t.key} type="button" data-on={tab === t.key} onClick={() => setTab(t.key)} title={t.hint}>
+              <button key={t.key} type="button" data-on={tab === t.key} aria-pressed={tab === t.key} onClick={() => setTab(t.key)} title={t.hint}>
                 {t.label} ({t.count.toLocaleString()})
               </button>
             ))}
