@@ -1,4 +1,4 @@
-# Every morning, ask each of the 85 databases about a topic it certainly
+# Every morning, ask each of the 90 databases about a topic it certainly
 # holds (tests/live/sources.test.ts). A database that fails or suddenly finds
 # nothing (often a site that changed its pages, which breaks a scraper) fails
 # this run, and GitHub emails the repository owner. Run it by hand from the

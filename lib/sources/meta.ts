@@ -389,6 +389,26 @@ const META = {
     label: "SEC EDGAR", blurb: "U.S. corporate filings (10-K, 10-Q, 8-K and more): business, finance, accounting and governance primary sources", color: "#1e3a8a",
     region: "United States", fields: ["business", "social"], kind: "reports", url: "https://www.sec.gov/edgar",
   },
+  nvd: {
+    label: "NVD (NIST)", blurb: "CVE vulnerability records from the U.S. National Vulnerability Database: descriptions, CWE classes and references", color: "#0b5394",
+    region: "United States", fields: ["computing", "engineering"], kind: "reports", url: "https://nvd.nist.gov",
+  },
+  cisakev: {
+    label: "CISA KEV", blurb: "Known Exploited Vulnerabilities catalog: CVEs confirmed exploited in the wild, with the required remediation action", color: "#b45309",
+    region: "United States", fields: ["computing", "engineering"], kind: "reports", url: "https://www.cisa.gov/known-exploited-vulnerabilities-catalog",
+  },
+  pedro: {
+    label: "PEDro", blurb: "Physiotherapy Evidence Database: trials, systematic reviews and guidelines with a methodological quality score (sports, rehab, performance)", color: "#0f766e",
+    region: "Global", fields: ["medicine"], kind: "index", url: "https://search.pedro.org.au",
+  },
+  philpolitics: {
+    label: "Philippine Politics & Society Journals", blurb: "Philippine Political Science Journal, Philippine Journal of Public Administration, Kasarinlan and Philippine Sociological Review, via DOI-backed OpenAlex records", color: "#7c2d12",
+    region: "Philippines", fields: ["social", "business", "education"], kind: "journals", url: "https://openalex.org",
+  },
+  philagri: {
+    label: "Philippine Agriculture & Veterinary Journals", blurb: "The Philippine Agricultural Scientist, Philippine Journal of Veterinary Medicine and Philippine Journal of Agricultural Economics, via DOI-backed OpenAlex records", color: "#166534",
+    region: "Philippines", fields: ["agriculture", "sciences", "business"], kind: "journals", url: "https://openalex.org",
+  },
 } satisfies Record<string, SourceMeta>;
 
 /** Every source id. lib/sources/registry.ts must have an adapter for each one. */

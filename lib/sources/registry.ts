@@ -84,6 +84,11 @@ import { searchAuckland } from "@/lib/sources/adapters/auckland";
 import { searchCaltech } from "@/lib/sources/adapters/caltech";
 import { searchPangaea } from "@/lib/sources/adapters/pangaea";
 import { searchSecEdgar } from "@/lib/sources/adapters/secedgar";
+import { searchNvd } from "@/lib/sources/adapters/nvd";
+import { searchCisaKev } from "@/lib/sources/adapters/cisa-kev";
+import { searchPedro } from "@/lib/sources/adapters/pedro";
+import { searchPhilpolitics } from "@/lib/sources/adapters/philpolitics";
+import { searchPhilagri } from "@/lib/sources/adapters/philagri";
 
 /**
  * The adapter for every source in lib/sources/meta.ts. Typed as a Record over
@@ -197,4 +202,9 @@ export const ADAPTERS: Record<SourceId, AdapterEntry> = {
   caltech:         { run: searchCaltech, boolean: false, country: "United States" },
   pangaea:         { run: searchPangaea, boolean: false },
   secedgar:        { run: searchSecEdgar, boolean: false, country: "United States" },
+  nvd:             { run: searchNvd, boolean: false, deadlineMs: 20000 },
+  cisakev:         { run: searchCisaKev, boolean: false, deadlineMs: 20000 },
+  pedro:           { run: searchPedro, boolean: false, deadlineMs: 24000 },
+  philpolitics:    { run: searchPhilpolitics, boolean: false, country: "Philippines" },
+  philagri:        { run: searchPhilagri, boolean: false, country: "Philippines" },
 };

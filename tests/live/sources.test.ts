@@ -90,6 +90,11 @@ const PROBES: Record<SourceId, string> = {
   caltech: "artificial intelligence",
   pangaea: "ocean",
   secedgar: "artificial intelligence",
+  nvd: "sql injection",
+  cisakev: "router",
+  pedro: "stroke",
+  philpolitics: "governance",
+  philagri: "rice",
 };
 
 describe.skipIf(!LIVE)(QUERY ? `live sources: "${QUERY}"` : "live sources: probe topics", () => {
