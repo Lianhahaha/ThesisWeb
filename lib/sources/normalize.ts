@@ -1,6 +1,6 @@
 import { WORK_TYPES, type Paper, type WorkType } from "@/lib/types";
 import { paperId } from "@/lib/utils";
-import { extractDoi } from "@/lib/text";
+import { extractDoi, stripHtml } from "@/lib/text";
 
 /**
  * Last line of defence between the independently written adapters and the
@@ -11,6 +11,13 @@ import { extractDoi } from "@/lib/text";
 
 const str = (v: unknown, max: number): string | null =>
   typeof v === "string" && v.trim() ? v.trim().slice(0, max) : null;
+
+/** Text as plain text: repositories often send HTML entities or JATS tags. */
+const cleanText = (v: unknown, max: number): string | null => {
+  const s = str(v, max);
+  if (!s) return null;
+  return stripHtml(s).slice(0, max) || null;
+};
 
 /** Like str(), but also takes a number: APIs give volumes and issues either way. */
 const label = (v: unknown, max: number): string | null =>
@@ -52,7 +59,7 @@ function cleanDoi(v: unknown): string | null {
 
 /** A clean copy of `p`, or null if it has no usable title. */
 export function normalizePaper(p: Paper, sourceId: string): Paper | null {
-  const title = str(p?.title, 1000)?.replace(/\s+/g, " ");
+  const title = cleanText(p?.title, 1000);
   // Several adapters fall back to "Untitled"; such a record can't be cited or found again.
   if (!title || /^untitled$/i.test(title)) return null;
 
@@ -66,18 +73,18 @@ export function normalizePaper(p: Paper, sourceId: string): Paper | null {
     // id every other source gives the paper.
     id: paperId(doi, title),
     title,
-    authors: strings(p.authors, 50),
+    authors: strings(p.authors, 50).map(stripHtml).filter(Boolean),
     year: safeYear(p.year),
     publishedDate: str(p.publishedDate, 40),
-    venue: str(p.venue, 500),
+    venue: cleanText(p.venue, 500),
     type: WORK_TYPES.includes(p.type as WorkType) ? p.type : undefined,
     volume: label(p.volume, 40),
     issue: label(p.issue, 40),
     pages: label(p.pages, 40),
-    publisher: str(p.publisher, 300),
+    publisher: cleanText(p.publisher, 300),
     doi,
-    abstract: str(p.abstract, 40000),
-    tldr: str(p.tldr, 2000),
+    abstract: cleanText(p.abstract, 40000),
+    tldr: cleanText(p.tldr, 2000),
     // A record counts as free only with a link to the free copy, and a link is
     // shown as free only when the source says it is: "Free full text only"
     // and the "Free PDF" button rely on both agreeing.
@@ -88,7 +95,7 @@ export function normalizePaper(p: Paper, sourceId: string): Paper | null {
       typeof p.citedByCount === "number" && Number.isFinite(p.citedByCount) && p.citedByCount >= 0
         ? Math.floor(p.citedByCount)
         : undefined,
-    keywords: strings(p.keywords, 20, 120),
+    keywords: strings(p.keywords, 20, 120).map(stripHtml).filter(Boolean),
     sources,
     retracted: p.retracted === true || undefined,
     concern: p.concern === true || undefined,

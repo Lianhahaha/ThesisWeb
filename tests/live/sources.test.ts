@@ -89,9 +89,17 @@ describe.skipIf(!LIVE)(QUERY ? `live sources: "${QUERY}"` : "live sources: probe
         throw e;
       }
       expect(Array.isArray(papers)).toBe(true);
+      const maxYear = new Date().getFullYear() + 1;
       for (const p of papers) {
         expect(normalizePaper(p, id), `${id} returned a record with no title`).not.toBeNull();
         expect(p.sources).toContain(id);
+        // Accuracy checks: a bad year, DOI or markup would corrupt citations.
+        if (p.year != null) {
+          expect(p.year, `${id} returned an implausible year`).toBeGreaterThanOrEqual(1000);
+          expect(p.year, `${id} returned an implausible year`).toBeLessThanOrEqual(maxYear);
+        }
+        if (p.doi) expect(p.doi, `${id} returned a malformed DOI`).toMatch(/^10\.\d{4,9}\//);
+        expect(p.title, `${id} returned markup in a title`).not.toMatch(/<[^>]+>/);
       }
       health.set(id, { status: papers.length > 0 ? "working" : "empty", count: papers.length });
       if (!QUERY) expect(papers.length, `${id} found nothing for "${PROBES[id]}"; has its site changed?`).toBeGreaterThan(0);
