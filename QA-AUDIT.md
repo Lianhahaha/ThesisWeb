@@ -1,5 +1,7 @@
 # ThesisWeb — QA Audit (Researcher Perspective)
 
+> **Snapshot note:** this QA pass ran while the app had 85 sources (79 working). It now searches **90 sources**. The findings, fixes and reproduction steps below remain valid; re-run the researcher spec for a current sweep.
+
 **Date:** 2026-11-08
 **System:** ThesisWeb (`https://thesiswebph.vercel.app`, local production build)
 **Commit under test:** `962f99b` (plus fixes `ff91b44`, `031e4fd`)

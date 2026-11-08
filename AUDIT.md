@@ -1,5 +1,7 @@
 # ThesisWeb — Codebase Audit & Product Review
 
+> **Snapshot note:** this audit reflects the repository on 2026-11-08. The app has since grown from 62 to **90 search sources** and received the remediation fixes below. See `README.md` for current counts and `QA-AUDIT.md` for the later researcher-perspective QA pass.
+
 **Date:** 2026-11-08
 **Scope:** full repository at `C:\Users\My PC\OneDrive\Documents\ThesisWeb` (276 tracked files, ~19,100 lines of TS/TSX, 240 TS/TSX files, 60 source adapters, 359 commits)
 **Method:** four parallel read-only code audits (search/server, data/auth, frontend/UX, tests/CI/dependencies) plus independent verification of every High finding.
