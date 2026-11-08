@@ -7,6 +7,7 @@ import type { Paper } from "@/lib/types";
 import { truncate } from "@/lib/utils";
 import { SaveButton } from "@/components/SaveButton";
 import { copyText } from "@/components/clipboard";
+import { mergeRecentPapers } from "@/lib/search/recent-papers";
 
 interface Props {
   paper: Paper;
@@ -32,7 +33,14 @@ export function PaperCard({ paper, showScore, refNum, isNew, localSaved }: Props
 
         <div className="min-w-0 flex-1">
           <h3 className="text-[15px] font-semibold leading-snug">
-            <Link href={`/paper/${encodeURIComponent(paper.id)}`} className="hover:underline">
+            <Link
+              href={`/paper/${encodeURIComponent(paper.id)}`}
+              className="hover:underline"
+              // Belt-and-braces for a click in the first paint window, before
+              // the streaming stash above has run.
+              onClick={() => mergeRecentPapers([paper])}
+              onAuxClick={() => mergeRecentPapers([paper])}
+            >
               {paper.title}
             </Link>
           </h3>

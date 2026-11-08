@@ -8,7 +8,7 @@ import { PaperCard } from "@/components/PaperCard";
 import { getDb } from "@/lib/library/store";
 import { SearchPanel, DEFAULT_FROM_YEAR } from "@/components/SearchPanel";
 import { toast } from "@/components/Toaster";
-import { storeRecentPapers } from "@/lib/search/recent-papers";
+import { mergeRecentPapers, storeRecentPapers } from "@/lib/search/recent-papers";
 import { applyIntegrity, fetchIntegrity } from "@/lib/search/integrity";
 import type { Paper, SearchResult } from "@/lib/types";
 import { rankResults } from "@/lib/search/rank";
@@ -182,7 +182,12 @@ export default function SearchPage() {
     const paint = () => {
       lastPaint = Date.now();
       paintTimer = undefined;
-      if (running.current === controller) setResult(snapshot(Date.now() - started));
+      if (running.current !== controller) return;
+      const next = snapshot(Date.now() - started);
+      // Stash results as they stream: clicking a paper before the whole search
+      // finishes must still open /paper/[id] (it reads this store).
+      mergeRecentPapers(next.papers);
+      setResult(next);
     };
 
     try {
