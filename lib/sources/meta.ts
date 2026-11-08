@@ -313,6 +313,50 @@ const META = {
     label: "Papers with Code", blurb: "Machine-learning papers linked to code, tasks and benchmarks; mostly arXiv preprints", color: "#c2410c",
     region: "Global", fields: ["computing", "engineering", "sciences"], kind: "preprints", url: "https://paperswithcode.co",
   },
+  mit: {
+    label: "MIT DSpace", blurb: "MIT theses, technical reports and papers, strong in AI, robotics, computer systems and electrical engineering", color: "#a31f34",
+    region: "United States", fields: ["computing", "engineering", "sciences"], kind: "repository", url: "https://dspace.mit.edu",
+  },
+  epfl: {
+    label: "EPFL Infoscience", blurb: "EPFL papers, theses and reports: computer and communication sciences, robotics and micro-engineering", color: "#ff4b2b",
+    region: "Switzerland", fields: ["computing", "engineering", "sciences"], kind: "repository", url: "https://infoscience.epfl.ch",
+  },
+  gatech: {
+    label: "Georgia Tech SMARTech", blurb: "Theses, dissertations and technical reports from Georgia Tech: computing, machine learning and engineering", color: "#b3a369",
+    region: "United States", fields: ["computing", "engineering", "sciences"], kind: "repository", url: "https://repository.gatech.edu",
+  },
+  toronto: {
+    label: "University of Toronto TSpace", blurb: "Toronto theses, articles and reports, including computer science and machine learning", color: "#002a5c",
+    region: "Canada", fields: ["computing", "engineering", "medicine"], kind: "repository", url: "https://tspace.library.utoronto.ca",
+  },
+  cornell: {
+    label: "Cornell eCommons", blurb: "Cornell theses, technical reports and papers: computing, information science, engineering and sciences", color: "#b31b1b",
+    region: "United States", fields: ["computing", "engineering", "sciences"], kind: "repository", url: "https://ecommons.cornell.edu",
+  },
+  duke: {
+    label: "DukeSpace", blurb: "Duke theses, dissertations and reports: computing, engineering, medicine and sciences", color: "#012169",
+    region: "United States", fields: ["computing", "engineering", "medicine"], kind: "repository", url: "https://dukespace.lib.duke.edu",
+  },
+  vtech: {
+    label: "VTechWorks", blurb: "Virginia Tech theses, dissertations and reports: engineering, computing and sciences", color: "#630031",
+    region: "United States", fields: ["engineering", "computing", "sciences"], kind: "repository", url: "https://vtechworks.lib.vt.edu",
+  },
+  uminn: {
+    label: "University of Minnesota Conservancy", blurb: "Minnesota theses, technical reports and papers: computing, engineering and sciences", color: "#ffcc33",
+    region: "United States", fields: ["computing", "engineering", "sciences"], kind: "repository", url: "https://conservancy.umn.edu",
+  },
+  arizona: {
+    label: "University of Arizona Repository", blurb: "Arizona theses, dissertations and reports: optical sciences, electrical engineering, computing and AI", color: "#ab0520",
+    region: "United States", fields: ["engineering", "sciences", "computing"], kind: "repository", url: "https://repository.arizona.edu",
+  },
+  unsw: {
+    label: "UNSW Sydney UNSWorks", blurb: "UNSW Sydney theses, reports and papers: engineering, computing, AI and sciences", color: "#ffd100",
+    region: "Australia", fields: ["engineering", "computing", "sciences"], kind: "repository", url: "https://unsworks.unsw.edu.au",
+  },
+  googlepatents: {
+    label: "Google Patents", blurb: "Published patents and applications worldwide: hardware, electronics, mechanical, materials and software inventions (public endpoint)", color: "#4285f4",
+    region: "Global", fields: ["engineering", "computing", "sciences"], kind: "reports", url: "https://patents.google.com",
+  },
 } satisfies Record<string, SourceMeta>;
 
 /** Every source id. lib/sources/registry.ts must have an adapter for each one. */

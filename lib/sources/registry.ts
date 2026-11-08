@@ -65,6 +65,17 @@ import { searchClinicalTrials } from "@/lib/sources/adapters/clinicaltrials";
 import { searchFederalRegister } from "@/lib/sources/adapters/federalregister";
 import { searchInternetArchive } from "@/lib/sources/adapters/internetarchive";
 import { searchPapersWithCode } from "@/lib/sources/adapters/paperswithcode";
+import { searchMit } from "@/lib/sources/adapters/mit";
+import { searchEpfl } from "@/lib/sources/adapters/epfl";
+import { searchGatech } from "@/lib/sources/adapters/gatech";
+import { searchToronto } from "@/lib/sources/adapters/toronto";
+import { searchCornell } from "@/lib/sources/adapters/cornell";
+import { searchDuke } from "@/lib/sources/adapters/duke";
+import { searchVtech } from "@/lib/sources/adapters/vtech";
+import { searchUminn } from "@/lib/sources/adapters/uminn";
+import { searchArizona } from "@/lib/sources/adapters/arizona";
+import { searchUnsw } from "@/lib/sources/adapters/unsw";
+import { searchGooglePatents } from "@/lib/sources/adapters/googlepatents";
 
 /**
  * The adapter for every source in lib/sources/meta.ts. Typed as a Record over
@@ -159,4 +170,15 @@ export const ADAPTERS: Record<SourceId, AdapterEntry> = {
   federalregister: { run: searchFederalRegister, boolean: false },
   internetarchive: { run: searchInternetArchive, boolean: false },
   paperswithcode:  { run: searchPapersWithCode, boolean: false },
+  mit:             { run: searchMit, boolean: false, country: "United States" },
+  epfl:            { run: searchEpfl, boolean: false, country: "Switzerland" },
+  gatech:          { run: searchGatech, boolean: false, country: "United States" },
+  toronto:         { run: searchToronto, boolean: false, country: "Canada" },
+  cornell:         { run: searchCornell, boolean: false, country: "United States" },
+  duke:            { run: searchDuke, boolean: false, country: "United States" },
+  vtech:           { run: searchVtech, boolean: false, country: "United States" },
+  uminn:           { run: searchUminn, boolean: false, country: "United States" },
+  arizona:         { run: searchArizona, boolean: false, country: "United States" },
+  unsw:            { run: searchUnsw, boolean: false, country: "Australia" },
+  googlepatents:   { run: searchGooglePatents, boolean: false },
 };

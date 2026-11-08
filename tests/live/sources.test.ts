@@ -72,6 +72,17 @@ const PROBES: Record<SourceId, string> = {
   federalregister: "education",
   internetarchive: "philippine history",
   paperswithcode: "transformer",
+  mit: "artificial intelligence",
+  epfl: "robot learning",
+  gatech: "machine learning",
+  toronto: "deep learning",
+  cornell: "computer vision",
+  duke: "neural network",
+  vtech: "autonomous systems",
+  uminn: "machine learning",
+  arizona: "optical computing",
+  unsw: "artificial intelligence",
+  googlepatents: "semiconductor",
 };
 
 describe.skipIf(!LIVE)(QUERY ? `live sources: "${QUERY}"` : "live sources: probe topics", () => {
