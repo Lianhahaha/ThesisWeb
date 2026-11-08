@@ -10,7 +10,9 @@
 
 ## 1. Executive summary
 
-The core researcher journey works end to end on a production build: a real multi-database search returned 40 usable results, the quality-signals sort worked, a result opened into a readable detail page, the paper was saved to the local library, a known DOI produced a citation, and the mobile layout had zero horizontal overflow.
+The core researcher journey works end to end on a production build: a real multi-database search rendered its first page of **40 result cards**, the quality-signals sort worked, a result opened into a readable detail page, the paper was saved to the local library, a known DOI produced a citation, and the mobile layout had zero horizontal overflow.
+
+**On the number “40”:** it is the rendered page size (`PAGE_SIZE = 40` in `app/search/page.tsx`), not the total number of deduplicated results. The page reports the full count separately as “X of N papers”, and “Show 40 more” reveals the next page. The QA script counted rendered `<article>` cards, so 40 means “the first page was full and readable”, not “only 40 results exist” or “all 40 are high quality”.
 
 Two real defects were found and fixed during this audit:
 
@@ -152,7 +154,7 @@ Entities: `Paper`, `SavedPaper`, `Collection`, `Note`, `Matrix`, `SharedLibrary`
 
 ### QA-03 — Medium — Peer-reviewed filter showed no visible change (unverified)
 
-**Observed:** 40 results before and 40 after enabling “Peer-reviewed only”.
+**Observed:** 40 rendered cards before and 40 after enabling “Peer-reviewed only” (first page).
 **Interpretation:** likely all 40 rendered results were peer-reviewed (no preprints in the first page), so the filter correctly removed nothing. This is **not confirmed as a defect**.
 **Next evidence needed:** run the same check on a preprint-heavy query (e.g. “large language models”) and compare `peerCount` in the filter label with the rendered count.
 
@@ -179,7 +181,7 @@ One title in the JSON evidence rendered as `Teachers�?T` while the library UI 
 
 ### QA-09 — Info — What passed well
 
-- Real search: 40 results, real titles, URL keeps the query.
+- Real search: first page of 40 rendered cards, real titles, URL keeps the query.
 - Quality-signals sort works and shows the heuristic disclaimer.
 - Paper detail loads, abstract and citation section present.
 - Save → library works (title visible in the browser-only library).
@@ -197,7 +199,7 @@ One title in the JSON evidence rendered as `Teachers�?T` while the library UI 
 | Step | Result |
 |---|---|
 | Home loads | Pass — “Research, simplified.” |
-| Search “reading comprehension strategies” | Pass — 40 results, query in URL |
+| Search “reading comprehension strategies” | Pass — 40 rendered cards (first page), query in URL |
 | Quality-signals sort | Pass — 40 results, disclaimer visible |
 | Peer-reviewed filter | 40 → 40 (unverified, see QA-03) |
 | Open paper | Pass — real h1, citation section |
