@@ -36,6 +36,23 @@ describe("normalizePaper", () => {
     expect(n?.authors).toEqual(["A B"]);
   });
 
+  it("strips markup and entities from text fields", () => {
+    const n = normalizePaper(
+      raw({
+        title: "Teacher <i>burnout</i> &amp; pay",
+        abstract: "<jats:p>Findings &lt;b&gt;strong&lt;/b&gt;</jats:p>",
+        authors: ["<b>Ana</b> Cruz"],
+        venue: "<i>Journal</i>",
+      }),
+      "src"
+    );
+    expect(n?.title).toBe("Teacher burnout & pay");
+    // Decoded entities are literal text, not live markup.
+    expect(n?.abstract).toBe("Findings <b>strong</b>");
+    expect(n?.authors).toEqual(["Ana Cruz"]);
+    expect(n?.venue).toBe("Journal");
+  });
+
   it("keeps citation details, as text, and drops an unknown record type", () => {
     const n = normalizePaper(raw({ type: "thesis", volume: 12, issue: "3", pages: " 45-67 ", publisher: "UP Diliman" }), "src");
     expect(n).toMatchObject({ type: "thesis", volume: "12", issue: "3", pages: "45-67", publisher: "UP Diliman" });

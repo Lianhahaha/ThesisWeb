@@ -158,6 +158,15 @@ describe("formatCitation title capitals", () => {
   });
 });
 
+describe("citation escaping", () => {
+  it("never renders markup from a source record as HTML", () => {
+    const html = formatCitation(paper({ title: "<script>alert(1)</script>", authors: ["<b>Ana</b> Cruz"] }), "apa");
+    expect(html).not.toContain("<script>");
+    expect(html).toContain("&lt;script&gt;");
+    expect(html).not.toContain("<b>Ana</b>");
+  });
+});
+
 describe("inTextCitation", () => {
   it("uses & only for APA", () => {
     expect(inTextCitation(paper(), "apa")).toBe("(Smith & Doe, 2023)");
