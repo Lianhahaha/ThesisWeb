@@ -99,6 +99,10 @@ export function StatusClient() {
     return <p role="status" className="mt-6 text-muted">Checking the service…</p>;
   }
 
+  // The daily report is a snapshot; it can predate sources added since it ran.
+  const covered = report?.results.length ?? 0;
+  const missing = Math.max(0, health.sources - covered);
+
   return (
     <div className="panel mt-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -147,8 +151,15 @@ export function StatusClient() {
             <p className="mt-1 text-sm text-muted">
               {report.results.filter((r) => r.status === "working").length} working,{" "}
               {report.results.filter((r) => r.status === "unavailable").length} unavailable,{" "}
-              {report.results.filter((r) => r.status === "skipped").length} without a key.
+              {report.results.filter((r) => r.status === "skipped").length} without a key
+              {covered > 0 && covered !== health.sources ? ` — report covers ${covered} of ${health.sources} databases` : ""}.
             </p>
+            {missing > 0 && (
+              <p className="mt-1 text-xs text-subtle">
+                This report predates the newest {missing} source{missing === 1 ? "" : "s"}. Searches already use all{" "}
+                {health.sources}; the next daily check will include them.
+              </p>
+            )}
             <ul className="mt-3 grid gap-1.5 text-sm sm:grid-cols-2">
               {[...report.results]
                 .sort((a, b) => STATUS_WEIGHT[a.status] - STATUS_WEIGHT[b.status])
