@@ -61,6 +61,10 @@ import { searchSaliksik } from "@/lib/sources/adapters/saliksik";
 import { searchPcaarrd } from "@/lib/sources/adapters/pcaarrd";
 import { searchScielo } from "@/lib/sources/adapters/scielo";
 import { searchPersee } from "@/lib/sources/adapters/persee";
+import { searchClinicalTrials } from "@/lib/sources/adapters/clinicaltrials";
+import { searchFederalRegister } from "@/lib/sources/adapters/federalregister";
+import { searchInternetArchive } from "@/lib/sources/adapters/internetarchive";
+import { searchPapersWithCode } from "@/lib/sources/adapters/paperswithcode";
 
 /**
  * The adapter for every source in lib/sources/meta.ts. Typed as a Record over
@@ -151,4 +155,8 @@ export const ADAPTERS: Record<SourceId, AdapterEntry> = {
   pcaarrd:         { run: searchPcaarrd, boolean: false, country: "Philippines", deadlineMs: 16000 },
   scielo:          { run: searchScielo, boolean: false },
   persee:          { run: searchPersee, boolean: false },
+  clinicaltrials:  { run: searchClinicalTrials, boolean: false },
+  federalregister: { run: searchFederalRegister, boolean: false },
+  internetarchive: { run: searchInternetArchive, boolean: false },
+  paperswithcode:  { run: searchPapersWithCode, boolean: false },
 };

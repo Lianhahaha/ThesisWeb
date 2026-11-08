@@ -297,6 +297,22 @@ const META = {
     label: "Persée", blurb: "French humanities and social science journals, books and reviews, many with free full text", color: "#4b6cb7",
     region: "France", fields: ["humanities", "social"], kind: "journals", url: "https://www.persee.fr",
   },
+  clinicaltrials: {
+    label: "ClinicalTrials.gov", blurb: "Clinical studies from around the world: status, sponsor, conditions, interventions and outcomes (U.S. NLM)", color: "#2d7d9a",
+    region: "Global", fields: ["medicine"], kind: "reports", url: "https://clinicaltrials.gov",
+  },
+  federalregister: {
+    label: "Federal Register", blurb: "U.S. rules, proposed rules, notices and executive orders, with abstracts and free PDFs", color: "#8b5e3c",
+    region: "United States", fields: ["social", "business", "humanities"], kind: "reports", url: "https://www.federalregister.gov",
+  },
+  internetarchive: {
+    label: "Internet Archive", blurb: "Books, texts, reports and historical primary sources from libraries and archives worldwide", color: "#6b7280",
+    region: "Global", fields: ["humanities", "social", "education", "sciences"], kind: "books", url: "https://archive.org",
+  },
+  paperswithcode: {
+    label: "Papers with Code", blurb: "Machine-learning papers linked to code, tasks and benchmarks; mostly arXiv preprints", color: "#c2410c",
+    region: "Global", fields: ["computing", "engineering", "sciences"], kind: "preprints", url: "https://paperswithcode.co",
+  },
 } satisfies Record<string, SourceMeta>;
 
 /** Every source id. lib/sources/registry.ts must have an adapter for each one. */

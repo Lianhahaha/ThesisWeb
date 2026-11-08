@@ -68,6 +68,10 @@ const PROBES: Record<SourceId, string> = {
   saliksik: "education", pcaarrd: "rice", scielo: "education", persee: "education",
   philjournals: "engineering", pej: "engineering", ajol: "engineering",
   ncjrs: "policing",
+  clinicaltrials: "diabetes",
+  federalregister: "education",
+  internetarchive: "philippine history",
+  paperswithcode: "transformer",
 };
 
 describe.skipIf(!LIVE)(QUERY ? `live sources: "${QUERY}"` : "live sources: probe topics", () => {
