@@ -59,6 +59,9 @@ export async function searchZbmath(query: string, opts: AdapterOptions = {}): Pr
     await sleep(1500);
     res = await fetchWithTimeout(`${BASE}?${params}`, { headers }, 12000);
   }
+  // zbMATH answers 404 for a topic it has no records for (e.g. a social
+  // science query); that is "no matches", not a broken source.
+  if (res.status === 404) return [];
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
   const data = await readJson<{ result?: ZbMathDoc[] }>(res, {});
   const papers: Paper[] = [];
