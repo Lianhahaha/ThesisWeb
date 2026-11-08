@@ -1,5 +1,5 @@
 import { paperId } from "@/lib/utils";
-import { fetchWithTimeout } from "@/lib/server/http";
+import { fetchWithTimeout, readText } from "@/lib/server/http";
 import { USER_AGENT } from "@/lib/server/config";
 import { flipName, stripHtml } from "@/lib/text";
 import type { Paper, WorkType } from "@/lib/types";
@@ -117,7 +117,7 @@ export async function searchPcaarrd(query: string, opts: AdapterOptions = {}): P
     10000
   );
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
-  const html = await res.text();
+  const html = await readText(res);
   if (!html.includes("box_list") && !/no (?:results|materials)/i.test(html)) throw new Error("unexpected page");
 
   const hits = parsePcaarrdList(html);

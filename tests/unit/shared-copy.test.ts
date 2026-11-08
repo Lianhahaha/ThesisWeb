@@ -70,4 +70,14 @@ describe("fromShared", () => {
   it("skips records without a title", () => {
     expect(fromShared({ name: "x", papers: [{ ...toSharedPaper(paper(), false), title: "" }] })).toEqual([]);
   });
+
+  it("ignores an id or unknown field supplied by the shared document", () => {
+    const hostile = Object.assign(toSharedPaper(paper(), false), {
+      id: "doi:10.1/someone-elses-paper",
+      evil: "x",
+    });
+    const [p] = fromShared({ name: "x", papers: [hostile] });
+    expect(p.id).toBe("doi:10.1234/a");
+    expect(p).not.toHaveProperty("evil");
+  });
 });

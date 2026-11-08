@@ -1,5 +1,5 @@
 import { paperId } from "@/lib/utils";
-import { fetchWithTimeout, waitTurn } from "@/lib/server/http";
+import { fetchWithTimeout, waitTurn, readText } from "@/lib/server/http";
 import type { Paper } from "@/lib/types";
 import type { AdapterOptions } from "@/lib/sources/types";
 
@@ -65,7 +65,7 @@ export async function searchArxiv(
   if (res.status === 429) throw new Error("rate limited (429)");
   if (!res.ok) throw new Error(`arXiv search failed: ${res.status}`);
   
-  const text = await res.text();
+  const text = await readText(res);
   
   // Quick and dirty XML parsing using regex to avoid heavy dependencies
   const entryRegex = /<entry>([\s\S]*?)<\/entry>/g;

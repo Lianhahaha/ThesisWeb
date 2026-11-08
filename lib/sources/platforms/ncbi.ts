@@ -1,4 +1,4 @@
-import { fetchWithTimeout, readJson, sleep, waitTurn } from "@/lib/server/http";
+import { fetchWithTimeout, readJson, sleep, waitTurn, readText } from "@/lib/server/http";
 import { CONTACT_EMAIL } from "@/lib/server/config";
 
 /**
@@ -48,7 +48,7 @@ export async function eFetchXml(db: string, ids: string[]): Promise<string> {
   if (ids.length === 0) return "";
   const res = await eutils("efetch.fcgi", { db, id: ids.join(","), retmode: "xml" });
   if (!res.ok) throw new Error(`efetch ${res.status}`);
-  return res.text();
+  return readText(res);
 }
 
 /** Summary records keyed by id (missing ids are simply absent). */

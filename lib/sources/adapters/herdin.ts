@@ -1,5 +1,5 @@
 import { paperId } from "@/lib/utils";
-import { fetchWithTimeout } from "@/lib/server/http";
+import { fetchWithTimeout, readText } from "@/lib/server/http";
 import { USER_AGENT } from "@/lib/server/config";
 import { decodeEntities, extractYear, stripHtml } from "@/lib/text";
 import type { Paper, WorkType } from "@/lib/types";
@@ -105,7 +105,7 @@ export async function searchHerdin(query: string, opts: AdapterOptions = {}): Pr
   // Usually 8-12 s, but the server occasionally takes 15-18 s.
   const res = await fetchWithTimeout(`${BASE}/index.php?${params}`, { headers: { "User-Agent": USER_AGENT } }, 20000);
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
-  const html = await res.text();
+  const html = await readText(res);
   // A changed page layout should show up as a failed source, not as "no results".
   if (!html.includes("researchlist-div") && !html.includes("No results found.")) throw new Error("unexpected page");
 

@@ -1,5 +1,5 @@
 import { paperId } from "@/lib/utils";
-import { fetchWithTimeout } from "@/lib/server/http";
+import { fetchWithTimeout, readText } from "@/lib/server/http";
 import { USER_AGENT } from "@/lib/server/config";
 import { extractYear, stripHtml } from "@/lib/text";
 import type { Paper } from "@/lib/types";
@@ -54,7 +54,7 @@ export async function searchNcjrs(query: string, opts: AdapterOptions = {}): Pro
   const params = new URLSearchParams({ searchterm: query });
   const res = await fetchWithTimeout(`${SEARCH}?${params}`, { headers: { "User-Agent": USER_AGENT } }, 12000);
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
-  const html = await res.text();
+  const html = await readText(res);
   if (!html.includes("listing-item")) throw new Error("unexpected page");
 
   return parseNcjrs(html)

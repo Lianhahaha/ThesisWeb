@@ -1,5 +1,5 @@
 import { paperId } from "@/lib/utils";
-import { fetchWithTimeout } from "@/lib/server/http";
+import { fetchWithTimeout, readText } from "@/lib/server/http";
 import { USER_AGENT } from "@/lib/server/config";
 import { decodeEntities, extractYear, stripHtml } from "@/lib/text";
 import type { Paper } from "@/lib/types";
@@ -85,7 +85,7 @@ export function parseEjournalsArticle(html: string, id: string): Paper | null {
 
 /** The first `max` bytes of a response body as text; the rest is never downloaded. */
 async function readStart(res: Response, max: number): Promise<string> {
-  if (!res.body) return res.text();
+  if (!res.body) return readText(res);
   const reader = res.body.getReader();
   const decoder = new TextDecoder();
   let text = "";

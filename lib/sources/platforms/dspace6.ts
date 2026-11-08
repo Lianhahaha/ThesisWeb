@@ -1,5 +1,5 @@
 import { paperId } from "@/lib/utils";
-import { fetchWithTimeout } from "@/lib/server/http";
+import { fetchWithTimeout, readText } from "@/lib/server/http";
 import { USER_AGENT } from "@/lib/server/config";
 import { decodeEntities, flipName, stripHtml } from "@/lib/text";
 import type { Paper } from "@/lib/types";
@@ -67,7 +67,7 @@ export function dspace6Adapter(cfg: Dspace6Config): Adapter {
       cfg.timeoutMs ?? 10000
     );
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const xml = await res.text();
+    const xml = await readText(res);
     if (!xml.includes("<feed")) throw new Error("not an OpenSearch feed");
 
     const papers: Paper[] = [];

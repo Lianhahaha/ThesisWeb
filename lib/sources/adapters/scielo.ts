@@ -1,5 +1,5 @@
 import { paperId } from "@/lib/utils";
-import { fetchWithTimeout } from "@/lib/server/http";
+import { fetchWithTimeout, readText } from "@/lib/server/http";
 import { decodeEntities, extractDoi, extractYear, flipName, stripHtml } from "@/lib/text";
 import type { Paper } from "@/lib/types";
 import type { AdapterOptions } from "@/lib/sources/types";
@@ -95,7 +95,7 @@ export async function searchScielo(query: string, opts: AdapterOptions = {}): Pr
     12000
   );
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
-  const html = await res.text();
+  const html = await readText(res);
   if (!html.includes('class="results"')) throw new Error("unexpected page");
 
   return parseScielo(html)

@@ -1,5 +1,5 @@
 import { paperId } from "@/lib/utils";
-import { fetchWithTimeout } from "@/lib/server/http";
+import { fetchWithTimeout, readText } from "@/lib/server/http";
 import { USER_AGENT } from "@/lib/server/config";
 import { decodeEntities, extractDoi } from "@/lib/text";
 import type { Paper } from "@/lib/types";
@@ -50,7 +50,7 @@ export async function searchJstage(
 
   const res = await fetchWithTimeout(`${BASE}?${params}`, { headers: { "User-Agent": USER_AGENT } });
   if (!res.ok) throw new Error(`J-STAGE ${res.status}`);
-  const xml = await res.text();
+  const xml = await readText(res);
   // Errors come back as 200 with a non-zero <status> (e.g. no matches).
   const status = xml.match(/<status>(\d+)<\/status>/)?.[1];
   if (status && status !== "0") return [];

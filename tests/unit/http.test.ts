@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { fetchWithTimeout, readJson, sleep, waitTurn, withAbortSignal } from "@/lib/server/http";
+import { fetchWithTimeout, readJson, readText, sleep, waitTurn, withAbortSignal } from "@/lib/server/http";
 
 afterEach(() => {
   vi.unstubAllGlobals();
@@ -28,6 +28,17 @@ describe("readJson", () => {
   it("refuses a body larger than the cap instead of buffering it", async () => {
     const huge = new Response("{}", { headers: { "content-length": "999999999" } });
     await expect(readJson(huge)).rejects.toThrow("too large");
+  });
+});
+
+describe("readText", () => {
+  it("returns a small HTML/XML body", async () => {
+    expect(await readText(new Response("<html>ok</html>"))).toBe("<html>ok</html>");
+  });
+
+  it("refuses a page larger than the cap", async () => {
+    const huge = new Response("abcdef", { headers: { "content-length": "999999" } });
+    await expect(readText(huge, 50)).rejects.toThrow("too large");
   });
 });
 

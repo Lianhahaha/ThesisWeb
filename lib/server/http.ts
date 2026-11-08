@@ -123,6 +123,8 @@ export function upstreamError(service: string, status: number): Error {
 
 /** A body larger than this is not an answer we can use; stop reading it. */
 const MAX_JSON_BYTES = 8_000_000;
+/** HTML/XML pages are smaller than JSON payloads; an unbounded page is a red flag. */
+const MAX_TEXT_BYTES = 5_000_000;
 
 async function readBody(res: Response, max: number): Promise<string> {
   const declared = Number(res.headers.get("content-length") ?? "");
@@ -151,6 +153,11 @@ async function readBody(res: Response, max: number): Promise<string> {
  * as failed (with the reason), not as "no results". `whenEmpty` is returned
  * for a blank body, for an API that answers "no matches" with nothing at all.
  */
+/** The text body of a response (HTML, XML, RSS), refused above `max` bytes. */
+export async function readText(res: Response, max = MAX_TEXT_BYTES): Promise<string> {
+  return readBody(res, max);
+}
+
 export async function readJson<T = unknown>(res: Response, whenEmpty?: T): Promise<T> {
   const text = await readBody(res, MAX_JSON_BYTES);
   if (!text.trim()) {

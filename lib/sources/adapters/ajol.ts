@@ -1,4 +1,4 @@
-import { fetchWithTimeout } from "@/lib/server/http";
+import { fetchWithTimeout, readText } from "@/lib/server/http";
 import { USER_AGENT } from "@/lib/server/config";
 import { stripHtml } from "@/lib/text";
 import type { Paper } from "@/lib/types";
@@ -23,7 +23,7 @@ async function journalTitle(code: string): Promise<string | null> {
   try {
     const res = await fetchWithTimeout(`${BASE}/index.php/${encodeURIComponent(code)}`, { headers: { "User-Agent": USER_AGENT } }, 5000);
     if (!res.ok) return null;
-    const html = await res.text();
+    const html = await readText(res);
     const meta = html.match(/<meta name="citation_journal_title" content="([^"]*)"/i)?.[1];
     const titleTag = html.match(/<title>([\s\S]*?)<\/title>/i)?.[1];
     const title = stripHtml(meta ?? titleTag ?? "").replace(/^archives?\s*\|\s*/i, "").trim();

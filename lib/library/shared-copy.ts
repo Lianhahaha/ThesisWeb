@@ -104,9 +104,34 @@ export function fromShared(share: Pick<SharedLibrary, "name" | "papers">, now = 
       const v = raw.matrix?.[k];
       if (typeof v === "string" && v) matrix[k] = v.slice(0, CELL_MAX);
     }
-    out.push({
-      ...p,
-      id: raw.id || p.id,
+    // Rebuild from known fields only: the shared document is someone else's
+    // input, and normalizePaper keeps unknown keys from it. Using raw.id would
+    // also let a crafted share target a paper id already in the victim's
+    // library and overwrite its link or notes on merge.
+    const clean: SavedPaper = {
+      id: p.id,
+      title: p.title,
+      authors: p.authors,
+      year: p.year,
+      publishedDate: p.publishedDate,
+      venue: p.venue,
+      type: p.type,
+      volume: p.volume,
+      issue: p.issue,
+      pages: p.pages,
+      publisher: p.publisher,
+      doi: p.doi,
+      abstract: p.abstract,
+      tldr: p.tldr,
+      openAccessUrl: p.openAccessUrl,
+      url: p.url,
+      isOpenAccess: p.isOpenAccess,
+      citedByCount: p.citedByCount,
+      keywords: p.keywords,
+      sources: p.sources,
+      retracted: p.retracted,
+      concern: p.concern,
+      preprint: p.preprint,
       notes: typeof raw.notes === "string" && raw.notes ? raw.notes.slice(0, NOTES_MAX) : undefined,
       matrix: Object.keys(matrix).length ? matrix : undefined,
       collection: share.name.slice(0, 100),
@@ -114,7 +139,8 @@ export function fromShared(share: Pick<SharedLibrary, "name" | "papers">, now = 
       savedAt: now,
       tags: [],
       readingStatus: "to-read",
-    });
+    };
+    out.push(clean);
   }
   return out;
 }

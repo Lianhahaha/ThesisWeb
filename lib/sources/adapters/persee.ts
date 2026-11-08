@@ -1,5 +1,5 @@
 import { paperId } from "@/lib/utils";
-import { fetchWithTimeout } from "@/lib/server/http";
+import { fetchWithTimeout, readText } from "@/lib/server/http";
 import { decodeEntities, extractYear, flipName, stripHtml } from "@/lib/text";
 import type { Paper } from "@/lib/types";
 import type { AdapterOptions } from "@/lib/sources/types";
@@ -73,7 +73,7 @@ export async function searchPersee(query: string, opts: AdapterOptions = {}): Pr
 
   const res = await fetchWithTimeout(`${SEARCH}?${params}`, { headers: { Accept: "text/html" } }, 12000);
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
-  const html = await res.text();
+  const html = await readText(res);
   if (!html.includes("doc-result") && !/aucun r[ée]sultat/i.test(html)) throw new Error("unexpected page");
 
   return parsePersee(html)

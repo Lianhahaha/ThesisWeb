@@ -1,5 +1,5 @@
 import { paperId } from "@/lib/utils";
-import { fetchWithTimeout, readJson } from "@/lib/server/http";
+import { fetchWithTimeout, readJson, readText } from "@/lib/server/http";
 import { USER_AGENT } from "@/lib/server/config";
 import { extractYear, flipName, stripHtml } from "@/lib/text";
 import type { Paper } from "@/lib/types";
@@ -79,7 +79,7 @@ export async function searchUpd(query: string, opts: AdapterOptions = {}): Promi
     10000
   );
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
-  const html = await res.text();
+  const html = await readText(res);
   // No matches is a page of its own, without the "returned N records" line.
   if (html.includes("No records found matching your search")) return [];
   const total = Number(html.match(/returned <strong>(\d+)<\/strong> records/)?.[1] ?? NaN);

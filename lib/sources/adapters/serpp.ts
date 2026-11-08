@@ -1,5 +1,5 @@
 import { paperId } from "@/lib/utils";
-import { fetchWithTimeout } from "@/lib/server/http";
+import { fetchWithTimeout, readText } from "@/lib/server/http";
 import { USER_AGENT } from "@/lib/server/config";
 import { decodeEntities, extractYear, stripHtml } from "@/lib/text";
 import type { Paper } from "@/lib/types";
@@ -64,7 +64,7 @@ export async function searchSerpp(query: string, opts: AdapterOptions = {}): Pro
 
   const res = await fetchWithTimeout(`${BASE}/site/homepage-search?${params}`, { headers: { "User-Agent": USER_AGENT } }, 10000);
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
-  const html = await res.text();
+  const html = await readText(res);
   // A changed page layout should show up as a failed source, not as "no results".
   if (!html.includes("related posts found")) throw new Error("unexpected page");
 

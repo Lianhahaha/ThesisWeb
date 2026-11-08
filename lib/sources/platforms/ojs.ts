@@ -1,5 +1,5 @@
 import { paperId } from "@/lib/utils";
-import { fetchWithTimeout } from "@/lib/server/http";
+import { fetchWithTimeout, readText } from "@/lib/server/http";
 import { USER_AGENT } from "@/lib/server/config";
 import { extractYear, stripHtml } from "@/lib/text";
 import type { Paper } from "@/lib/types";
@@ -83,7 +83,7 @@ export function ojsAdapter(cfg: OjsConfig): Adapter {
       cfg.timeoutMs ?? 10000
     );
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const html = await res.text();
+    const html = await readText(res);
     // A changed page layout should show up as a failed source, not as "no results".
     if (!html.includes("search_results")) throw new Error("unexpected page");
 
