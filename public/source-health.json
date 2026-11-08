@@ -1,5 +1,5 @@
 {
-  "checkedAt": "2026-11-08T01:14:07.432Z",
+  "checkedAt": "2026-11-08T13:43:28.289Z",
   "results": [
     {
       "id": "openalex",
@@ -33,8 +33,8 @@
     },
     {
       "id": "arxiv",
-      "status": "unavailable",
-      "detail": "The operation was aborted due to timeout"
+      "status": "working",
+      "count": 10
     },
     {
       "id": "eric",
@@ -98,8 +98,8 @@
     },
     {
       "id": "cinii",
-      "status": "skipped",
-      "detail": "CINII_APP_ID not configured"
+      "status": "working",
+      "count": 8
     },
     {
       "id": "jstage",
@@ -109,7 +109,7 @@
     {
       "id": "figshare",
       "status": "working",
-      "count": 10
+      "count": 9
     },
     {
       "id": "worldbank",
@@ -168,8 +168,8 @@
     },
     {
       "id": "thesesfr",
-      "status": "unavailable",
-      "detail": "fetch failed"
+      "status": "working",
+      "count": 10
     },
     {
       "id": "osf",
@@ -308,6 +308,146 @@
     },
     {
       "id": "persee",
+      "status": "working",
+      "count": 10
+    },
+    {
+      "id": "clinicaltrials",
+      "status": "working",
+      "count": 10
+    },
+    {
+      "id": "federalregister",
+      "status": "working",
+      "count": 10
+    },
+    {
+      "id": "internetarchive",
+      "status": "working",
+      "count": 10
+    },
+    {
+      "id": "paperswithcode",
+      "status": "working",
+      "count": 10
+    },
+    {
+      "id": "mit",
+      "status": "working",
+      "count": 10
+    },
+    {
+      "id": "epfl",
+      "status": "working",
+      "count": 10
+    },
+    {
+      "id": "gatech",
+      "status": "working",
+      "count": 10
+    },
+    {
+      "id": "toronto",
+      "status": "working",
+      "count": 10
+    },
+    {
+      "id": "cornell",
+      "status": "working",
+      "count": 10
+    },
+    {
+      "id": "duke",
+      "status": "working",
+      "count": 10
+    },
+    {
+      "id": "vtech",
+      "status": "working",
+      "count": 10
+    },
+    {
+      "id": "uminn",
+      "status": "working",
+      "count": 10
+    },
+    {
+      "id": "arizona",
+      "status": "working",
+      "count": 10
+    },
+    {
+      "id": "unsw",
+      "status": "working",
+      "count": 10
+    },
+    {
+      "id": "googlepatents",
+      "status": "working",
+      "count": 10
+    },
+    {
+      "id": "oapen",
+      "status": "working",
+      "count": 8
+    },
+    {
+      "id": "doab",
+      "status": "working",
+      "count": 9
+    },
+    {
+      "id": "harvard",
+      "status": "working",
+      "count": 10
+    },
+    {
+      "id": "melbourne",
+      "status": "working",
+      "count": 10
+    },
+    {
+      "id": "auckland",
+      "status": "working",
+      "count": 10
+    },
+    {
+      "id": "caltech",
+      "status": "working",
+      "count": 10
+    },
+    {
+      "id": "pangaea",
+      "status": "working",
+      "count": 10
+    },
+    {
+      "id": "secedgar",
+      "status": "working",
+      "count": 10
+    },
+    {
+      "id": "nvd",
+      "status": "working",
+      "count": 10
+    },
+    {
+      "id": "cisakev",
+      "status": "working",
+      "count": 10
+    },
+    {
+      "id": "pedro",
+      "status": "working",
+      "count": 6
+    },
+    {
+      "id": "philpolitics",
+      "status": "working",
+      "count": 10
+    },
+    {
+      "id": "philagri",
       "status": "working",
       "count": 10
     }
