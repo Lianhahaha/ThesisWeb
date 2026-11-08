@@ -83,6 +83,14 @@ const PROBES: Record<SourceId, string> = {
   arizona: "optical computing",
   unsw: "artificial intelligence",
   googlepatents: "semiconductor",
+  oapen: "education",
+  doab: "education",
+  harvard: "machine learning",
+  melbourne: "artificial intelligence",
+  auckland: "machine learning",
+  caltech: "artificial intelligence",
+  pangaea: "ocean",
+  secedgar: "artificial intelligence",
 };
 
 describe.skipIf(!LIVE)(QUERY ? `live sources: "${QUERY}"` : "live sources: probe topics", () => {

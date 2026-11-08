@@ -357,6 +357,38 @@ const META = {
     label: "Google Patents", blurb: "Published patents and applications worldwide: hardware, electronics, mechanical, materials and software inventions (public endpoint)", color: "#4285f4",
     region: "Global", fields: ["engineering", "computing", "sciences"], kind: "reports", url: "https://patents.google.com",
   },
+  oapen: {
+    label: "OAPEN Library", blurb: "Open-access academic books from publishers and university presses: humanities, social sciences, science and technology", color: "#f59e0b",
+    region: "Global", fields: ["all"], kind: "books", url: "https://library.oapen.org",
+  },
+  doab: {
+    label: "DOAB", blurb: "Directory of Open Access Books: peer-reviewed books from many publishers, across every field", color: "#16a34a",
+    region: "Global", fields: ["all"], kind: "books", url: "https://directory.doabooks.org",
+  },
+  harvard: {
+    label: "Harvard DASH", blurb: "Harvard theses, articles, working papers and reports: law, medicine, sciences, social sciences and humanities", color: "#a51c30",
+    region: "United States", fields: ["all"], kind: "repository", url: "https://dash.harvard.edu",
+  },
+  melbourne: {
+    label: "University of Melbourne Minerva Access", blurb: "Melbourne theses, reports and papers across all fields", color: "#094183",
+    region: "Australia", fields: ["all"], kind: "repository", url: "https://minerva-access.unimelb.edu.au",
+  },
+  auckland: {
+    label: "University of Auckland ResearchSpace", blurb: "Auckland theses, reports and papers across all fields", color: "#00467f",
+    region: "New Zealand", fields: ["all"], kind: "repository", url: "https://researchspace.auckland.ac.nz",
+  },
+  caltech: {
+    label: "CaltechAUTHORS", blurb: "Caltech papers, preprints, theses and reports: AI, robotics, physics and engineering", color: "#ff6f00",
+    region: "United States", fields: ["computing", "engineering", "sciences"], kind: "repository", url: "https://authors.library.caltech.edu",
+  },
+  pangaea: {
+    label: "PANGAEA", blurb: "Earth, ocean and environmental science datasets and publications, each with a DOI", color: "#0e7490",
+    region: "Global", fields: ["sciences", "agriculture"], kind: "repository", url: "https://pangaea.de",
+  },
+  secedgar: {
+    label: "SEC EDGAR", blurb: "U.S. corporate filings (10-K, 10-Q, 8-K and more): business, finance, accounting and governance primary sources", color: "#1e3a8a",
+    region: "United States", fields: ["business", "social"], kind: "reports", url: "https://www.sec.gov/edgar",
+  },
 } satisfies Record<string, SourceMeta>;
 
 /** Every source id. lib/sources/registry.ts must have an adapter for each one. */

@@ -4,7 +4,7 @@
 
 A free web app that helps thesis students find related literature (RRL), keep it organised, and cite it correctly.
 
-- **Search** — one topic, 77 free academic databases at once, merged, de-duplicated and ranked, with preprint, retraction and expression-of-concern warnings. Save a search and the next time you open it, papers that weren't there before are marked *New*.
+- **Search** — one topic, 85 free academic databases at once, merged, de-duplicated and ranked, with preprint, retraction and expression-of-concern warnings. Save a search and the next time you open it, papers that weren't there before are marked *New*.
 - **Library** — save papers, group them by chapter, take notes, fill a synthesis matrix, or import a .bib/.ris file from Zotero, Mendeley or EndNote. Each paper is tagged **Local** or **Foreign** (guessed from the paper, changeable), to filter the library and split the exported reference list. **Share** a collection with your thesis group by link: they can read it, export it and copy it into their own library.
 - **Cite** — paste DOIs and get references in APA, MLA, IEEE or Chicago, or export your whole library.
 
@@ -79,6 +79,11 @@ All free; IEEE Xplore and Google Books need free registration keys. The in-app [
 | MIT DSpace, Georgia Tech SMARTech, Cornell eCommons, DukeSpace, VTechWorks, UMN Conservancy, University of Arizona | Theses, technical reports and papers strong in AI, computing and engineering |
 | EPFL Infoscience, Toronto TSpace, UNSW UNSWorks | AI, robotics, computing and engineering theses and papers |
 | Google Patents | Published patents and applications: hardware, electronics, mechanical, materials and software |
+| OAPEN Library, DOAB | Open-access academic books across every field |
+| Harvard DASH, Melbourne Minerva Access, Auckland ResearchSpace | Theses, reports and papers across all fields |
+| CaltechAUTHORS | AI, robotics, physics and engineering papers, preprints and theses |
+| PANGAEA | Earth, ocean and environmental science datasets and publications (DOI) |
+| SEC EDGAR | U.S. corporate filings: business, finance, accounting and governance primary sources |
 
 **Trust signals:** results come straight from these databases; nothing is generated. Preprints carry a *Preprint · not peer-reviewed* badge. After results load, every DOI is checked against Crossref (which includes Retraction Watch) for retractions and expressions of concern. Semantic Scholar's one-line summaries are labelled *AI summary*.
 

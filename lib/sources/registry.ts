@@ -76,6 +76,14 @@ import { searchUminn } from "@/lib/sources/adapters/uminn";
 import { searchArizona } from "@/lib/sources/adapters/arizona";
 import { searchUnsw } from "@/lib/sources/adapters/unsw";
 import { searchGooglePatents } from "@/lib/sources/adapters/googlepatents";
+import { searchOapen } from "@/lib/sources/adapters/oapen";
+import { searchDoab } from "@/lib/sources/adapters/doab";
+import { searchHarvard } from "@/lib/sources/adapters/harvard";
+import { searchMelbourne } from "@/lib/sources/adapters/melbourne";
+import { searchAuckland } from "@/lib/sources/adapters/auckland";
+import { searchCaltech } from "@/lib/sources/adapters/caltech";
+import { searchPangaea } from "@/lib/sources/adapters/pangaea";
+import { searchSecEdgar } from "@/lib/sources/adapters/secedgar";
 
 /**
  * The adapter for every source in lib/sources/meta.ts. Typed as a Record over
@@ -181,4 +189,12 @@ export const ADAPTERS: Record<SourceId, AdapterEntry> = {
   arizona:         { run: searchArizona, boolean: false, country: "United States" },
   unsw:            { run: searchUnsw, boolean: false, country: "Australia" },
   googlepatents:   { run: searchGooglePatents, boolean: false },
+  oapen:           { run: searchOapen, boolean: false },
+  doab:            { run: searchDoab, boolean: false },
+  harvard:         { run: searchHarvard, boolean: false, country: "United States" },
+  melbourne:       { run: searchMelbourne, boolean: false, country: "Australia" },
+  auckland:        { run: searchAuckland, boolean: false, country: "New Zealand" },
+  caltech:         { run: searchCaltech, boolean: false, country: "United States" },
+  pangaea:         { run: searchPangaea, boolean: false },
+  secedgar:        { run: searchSecEdgar, boolean: false, country: "United States" },
 };
