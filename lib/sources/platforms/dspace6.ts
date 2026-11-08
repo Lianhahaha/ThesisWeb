@@ -75,6 +75,8 @@ export function dspace6Adapter(cfg: Dspace6Config): Adapter {
       const rawTitle = tag(entry, "title");
       if (!rawTitle) continue;
       const title = stripHtml(rawTitle);
+      // Some feeds include a placeholder record with no title at all.
+      if (!title || /^untitled$/i.test(title)) continue;
       const authors = [...entry.matchAll(/<author>\s*<name>([\s\S]*?)<\/name>/g)].map((m) => decodeEntities(m[1]).trim());
       const date = tag(entry, "published") ?? tag(entry, "dc:date");
       const year = date ? Number(date.slice(0, 4)) || null : null;
