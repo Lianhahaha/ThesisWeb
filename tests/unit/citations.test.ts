@@ -164,6 +164,13 @@ describe("inTextCitation", () => {
     expect(inTextCitation(paper(), "mla")).toBe("(Smith and Doe)");
     expect(inTextCitation(paper({ year: null }), "chicago")).toBe("(Smith and Doe n.d.)");
   });
+
+  it("lists three authors in Chicago but uses et al. from four", () => {
+    const three = paper({ authors: ["Ana Cruz", "Ben Reyes", "Cara Lim"] });
+    expect(inTextCitation(three, "chicago")).toBe("(Cruz, Reyes, and Lim 2023)");
+    const four = paper({ authors: ["Ana Cruz", "Ben Reyes", "Cara Lim", "Dan Tan"] });
+    expect(inTextCitation(four, "chicago")).toBe("(Cruz et al. 2023)");
+  });
 });
 
 describe("toBibtex and toRis by record type", () => {

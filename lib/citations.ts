@@ -447,6 +447,9 @@ export function inTextCitation(p: Paper, style: CitationStyle, refNum?: number):
   else if (p.authors.length === 2) {
     // "&" is APA's; MLA and Chicago spell out "and".
     authors = `${surname(p.authors[0])} ${style === "apa" ? "&" : "and"} ${surname(p.authors[1])}`;
+  } else if (p.authors.length === 3 && style === "chicago") {
+    // Chicago lists all three in the text; "et al." starts at four authors.
+    authors = `${surname(p.authors[0])}, ${surname(p.authors[1])}, and ${surname(p.authors[2])}`;
   } else authors = `${surname(p.authors[0])} et al.`;
   if (style === "apa") return `(${authors}, ${yr(p, "n.d.")})`;
   // MLA in-text is author (and page) only; a missing year used to leave
