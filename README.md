@@ -94,6 +94,10 @@ npm test                     # unit and component tests, no network
 npm run test:live            # calls every real database once
 ```
 
+`package.json`'s `overrides` keeps `@grpc/grpc-js` on the patched 1.13.x line
+(the version Firebase's range does not yet include). Remove the override once
+Firebase ships that range, and let `npm audit` be the reminder.
+
 **Environment variables** (`.env.local`, git-ignored):
 
 | Variable | Needed | Why |
