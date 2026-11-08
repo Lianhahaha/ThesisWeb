@@ -25,7 +25,7 @@ export default function ErrorPage({
         <button type="button" onClick={reset} className="btn-primary">
           Try again
         </button>
-        <Link href="/" className="btn-secondary">
+        <Link href="/search" className="btn-secondary">
           Go to search
         </Link>
       </div>

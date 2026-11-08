@@ -151,6 +151,9 @@ export default function SearchPage() {
     running.current?.abort();
     const controller = new AbortController();
     running.current = controller;
+    // Put the query in the URL before the search runs, so a refresh or a
+    // shared link mid-search still knows what was asked.
+    window.history.replaceState(null, "", `?${buildSearchParams(input)}`);
     setForm(input);
     setSearched(input);
     setPending(true);

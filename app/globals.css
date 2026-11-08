@@ -126,11 +126,15 @@
     border-radius: 999px;
   }
 
-  /* No motion anywhere. */
+  /* No motion anywhere, except a spinner that says work is still running. */
   *, *::before, *::after {
     animation: none !important;
     transition: none !important;
     scroll-behavior: auto !important;
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .animate-spin { animation: spin 1s linear infinite !important; }
+    @keyframes spin { to { transform: rotate(360deg); } }
   }
 }
 
