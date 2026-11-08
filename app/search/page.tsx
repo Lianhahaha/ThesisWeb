@@ -3,7 +3,9 @@
 import { useState, useEffect, useMemo, useRef } from "react";
 import Link from "next/link";
 import { Bookmark, BookmarkCheck } from "lucide-react";
+import { useLiveQuery } from "dexie-react-hooks";
 import { PaperCard } from "@/components/PaperCard";
+import { getDb } from "@/lib/library/store";
 import { SearchPanel, DEFAULT_FROM_YEAR } from "@/components/SearchPanel";
 import { toast } from "@/components/Toaster";
 import { storeRecentPapers } from "@/lib/search/recent-papers";
@@ -70,6 +72,16 @@ export default function SearchPage() {
     const list = refine(filterBySources(result?.papers ?? [], selectedSources), refinement);
     return sortPapers(onlyNew ? list.filter((p) => freshIds.has(p.id)) : list, sortKey);
   }, [result, selectedSources, refinement, sortKey, onlyNew, freshIds]);
+
+  // One IndexedDB query for the whole rendered page, instead of one live
+  // subscription per Save button.
+  const shownIds = useMemo(() => visible.slice(0, shown).map((p) => p.id), [visible, shown]);
+  const shownKey = shownIds.join("|");
+  const localSaved = useLiveQuery(async () => {
+    if (typeof window === "undefined" || shownIds.length === 0) return new Set<string>();
+    const rows = await getDb().papers.where("id").anyOf(shownIds).toArray();
+    return new Set(rows.map((r) => r.id));
+  }, [shownKey]);
 
   function toggleSaved() {
     if (!searched || !result) return;
@@ -373,7 +385,13 @@ export default function SearchPage() {
                 <ol className="card mt-4 divide-y divide-border">
                   {visible.slice(0, shown).map((p, i) => (
                     <li key={p.id}>
-                      <PaperCard paper={p} showScore refNum={i + 1} isNew={freshIds.has(p.id)} />
+                      <PaperCard
+                        paper={p}
+                        showScore
+                        refNum={i + 1}
+                        isNew={freshIds.has(p.id)}
+                        localSaved={localSaved?.has(p.id)}
+                      />
                     </li>
                   ))}
                 </ol>

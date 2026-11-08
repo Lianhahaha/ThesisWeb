@@ -14,9 +14,11 @@ interface Props {
   refNum?: number;
   /** Not seen before in this saved search. */
   isNew?: boolean;
+  /** Saved in this browser, when the page already looked up a whole batch. */
+  localSaved?: boolean;
 }
 
-export function PaperCard({ paper, showScore, refNum, isNew }: Props) {
+export function PaperCard({ paper, showScore, refNum, isNew, localSaved }: Props) {
   const [expanded, setExpanded] = useState(false);
   const summary = paper.tldr || paper.abstract;
   const long = (summary?.length ?? 0) > 220;
@@ -138,7 +140,7 @@ export function PaperCard({ paper, showScore, refNum, isNew }: Props) {
           )}
 
           <div className="mt-3 flex flex-wrap items-center gap-2">
-            <SaveButton paper={paper} />
+            <SaveButton paper={paper} localSaved={localSaved} />
             {paper.openAccessUrl && (
               <a
                 href={paper.openAccessUrl}

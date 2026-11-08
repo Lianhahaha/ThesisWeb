@@ -13,19 +13,35 @@ import { useAuth } from "@/lib/auth/store";
 interface Props {
   paper: Paper;
   className?: string;
+  /**
+   * When a results page has already looked up the whole page in one query,
+   * it passes the answer here. Without it, the button subscribes to IndexedDB
+   * for this paper alone (fine for a single paper page).
+   */
+  localSaved?: boolean;
 }
 
 /**
  * Toggle a paper in the library: IndexedDB when signed out, Firestore when
  * signed in (saved state from lib/library/saved-ids.ts).
  */
-export function SaveButton({ paper, className }: Props) {
-  const { user, initialized } = useAuth();
+export function SaveButton(props: Props) {
+  // A per-card subscription is only needed when the caller has not batched
+  // the answer already.
+  if (props.localSaved !== undefined) return <SaveButtonView {...props} />;
+  return <LiveSaveButton {...props} />;
+}
 
+function LiveSaveButton(props: Props) {
   const localSaved = useLiveQuery(async () => {
     if (typeof window === "undefined") return false;
-    return (await getDb().papers.get(paper.id)) !== undefined;
-  }, [paper.id]);
+    return (await getDb().papers.get(props.paper.id)) !== undefined;
+  }, [props.paper.id]);
+  return <SaveButtonView {...props} localSaved={localSaved} />;
+}
+
+function SaveButtonView({ paper, className, localSaved }: Props) {
+  const { user, initialized } = useAuth();
 
   // Signed in: shared with every other Save button, looked up in batches.
   const cloudSaved = useSavedState((s) => (user && s.uid === user.uid ? s.saved[paper.id] : undefined));
