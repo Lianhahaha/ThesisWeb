@@ -1,5 +1,10 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test } from "@playwright/test";
+import { acceptTerms } from "./terms";
+
+test.beforeEach(async ({ page }) => {
+  await acceptTerms(page);
+});
 
 const PAGES = [
   { path: "/", heading: /research|thesis/i },
@@ -20,6 +25,26 @@ for (const entry of PAGES) {
     expect(errors).toEqual([]);
   });
 }
+
+test("a first visit must read the terms before accepting", async ({ page }) => {
+  await page.addInitScript(() => localStorage.removeItem("tw-terms-accepted"));
+  await page.goto("/");
+
+  const dialog = page.getByRole("dialog", { name: "Before you continue" });
+  await expect(dialog).toBeVisible();
+  const box = dialog.getByRole("checkbox");
+  const accept = dialog.getByRole("button", { name: /accept and continue/i });
+  await expect(box).toBeDisabled();
+  await expect(accept).toBeDisabled();
+
+  await dialog.getByText("End of the Terms of Use and Privacy Policy.").scrollIntoViewIfNeeded();
+  await expect(box).toBeEnabled();
+
+  await box.check();
+  await accept.click();
+  await expect(dialog).toBeHidden();
+  await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+});
 
 test("a missing page shows the custom 404", async ({ page }) => {
   await page.goto("/this-page-does-not-exist");

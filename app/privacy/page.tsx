@@ -1,14 +1,8 @@
 import type { Metadata } from "next";
 import { pageMetadata } from "@/lib/site";
 import Link from "next/link";
-import { CONTACT_EMAIL, LEGAL_UPDATED } from "@/lib/legal";
-import { SOURCE_COUNT, SOURCE_META } from "@/lib/sources/meta";
-
-/** Every database a search goes to, from the same list the search uses, so this page can't fall behind it. */
-const DATABASE_NAMES = Object.values(SOURCE_META)
-  .map((s) => s.label)
-  .sort((a, b) => a.localeCompare(b))
-  .join(", ");
+import { LEGAL_UPDATED } from "@/lib/legal";
+import { PrivacyContent } from "@/components/legal/PrivacyContent";
 
 export const metadata: Metadata = pageMetadata({
   title: "Privacy Policy",
@@ -22,130 +16,7 @@ export default function PrivacyPage() {
       <p className="eyebrow">Legal</p>
       <h1 className="display mt-3 text-3xl">Privacy Policy</h1>
       <p className="mt-2 text-sm text-muted">Last updated {LEGAL_UPDATED}</p>
-
-      <p className="mt-6">
-        Thesisweb helps students find related literature, keep notes on it and generate citations.
-        This page explains exactly what the app stores, where it goes, and how to get rid of it.
-        Thesisweb is free, carries no advertising, and does not sell anything about you.
-      </p>
-
-      <h2 className="mt-8 text-xl">You can use it without an account</h2>
-      <p className="mt-2">
-        Searching, reading and saving papers all work signed out. In that case everything stays in
-        your browser and no account data is created. Clearing your browser data removes it.
-      </p>
-
-      <h2 className="mt-8 text-xl">What is stored in your browser</h2>
-      <ul className="mt-2 list-disc space-y-1 pl-5">
-        <li>Papers you save while signed out, including your notes and synthesis matrix.</li>
-        <li>Your search preferences: published-since range, country focus, citation style.</li>
-        <li>Your light or dark theme choice.</li>
-        <li>Your last eight search topics, so you can return to them in one click.</li>
-        <li>That you accepted the Terms of Use and Privacy Policy, and the date they were last updated.</li>
-      </ul>
-      <p className="mt-2">
-        None of this leaves your device unless you sign in and choose to copy it to your account.
-        You can clear the search history and preferences from{" "}
-        <Link href="/settings" className="underline">Settings</Link>.
-      </p>
-
-      <h2 className="mt-8 text-xl">What is stored if you make an account</h2>
-      <p className="mt-2">
-        Accounts use Firebase Authentication and Cloud Firestore, both operated by Google. We store:
-      </p>
-      <ul className="mt-2 list-disc space-y-1 pl-5">
-        <li>
-          <strong>Your email address and password.</strong> Firebase handles both. The password is
-          hashed by Firebase and is never visible to this app or to its author.
-        </li>
-        <li>
-          <strong>If you continue with Google:</strong> the name and email address of your Google
-          account, as Google shares them. Your Google password never reaches Thesisweb.
-        </li>
-        <li>
-          <strong>Your display name and preferences</strong>, if you set them.
-        </li>
-        <li>
-          <strong>Your library:</strong> the papers you saved, their database records, your notes,
-          your synthesis matrix entries and your collection names.
-        </li>
-        <li>
-          <strong>Libraries you choose to share</strong>: a copy of those papers (and, if you tick the
-          box, your notes and matrix for them), readable by anyone who has the link, until you stop
-          sharing.
-        </li>
-      </ul>
-      <p className="mt-2">
-        Only you can read or change your library and profile. This is enforced by Firestore security
-        rules on Google&apos;s servers, not merely by the app.
-      </p>
-
-      <h2 className="mt-8 text-xl">What your searches are sent to</h2>
-      <p className="mt-2">
-        A search sends your topic words to all {SOURCE_COUNT} free academic databases the app
-        queries: {DATABASE_NAMES} (what each one is, and who runs it, is on
-        the <Link href="/databases" className="underline">Databases</Link> page). Crossref is also
-        asked about the DOIs in your results, to check for retractions. Those requests are
-        made by the Thesisweb server, so the databases do not receive your IP address. Each
-        database has its own privacy policy, and this app has no control over it.
-      </p>
-
-      <h2 className="mt-8 text-xl">Public feedback board</h2>
-      <p className="mt-2">
-        You can leave a problem report or suggestion on the{" "}
-        <Link href="/suggestions" className="underline">Suggestions</Link> page. Those comments and
-        their replies are public: anyone can read them, and they are not private messages. Each
-        comment or reply stores an internal account id so you can delete your own entries later; that
-        id is not shown on the board, and deleting an entry removes it for everyone. Your account name
-        and email are never stored with it. If you use a nickname, that nickname is stored and shown.
-        Do not include private or personal information in a comment or reply.
-      </p>
-
-      <h2 className="mt-8 text-xl">Analytics</h2>
-      <p className="mt-2">
-        The app uses Firebase Analytics and Vercel Analytics to count page views and to see which
-        features get used. Firebase Analytics also records when an account is created, when someone
-        signs in, and how many results a search returned. It never receives the search words
-        themselves, and the query string is stripped from page-view addresses. It is used in
-        aggregate, to decide what to improve. If you would rather not be counted, a content blocker
-        or a private window will stop both, and the app works normally without them.
-      </p>
-
-      <h2 className="mt-8 text-xl">Papers and data we did not create</h2>
-      <p className="mt-2">
-        Paper records come from the databases listed above. Most of that metadata is public domain
-        or openly licensed — OpenAlex publishes under CC0. Full-text links point at publishers,
-        repositories and preprint servers; Thesisweb does not host or copy paywalled material.
-      </p>
-
-      <h2 className="mt-8 text-xl">Removing your data</h2>
-      <p className="mt-2">
-        You can delete any saved paper from{" "}
-        <Link href="/library" className="underline">Library</Link>, and export a full copy of your
-        library from <Link href="/settings" className="underline">Settings</Link> first if you want
-        one. To delete your whole account and everything in it, use <em>Delete account</em> in{" "}
-        <Link href="/settings" className="underline">Settings</Link>, or email{" "}
-        <a href={`mailto:${CONTACT_EMAIL}`} className="underline">{CONTACT_EMAIL}</a> from the
-        address on the account and it will be removed.
-      </p>
-
-      <h2 className="mt-8 text-xl">Children</h2>
-      <p className="mt-2">
-        Thesisweb is built for university and senior-high-school researchers. It is not directed at
-        children under 13, and accounts should not be created for them.
-      </p>
-
-      <h2 className="mt-8 text-xl">Changes</h2>
-      <p className="mt-2">
-        If what the app stores changes, this page changes with it and the date at the top moves.
-      </p>
-
-      <h2 className="mt-8 text-xl">Contact</h2>
-      <p className="mt-2">
-        Questions about any of this go to{" "}
-        <a href={`mailto:${CONTACT_EMAIL}`} className="underline">{CONTACT_EMAIL}</a>.
-      </p>
-
+      <PrivacyContent />
       <p className="mt-8 text-sm text-muted">
         See also the <Link href="/terms" className="underline">Terms of Use</Link>.
       </p>

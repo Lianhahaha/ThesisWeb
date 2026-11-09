@@ -1,6 +1,11 @@
 import { test, expect } from "@playwright/test";
 import fs from "node:fs";
 import path from "node:path";
+import { acceptTerms } from "./terms";
+
+test.beforeEach(async ({ page }) => {
+  await acceptTerms(page);
+});
 
 /**
  * Researcher-perspective QA journey. Network-dependent (real databases), so it
