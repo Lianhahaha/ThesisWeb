@@ -60,7 +60,7 @@ const PROBES: Record<SourceId, string> = {
   ieee: "engineering",
   agris: "rice", gbif: "biodiversity", lareferencia: "educación", bdtd: "educação", thesesfr: "climat", osf: "psychology",
   seafdec: "shrimp", bsu: "rice", ssoar: "migration", paho: "dengue", who: "dengue", nber: "inflation", openlibrary: "statistics",
-  core: "climate change", ntu: "engineering", upspace: "education", upou: "distance education", upv: "fisheries",
+  core: "climate change", ntu: "engineering", upspace: "education", elib: "education", upou: "distance education", upv: "fisheries",
   googlebooks: "education",
   openstax: "algebra",
   herdin: "dengue", serpp: "poverty", krishikosh: "rice", upd: "education",

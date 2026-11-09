@@ -33,6 +33,7 @@ All free; IEEE Xplore and Google Books need free registration keys. The in-app [
 | OpenAlex, Crossref, Semantic Scholar, OpenAIRE, CORE | Broad first pass across every field, citation data, AI summaries (CORE = free copies from 10k+ repositories) |
 | SEAFDEC/AQD | Philippine research: aquaculture and fisheries |
 | UP Open University | Philippine theses: online and distance education, development communication, health informatics |
+| Philippine eLib | Union catalogue of the National Library, UP, DOST, DA and CHED: books, theses, government documents and Filipiniana |
 | BSU Repository | Benguet State University theses and research: Cordillera agriculture, rice, nursing, education and indigenous studies |
 | UP Visayas | Philippine theses and research: fisheries, ocean sciences, food science, social sciences |
 | UP Diliman | Philippine theses and dissertations from every UP Diliman college, with abstracts |

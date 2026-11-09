@@ -52,6 +52,7 @@ import { searchCore } from "@/lib/sources/adapters/core";
 import { searchNtu } from "@/lib/sources/adapters/ntu";
 import { searchUpspace } from "@/lib/sources/adapters/upspace";
 import { searchUpou } from "@/lib/sources/adapters/upou";
+import { searchElib } from "@/lib/sources/adapters/elib";
 import { searchUpv } from "@/lib/sources/adapters/upv";
 import { searchPhiljournals } from "@/lib/sources/adapters/philjournals";
 import { searchPej } from "@/lib/sources/adapters/saliksik";
@@ -178,6 +179,7 @@ export const ADAPTERS: Record<SourceId, AdapterEntry> = {
   core:            { run: searchCore, boolean: true },
   ntu:             { run: searchNtu, boolean: false, country: "Singapore" },
   upspace:         { run: searchUpspace, boolean: false, country: "South Africa" },
+  elib:            { run: searchElib, boolean: false, country: "Philippines", deadlineMs: 22000 },
   upou:            { run: searchUpou, boolean: false, country: "Philippines" },
   upv:             { run: searchUpv, boolean: false, country: "Philippines" },
   // Crossref journal subsets: DOI-backed records, so the source is verifiable.

@@ -260,6 +260,10 @@ const META = {
     label: "UPSpace (South Africa)", blurb: "University of Pretoria theses, articles and reports: education, health, veterinary science, engineering, economics", color: "#005baa",
     region: "South Africa", fields: ["education", "medicine", "engineering", "business", "agriculture"], kind: "repository", url: "https://repository.up.ac.za",
   },
+  elib: {
+    label: "Philippine eLib", blurb: "Union catalogue of the National Library of the Philippines, UP, DOST, DA and CHED: books, theses, government documents and Filipiniana from partner libraries (metadata free; full text for members)", color: "#7a4b12",
+    region: "Philippines", fields: ["all"], kind: "index", url: "https://www.elib.gov.ph",
+  },
   upou: {
     label: "UP Open University", blurb: "UPOU theses, capstone projects and research: online and distance education, development communication, health informatics, environment", color: "#7b1113",
     region: "Philippines", fields: ["education", "social", "medicine", "agriculture"], kind: "repository", url: "https://repository.upou.edu.ph",
