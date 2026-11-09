@@ -329,6 +329,10 @@ const META = {
     label: "Saliksik (UP Diliman Journals)", blurb: "Peer-reviewed journals from UP Diliman colleges and units: public administration, social sciences, humanities, education, science and Filipino language", color: "#6f1d2c",
     region: "Philippines", fields: ["all"], kind: "journals", url: "https://saliksik.upd.edu.ph",
   },
+  asean: {
+    label: "ASEAN Resource Centre", blurb: "Books, reports and studies published by the ASEAN Secretariat: trade, environment, social policy, education and regional cooperation", color: "#b8860b",
+    region: "Southeast Asia (ASEAN)", fields: ["social", "business", "agriculture", "sciences"], kind: "books", url: "https://resourcecentre.asean.org",
+  },
   searca: {
     label: "SEARCA Library", blurb: "Southeast Asian Regional Center for Graduate Study and Research in Agriculture: 1,600+ theses and a wider catalogue of agriculture, fisheries, environment and rural-development material", color: "#3f7d20",
     region: "Southeast Asia (SEARCA)", fields: ["agriculture", "sciences", "social"], kind: "theses", url: "https://lis.searcaapps.org",

@@ -65,7 +65,7 @@ const PROBES: Record<SourceId, string> = {
   openstax: "algebra",
   herdin: "dengue", serpp: "poverty", krishikosh: "rice", upd: "education",
   aiias: "education", actamedica: "dengue", pnu: "teachers", ejournalsph: "education",
-  saliksik: "education", searca: "rice", pcaarrd: "rice", scielo: "education", persee: "education",
+  saliksik: "education", asean: "rice", searca: "rice", pcaarrd: "rice", scielo: "education", persee: "education",
   philjournals: "engineering", plaridel: "education", pej: "engineering", ajol: "engineering",
   ncjrs: "policing",
   ctis: "diabetes", euctr: "dengue", isrctn: "dengue", nice: "diabetes", clinicaltrials: "diabetes",

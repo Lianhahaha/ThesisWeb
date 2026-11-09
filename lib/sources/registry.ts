@@ -70,6 +70,7 @@ import { searchEjournalsPh } from "@/lib/sources/adapters/ejournalsph";
 import { searchSaliksik } from "@/lib/sources/adapters/saliksik";
 import { searchPcaarrd } from "@/lib/sources/adapters/pcaarrd";
 import { searchSearca } from "@/lib/sources/adapters/searca";
+import { searchAsean } from "@/lib/sources/adapters/asean";
 import { searchScielo } from "@/lib/sources/adapters/scielo";
 import { searchPersee } from "@/lib/sources/adapters/persee";
 import { searchClinicalTrials } from "@/lib/sources/adapters/clinicaltrials";
@@ -206,6 +207,7 @@ export const ADAPTERS: Record<SourceId, AdapterEntry> = {
   // A search API, then an article page per result for authors and year.
   saliksik:        { run: searchSaliksik, boolean: false, country: "Philippines", deadlineMs: 16000 },
   // A results page, then one record page per result for abstract and authors.
+  asean:           { run: searchAsean, boolean: false, deadlineMs: 12000 },
   searca:          { run: searchSearca, boolean: false, deadlineMs: 22000 },
   pcaarrd:         { run: searchPcaarrd, boolean: false, country: "Philippines", deadlineMs: 16000 },
   scielo:          { run: searchScielo, boolean: false },
