@@ -68,7 +68,7 @@ const PROBES: Record<SourceId, string> = {
   saliksik: "education", pcaarrd: "rice", scielo: "education", persee: "education",
   philjournals: "engineering", pej: "engineering", ajol: "engineering",
   ncjrs: "policing",
-  ctis: "diabetes", euctr: "dengue", isrctn: "dengue", clinicaltrials: "diabetes",
+  ctis: "diabetes", euctr: "dengue", isrctn: "dengue", nice: "diabetes", clinicaltrials: "diabetes",
   eurlex: "education", federalregister: "education",
   internetarchive: "philippine history",
   paperswithcode: "transformer",

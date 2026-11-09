@@ -43,6 +43,7 @@ import { searchBsu } from "@/lib/sources/adapters/bsu";
 import { searchSsoar } from "@/lib/sources/adapters/ssoar";
 import { searchWho } from "@/lib/sources/adapters/who";
 import { searchPaho } from "@/lib/sources/adapters/paho";
+import { searchNice } from "@/lib/sources/adapters/nice";
 import { searchNber } from "@/lib/sources/adapters/nber";
 import { searchOpenLibrary } from "@/lib/sources/adapters/openlibrary";
 import { searchGoogleBooks } from "@/lib/sources/adapters/googlebooks";
@@ -165,6 +166,7 @@ export const ADAPTERS: Record<SourceId, AdapterEntry> = {
   seafdec:         { run: searchSeafdec, boolean: false, country: "Philippines" },
   ssoar:           { run: searchSsoar, boolean: false },
   // Slow server (8-13 s), so it gets extra room.
+  nice:            { run: searchNice, boolean: false, deadlineMs: 15000 },
   paho:            { run: searchPaho, boolean: false, deadlineMs: 16000 },
   who:             { run: searchWho, boolean: false, deadlineMs: 16000 },
   nber:            { run: searchNber, boolean: false },

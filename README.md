@@ -50,6 +50,7 @@ All free; IEEE Xplore and Google Books need free registration keys. The in-app [
 | Acta Medica Philippina | Philippine clinical, nursing and public health journal articles (UP Manila) |
 | WHO IRIS | WHO guidelines, health reports, Western Pacific (Manila) publications |
 | PAHO IRIS | Pan American Health Organization guidelines, technical reports, country health profiles and journal articles |
+| NICE | UK clinical guidelines, quality standards, technology appraisals and public-health guidance |
 | ERIC | Education and teaching research, including theses and reports |
 | EdArXiv | Education research preprints: teaching, learning, assessment, policy and educational technology |
 | PNU Journals | Philippine education journals (Philippine Normal University) |

@@ -220,6 +220,10 @@ const META = {
     label: "SSOAR", blurb: "Social science articles, working papers and reports, all free full text (GESIS, Germany)", color: "#c2185b",
     region: "Germany (GESIS)", fields: ["social", "education"], kind: "repository", url: "https://www.ssoar.info",
   },
+  nice: {
+    label: "NICE", blurb: "UK National Institute for Health and Care Excellence: clinical guidelines, quality standards, technology appraisals and public-health guidance", color: "#6d28d9",
+    region: "United Kingdom", fields: ["medicine", "social"], kind: "reports", url: "https://www.nice.org.uk",
+  },
   paho: {
     label: "PAHO IRIS", blurb: "Pan American Health Organization publications: guidelines, technical reports, country health profiles and journal articles from the Americas, all free", color: "#0072ce",
     region: "Americas (PAHO/WHO)", fields: ["medicine", "social"], kind: "reports", url: "https://iris.paho.org",
