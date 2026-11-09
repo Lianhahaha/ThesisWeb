@@ -89,7 +89,7 @@ const PROBES: Record<SourceId, string> = {
   melbourne: "artificial intelligence",
   auckland: "machine learning",
   caltech: "artificial intelligence",
-  pangaea: "ocean",
+  dryad: "rice", pangaea: "ocean",
   secedgar: "artificial intelligence",
   nvd: "sql injection",
   cisakev: "router",

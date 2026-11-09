@@ -89,6 +89,7 @@ import { searchMelbourne } from "@/lib/sources/adapters/melbourne";
 import { searchAuckland } from "@/lib/sources/adapters/auckland";
 import { searchCaltech } from "@/lib/sources/adapters/caltech";
 import { searchPangaea } from "@/lib/sources/adapters/pangaea";
+import { searchDryad } from "@/lib/sources/adapters/dryad";
 import { searchSecEdgar } from "@/lib/sources/adapters/secedgar";
 import { searchNvd } from "@/lib/sources/adapters/nvd";
 import { searchCisaKev } from "@/lib/sources/adapters/cisa-kev";
@@ -214,6 +215,7 @@ export const ADAPTERS: Record<SourceId, AdapterEntry> = {
   melbourne:       { run: searchMelbourne, boolean: false, country: "Australia" },
   auckland:        { run: searchAuckland, boolean: false, country: "New Zealand" },
   caltech:         { run: searchCaltech, boolean: false, country: "United States" },
+  dryad:           { run: searchDryad, boolean: false, deadlineMs: 12000 },
   pangaea:         { run: searchPangaea, boolean: false },
   secedgar:        { run: searchSecEdgar, boolean: false, country: "United States" },
   nvd:             { run: searchNvd, boolean: false, deadlineMs: 20000 },

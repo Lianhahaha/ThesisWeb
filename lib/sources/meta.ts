@@ -409,6 +409,10 @@ const META = {
     label: "CaltechAUTHORS", blurb: "Caltech papers, preprints, theses and reports: AI, robotics, physics and engineering", color: "#ff6f00",
     region: "United States", fields: ["computing", "engineering", "sciences"], kind: "repository", url: "https://authors.library.caltech.edu",
   },
+  dryad: {
+    label: "Dryad", blurb: "Open research-data packages across ecology, agriculture, fisheries, earth and environmental science, each with a citable DOI", color: "#3b7f6b",
+    region: "Global", fields: ["sciences", "agriculture", "medicine", "social"], kind: "repository", url: "https://datadryad.org",
+  },
   pangaea: {
     label: "PANGAEA", blurb: "Earth, ocean and environmental science datasets and publications, each with a DOI", color: "#0e7490",
     region: "Global", fields: ["sciences", "agriculture"], kind: "repository", url: "https://pangaea.de",

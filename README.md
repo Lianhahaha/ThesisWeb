@@ -88,7 +88,7 @@ All free; IEEE Xplore and Google Books need free registration keys. The in-app [
 | OAPEN Library, DOAB | Open-access academic books across every field |
 | Harvard DASH, Melbourne Minerva Access, Auckland ResearchSpace | Theses, reports and papers across all fields |
 | CaltechAUTHORS | AI, robotics, physics and engineering papers, preprints and theses |
-| PANGAEA | Earth, ocean and environmental science datasets and publications (DOI) |
+| PANGAEA, Dryad | Earth, ocean, environmental and ecological research data packages with citable DOIs |
 | SEC EDGAR | U.S. corporate filings: business, finance, accounting and governance primary sources |
 | NVD (NIST), CISA KEV | Cybersecurity: CVE vulnerability records and confirmed exploited vulnerabilities |
 | PEDro | Physiotherapy evidence: trials, reviews and guidelines with quality scores (sports, rehab, performance) |
