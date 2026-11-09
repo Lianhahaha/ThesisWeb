@@ -55,6 +55,7 @@ import { searchUpou } from "@/lib/sources/adapters/upou";
 import { searchElib } from "@/lib/sources/adapters/elib";
 import { searchUpv } from "@/lib/sources/adapters/upv";
 import { searchPhiljournals } from "@/lib/sources/adapters/philjournals";
+import { searchPlaridel } from "@/lib/sources/adapters/plaridel";
 import { searchPej } from "@/lib/sources/adapters/saliksik";
 import { searchAjol } from "@/lib/sources/adapters/ajol";
 import { searchNcjrs } from "@/lib/sources/adapters/ncjrs";
@@ -183,6 +184,7 @@ export const ADAPTERS: Record<SourceId, AdapterEntry> = {
   upou:            { run: searchUpou, boolean: false, country: "Philippines" },
   upv:             { run: searchUpv, boolean: false, country: "Philippines" },
   // Crossref journal subsets: DOI-backed records, so the source is verifiable.
+  plaridel:        { run: searchPlaridel, boolean: false, country: "Philippines", deadlineMs: 20000 },
   philjournals:    { run: searchPhiljournals, boolean: false, country: "Philippines" },
   // A single journal from the Saliksik portal; same API, local engineering focus.
   pej:             { run: searchPej, boolean: false, country: "Philippines", deadlineMs: 16000 },

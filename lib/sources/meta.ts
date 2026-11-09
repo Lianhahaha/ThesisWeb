@@ -272,6 +272,10 @@ const META = {
     label: "UP Visayas", blurb: "UP Visayas theses and research: fisheries, ocean sciences, aquaculture, food science, management, social sciences", color: "#014421",
     region: "Philippines", fields: ["agriculture", "sciences", "social", "business"], kind: "repository", url: "https://repository.upv.edu.ph",
   },
+  plaridel: {
+    label: "Plaridel", blurb: "Plaridel: A Philippine Journal of Communication, Media, and Society (UP College of Mass Communication), open access", color: "#8a1c1c",
+    region: "Philippines", fields: ["social", "humanities", "education"], kind: "journals", url: "https://plarideljournal.org",
+  },
   philjournals: {
     label: "Philippine Journals (Crossref)", blurb: "One search across major DOI-backed Philippine journals: Philippine Journal of Science, engineering and applied science, teacher education, agriculture and fisheries, and psychology", color: "#1f6f8b",
     region: "Philippines", fields: ["engineering", "education", "agriculture", "sciences", "social"], kind: "journals", url: "https://search.crossref.org",

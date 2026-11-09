@@ -56,6 +56,7 @@ All free; IEEE Xplore and Google Books need free registration keys. The in-app [
 | ERIC | Education and teaching research, including theses and reports |
 | EdArXiv | Education research preprints: teaching, learning, assessment, policy and educational technology |
 | PNU Journals | Philippine education journals (Philippine Normal University) |
+| Plaridel | Philippine communication, media and society journal (UP College of Mass Communication) |
 | EconBiz, World Bank OKR, NBER | Economics, business, development, poverty (NBER = working papers) |
 | SERP-P (PIDS) | Philippine socioeconomic research: PIDS, BSP, NEDA and university studies |
 | NCJRS Virtual Library | U.S. criminal justice research: policing, courts, corrections, victims, drugs and crime prevention |
