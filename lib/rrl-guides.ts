@@ -114,7 +114,7 @@ export const RRL_GUIDES: RrlGuide[] = [
     ],
     field: "medicine",
     intro:
-      "Health sciences RRL demands peer-reviewed clinical evidence, epidemiology and official health-agency guidelines. Every result is checked against Crossref / Retraction Watch for retractions.",
+      "Health sciences RRL demands peer-reviewed clinical evidence, epidemiology and official health-agency guidelines. Results with a DOI are checked against Crossref's retraction notices, which include Retraction Watch data.",
     sampleQueries: [
       { label: "Nurse staffing ratios and patient safety", query: "nurse staffing patient safety" },
       { label: "Hypertension self-management in community clinics", query: "hypertension self-management community" },

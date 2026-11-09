@@ -175,7 +175,7 @@ export const GUIDES: Guide[] = [
       },
       {
         q: "Does it use AI to invent papers?",
-        a: "No. Results come from real databases and repositories. Every DOI is checked against Crossref and Retraction Watch, and nothing is generated.",
+        a: "No. Results come from real databases and repositories, and nothing is generated. DOIs are checked against Crossref's retraction notices, which include the Retraction Watch data, so retractions and expressions of concern are flagged when a notice is found.",
       },
     ],
     related: ["how-to-write-rrl", "free-rrl-databases-philippines", "how-to-find-local-studies-philippines"],
