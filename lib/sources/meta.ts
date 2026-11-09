@@ -297,6 +297,10 @@ const META = {
     region: "Africa", fields: ["all"], kind: "journals", url: "https://www.ajol.info",
   },
 
+  courtlistener: {
+    label: "CourtListener", blurb: "U.S. case law and PACER/RECAP from the Free Law Project: opinions, dockets, judges and oral arguments (free token; low default limits)", color: "#1f3a5f",
+    region: "United States", fields: ["social", "business"], kind: "reports", url: "https://www.courtlistener.com",
+  },
   ncjrs: {
     label: "NCJRS Virtual Library", blurb: "U.S. National Criminal Justice Reference Service: research reports, statistics, program evaluations and federal publications on policing, courts, corrections, victims, drugs and crime prevention", color: "#1f4e79",
     region: "United States", fields: ["social"], kind: "reports", url: "https://www.ojp.gov/ncjrs",

@@ -61,6 +61,7 @@ import { searchPlaridel } from "@/lib/sources/adapters/plaridel";
 import { searchPej } from "@/lib/sources/adapters/saliksik";
 import { searchAjol } from "@/lib/sources/adapters/ajol";
 import { searchNcjrs } from "@/lib/sources/adapters/ncjrs";
+import { searchCourtListener } from "@/lib/sources/adapters/courtlistener";
 import { searchHerdin } from "@/lib/sources/adapters/herdin";
 import { searchSerpp } from "@/lib/sources/adapters/serpp";
 import { searchKrishikosh } from "@/lib/sources/adapters/krishikosh";
@@ -195,6 +196,7 @@ export const ADAPTERS: Record<SourceId, AdapterEntry> = {
   pej:             { run: searchPej, boolean: false, country: "Philippines", deadlineMs: 16000 },
   // Search page, then one small journal page per unique journal for its title.
   ajol:            { run: searchAjol, boolean: false, deadlineMs: 18000 },
+  courtlistener:   { run: searchCourtListener, boolean: false, deadlineMs: 15000 },
   ncjrs:           { run: searchNcjrs, boolean: false, country: "United States" },
   // A scraped page that is sometimes slow (8-12 s).
   herdin:          { run: searchHerdin, boolean: false, country: "Philippines", deadlineMs: 22000 },

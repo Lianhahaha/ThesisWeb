@@ -28,6 +28,7 @@ if (!process.env.CORE_API_KEY) SKIP.core = "CORE_API_KEY not configured";
 if (!process.env.GOOGLE_BOOKS_API_KEY) SKIP.googlebooks = "GOOGLE_BOOKS_API_KEY not configured";
 if (!process.env.SPRINGER_NATURE_API_KEY) SKIP.springer = "SPRINGER_NATURE_API_KEY not configured";
 if (!process.env.NASA_ADS_TOKEN) SKIP.ads = "NASA_ADS_TOKEN not configured";
+if (!process.env.COURTLISTENER_API_TOKEN) SKIP.courtlistener = "COURTLISTENER_API_TOKEN not configured";
 
 /**
  * A rate limit, anti-bot block, timeout or outage is not an adapter bug. It is
@@ -69,7 +70,7 @@ const PROBES: Record<SourceId, string> = {
   aiias: "education", actamedica: "dengue", pnu: "teachers", ejournalsph: "education",
   saliksik: "education", asean: "rice", searca: "rice", pcaarrd: "rice", scielo: "education", persee: "education",
   philjournals: "engineering", plaridel: "education", pej: "engineering", ajol: "engineering",
-  ncjrs: "policing",
+  courtlistener: "education", ncjrs: "policing",
   ctis: "diabetes", euctr: "dengue", isrctn: "dengue", nice: "diabetes", clinicaltrials: "diabetes",
   eurlex: "education", federalregister: "education",
   internetarchive: "philippine history",
