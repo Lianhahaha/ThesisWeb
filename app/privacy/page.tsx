@@ -41,6 +41,7 @@ export default function PrivacyPage() {
         <li>Your search preferences: published-since range, country focus, citation style.</li>
         <li>Your light or dark theme choice.</li>
         <li>Your last eight search topics, so you can return to them in one click.</li>
+        <li>That you accepted the Terms of Use and Privacy Policy, and the date they were last updated.</li>
       </ul>
       <p className="mt-2">
         None of this leaves your device unless you sign in and choose to copy it to your account.
@@ -93,10 +94,11 @@ export default function PrivacyPage() {
       <p className="mt-2">
         You can leave a problem report or suggestion on the{" "}
         <Link href="/suggestions" className="underline">Suggestions</Link> page. Those comments and
-        their replies are public: anyone can read them, and they are not private messages. If you
-        comment or reply anonymously, the entry contains only your message and the time; your account
-        name and email are not stored with it. If you use a nickname, that nickname is stored and
-        shown. Do not include private or personal information in a comment or reply.
+        their replies are public: anyone can read them, and they are not private messages. Each
+        comment or reply stores an internal account id so you can delete your own entries later; that
+        id is not shown on the board, and deleting an entry removes it for everyone. Your account name
+        and email are never stored with it. If you use a nickname, that nickname is stored and shown.
+        Do not include private or personal information in a comment or reply.
       </p>
 
       <h2 className="mt-8 text-xl">Analytics</h2>

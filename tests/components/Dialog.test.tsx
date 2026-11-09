@@ -67,4 +67,18 @@ describe("Dialog", () => {
     fireEvent.click(screen.getByRole("dialog").parentElement!);
     expect(onClose).toHaveBeenCalledTimes(1);
   });
+
+  it("cannot be dismissed when it must be answered first", async () => {
+    const onClose = vi.fn();
+    render(
+      <Dialog title="Before you continue" onClose={onClose} dismissible={false}>
+        <button>Accept</button>
+      </Dialog>
+    );
+    expect(screen.queryByRole("button", { name: "Close" })).toBeNull();
+    await userEvent.keyboard("{Escape}");
+    fireEvent.click(screen.getByRole("dialog").parentElement!);
+    expect(onClose).not.toHaveBeenCalled();
+    expect(screen.getByRole("dialog", { name: "Before you continue" })).toBeTruthy();
+  });
 });

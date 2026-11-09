@@ -12,6 +12,10 @@ const FOCUSABLE =
  * it, Tab and Shift+Tab stay inside it, the page behind doesn't scroll, and
  * focus returns to what opened it, so keyboard and screen-reader users never
  * end up behind the overlay.
+ *
+ * Pass `dismissible={false}` for a dialog that must be answered first (the
+ * terms gate): it has no close button and ignores Escape and outside clicks.
+ * `overlayClassName` lets a caller soften or blur the background.
  */
 export function Dialog({
   title,
@@ -20,6 +24,8 @@ export function Dialog({
   footer,
   className = "max-h-[92vh] max-w-2xl",
   placement = "sheet",
+  dismissible = true,
+  overlayClassName = "bg-black/50",
 }: {
   title: React.ReactNode;
   onClose: () => void;
@@ -29,25 +35,31 @@ export function Dialog({
   className?: string;
   /** A bottom sheet on phones, or a centred panel on every screen. */
   placement?: "sheet" | "center";
+  /** Whether Escape, the close button and an outside click close it. */
+  dismissible?: boolean;
+  /** Background layer behind the panel, e.g. a blur. */
+  overlayClassName?: string;
 }) {
   const titleId = useId();
   const panel = useRef<HTMLDivElement>(null);
   const closeButton = useRef<HTMLButtonElement>(null);
   // The latest onClose, without re-running the setup below when a parent passes a new function.
   const close = useRef(onClose);
+  const canDismiss = useRef(dismissible);
   useEffect(() => {
     close.current = onClose;
+    canDismiss.current = dismissible;
   });
 
   useEffect(() => {
     const opener = document.activeElement instanceof HTMLElement ? document.activeElement : null;
-    closeButton.current?.focus();
+    (closeButton.current ?? panel.current)?.focus();
     const overflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
 
     function onKey(e: KeyboardEvent) {
       if (e.key === "Escape") {
-        close.current();
+        if (canDismiss.current) close.current();
         return;
       }
       if (e.key !== "Tab" || !panel.current) return;
@@ -77,16 +89,17 @@ export function Dialog({
 
   return (
     <div
-      className={`fixed inset-0 z-50 flex justify-center bg-black/50 ${
+      className={`fixed inset-0 z-50 flex justify-center ${overlayClassName} ${
         placement === "center" ? "items-center p-3" : "items-end p-0 sm:items-center sm:p-4"
       }`}
-      onClick={() => close.current()}
+      onClick={() => canDismiss.current && close.current()}
     >
       <div
         ref={panel}
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
+        tabIndex={-1}
         onClick={(e) => e.stopPropagation()}
         className={`flex w-full flex-col border border-border bg-surface text-left ${
           placement === "center" ? "rounded-2xl" : "rounded-t-2xl sm:rounded-2xl"
@@ -94,9 +107,11 @@ export function Dialog({
       >
         <header className="flex items-center justify-between border-b border-border p-4">
           <h2 id={titleId} className="text-lg">{title}</h2>
-          <button ref={closeButton} type="button" onClick={() => close.current()} className="btn-ghost btn-sm !px-2" aria-label="Close">
-            <X className="h-4 w-4" aria-hidden />
-          </button>
+          {dismissible && (
+            <button ref={closeButton} type="button" onClick={() => close.current()} className="btn-ghost btn-sm !px-2" aria-label="Close">
+              <X className="h-4 w-4" aria-hidden />
+            </button>
+          )}
         </header>
         <div className="overflow-y-auto p-4">{children}</div>
         {footer && <footer className="border-t border-border p-4 text-sm">{footer}</footer>}

@@ -6,6 +6,7 @@ import { Footer } from "@/components/layout/Footer";
 import { Providers } from "@/components/layout/Providers";
 import { ServiceWorker } from "@/components/layout/ServiceWorker";
 import { Toaster } from "@/components/Toaster";
+import { TermsGate } from "@/components/TermsGate";
 import { Analytics } from "@vercel/analytics/react";
 import { THEME_SCRIPT } from "@/lib/theme";
 import { SITE_DESCRIPTION, SITE_IMAGE, SITE_JSON_LD, SITE_NAME, SITE_OPEN_GRAPH, SITE_TAGLINE, SITE_URL } from "@/lib/site";
@@ -82,6 +83,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           {/* The footer carries the bottom padding that clears the mobile tab bar. */}
           <Footer />
           <Toaster />
+          <TermsGate />
           <ServiceWorker />
         </Providers>
         <Analytics />

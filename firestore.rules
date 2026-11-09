@@ -56,12 +56,14 @@ service cloud.firestore {
     }
 
     // ── Public feedback board ────────────────────────────────────────────
-    // Anyone can read; signed-in users can post. No uid or email is stored,
-    // so anonymous posts cannot be traced through the public document.
+    // Anyone can read; signed-in users can post. The post keeps the author's
+    // uid so they can delete their own entry, but no name or email is exposed
+    // beyond the nickname they chose. Updates are never allowed.
     match /suggestions/{suggestionId} {
       function validSuggestion() {
         let d = request.resource.data;
-        return d.keys().hasOnly(['body', 'nickname', 'anonymous', 'kind', 'page', 'createdAt'])
+        return d.keys().hasOnly(['body', 'nickname', 'anonymous', 'kind', 'page', 'createdAt', 'author'])
+          && d.author == request.auth.uid
           && d.body is string && d.body.size() >= 10 && d.body.size() <= 2000
           && d.anonymous is bool
           && d.kind is string && (d.kind == 'problem' || d.kind == 'suggestion')
@@ -74,15 +76,17 @@ service cloud.firestore {
 
       allow read: if true;
       allow create: if signedIn() && validSuggestion();
-      allow update, delete: if false;
+      allow update: if false;
+      allow delete: if signedIn() && resource.data.author == request.auth.uid;
     }
 
     // Replies to a feedback comment. Public to read; signed-in users can
-    // reply. No uid or email is stored here either.
+    // reply. The author's uid is kept so they can delete their own reply.
     match /replies/{replyId} {
       function validReply() {
         let d = request.resource.data;
-        return d.keys().hasOnly(['suggestionId', 'body', 'nickname', 'anonymous', 'createdAt'])
+        return d.keys().hasOnly(['suggestionId', 'body', 'nickname', 'anonymous', 'createdAt', 'author'])
+          && d.author == request.auth.uid
           && d.suggestionId is string
           && d.suggestionId.size() >= 1 && d.suggestionId.size() <= 128
           && d.suggestionId.matches('^[A-Za-z0-9]+$')
@@ -98,7 +102,8 @@ service cloud.firestore {
       allow create: if signedIn()
         && exists(/databases/$(database)/documents/suggestions/$(request.resource.data.suggestionId))
         && validReply();
-      allow update, delete: if false;
+      allow update: if false;
+      allow delete: if signedIn() && resource.data.author == request.auth.uid;
     }
 
     // ── Shared group libraries ───────────────────────────────────────────

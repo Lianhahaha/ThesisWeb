@@ -2,11 +2,12 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { addDoc, collection, limit, onSnapshot, orderBy, query } from "firebase/firestore";
-import { Flag, Loader2, MessageSquarePlus, Reply, Send } from "lucide-react";
+import { addDoc, collection, deleteDoc, doc, limit, onSnapshot, orderBy, query } from "firebase/firestore";
+import { Flag, Loader2, MessageSquarePlus, Reply, Send, Trash2 } from "lucide-react";
 import { db } from "@/lib/firebase";
 import { useAuth } from "@/lib/auth/store";
 import { getCachedUsername, USERNAME_EVENT } from "@/lib/auth/username-cache";
+import { toast } from "@/components/Toaster";
 
 type Kind = "problem" | "suggestion";
 
@@ -18,6 +19,8 @@ interface Suggestion {
   kind: Kind;
   page: string;
   createdAt: number;
+  /** Account that posted it, kept off the visible board. Empty on older entries. */
+  author: string;
 }
 
 interface CommentReply {
@@ -27,6 +30,8 @@ interface CommentReply {
   nickname: string;
   anonymous: boolean;
   createdAt: number;
+  /** Account that posted it, kept off the visible board. Empty on older entries. */
+  author: string;
 }
 
 interface Commenter {
@@ -128,6 +133,7 @@ export function SuggestionsClient() {
               nickname: typeof data.nickname === "string" ? data.nickname : "",
               anonymous: data.anonymous === true,
               createdAt: typeof data.createdAt === "number" ? data.createdAt : 0,
+              author: typeof data.author === "string" ? data.author : "",
             };
           })
         );
@@ -153,6 +159,7 @@ export function SuggestionsClient() {
               kind: data.kind === "problem" ? "problem" : "suggestion",
               page: typeof data.page === "string" ? data.page : "",
               createdAt: typeof data.createdAt === "number" ? data.createdAt : 0,
+              author: typeof data.author === "string" ? data.author : "",
             };
           })
         );
@@ -196,6 +203,7 @@ export function SuggestionsClient() {
         kind,
         page: about.slice(0, 500),
         createdAt: new Date().valueOf(),
+        author: user.uid,
       });
       setBody("");
       setMessage("Comment posted. Thank you for helping improve Thesisweb.");
@@ -243,6 +251,7 @@ export function SuggestionsClient() {
         nickname: replyAnonymous ? "" : name.slice(0, MAX_NICKNAME),
         anonymous: replyAnonymous,
         createdAt: new Date().valueOf(),
+        author: user.uid,
       });
       setReplyingTo(null);
       setReplyBody("");
@@ -250,6 +259,28 @@ export function SuggestionsClient() {
       setReplyError("The reply was not saved. Please try again.");
     } finally {
       setReplySending(false);
+    }
+  }
+
+  async function deleteComment(item: Suggestion) {
+    if (!user || item.author !== user.uid) return;
+    if (!window.confirm("Delete this comment? This cannot be undone.")) return;
+    try {
+      await deleteDoc(doc(db, "suggestions", item.id));
+      toast("Comment deleted", "success");
+    } catch {
+      toast("Could not delete the comment. Try again.", "error");
+    }
+  }
+
+  async function deleteReply(reply: CommentReply) {
+    if (!user || reply.author !== user.uid) return;
+    if (!window.confirm("Delete this reply? This cannot be undone.")) return;
+    try {
+      await deleteDoc(doc(db, "replies", reply.id));
+      toast("Reply deleted", "success");
+    } catch {
+      toast("Could not delete the reply. Try again.", "error");
     }
   }
 
@@ -406,6 +437,16 @@ export function SuggestionsClient() {
                             <time dateTime={new Date(reply.createdAt).toISOString()} className="text-subtle">
                               {formatDate(reply.createdAt)}
                             </time>
+                            {user?.uid === reply.author && (
+                              <button
+                                type="button"
+                                onClick={() => deleteReply(reply)}
+                                className="btn-ghost btn-sm ml-auto !px-2 !text-danger"
+                                aria-label="Delete your reply"
+                              >
+                                <Trash2 className="h-3.5 w-3.5" aria-hidden />
+                              </button>
+                            )}
                           </div>
                           <p className="mt-1 whitespace-pre-wrap break-words text-sm text-muted">{reply.body}</p>
                         </li>
@@ -467,10 +508,23 @@ export function SuggestionsClient() {
                           </div>
                         </form>
                       ) : (
-                        <button type="button" onClick={() => startReply(item.id)} className="btn-ghost btn-sm">
-                          <Reply className="h-3.5 w-3.5" aria-hidden />
-                          Reply
-                        </button>
+                        <div className="flex flex-wrap items-center gap-2">
+                          <button type="button" onClick={() => startReply(item.id)} className="btn-ghost btn-sm">
+                            <Reply className="h-3.5 w-3.5" aria-hidden />
+                            Reply
+                          </button>
+                          {item.author && item.author === user.uid && (
+                            <button
+                              type="button"
+                              onClick={() => deleteComment(item)}
+                              className="btn-ghost btn-sm !text-danger"
+                              aria-label="Delete your comment"
+                            >
+                              <Trash2 className="h-3.5 w-3.5" aria-hidden />
+                              Delete
+                            </button>
+                          )}
+                        </div>
                       )
                     ) : (
                       <Link href="/login?next=/suggestions" className="text-xs text-muted underline">
