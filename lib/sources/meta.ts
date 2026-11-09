@@ -325,6 +325,10 @@ const META = {
     label: "Persée", blurb: "French humanities and social science journals, books and reviews, many with free full text", color: "#4b6cb7",
     region: "France", fields: ["humanities", "social"], kind: "journals", url: "https://www.persee.fr",
   },
+  euctr: {
+    label: "EU Clinical Trials Register", blurb: "Legacy EU/EEA clinical trials registered in EudraCT: sponsor, condition, population, start date and results links", color: "#4b5fa8",
+    region: "Europe (EU)", fields: ["medicine", "social"], kind: "index", url: "https://www.clinicaltrialsregister.eu",
+  },
   ctis: {
     label: "CTIS (EU)", blurb: "EU Clinical Trials Information System: authorised trials under the EU Clinical Trials Regulation, with status, sponsor, conditions, phase and participating countries", color: "#1e4f91",
     region: "Europe (EU)", fields: ["medicine", "social"], kind: "index", url: "https://euclinicaltrials.eu/ctis-public/search",
