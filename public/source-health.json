@@ -1,5 +1,5 @@
 {
-  "checkedAt": "2026-11-08T13:43:28.289Z",
+  "checkedAt": "2026-11-09T01:33:26.316Z",
   "results": [
     {
       "id": "openalex",
@@ -109,7 +109,7 @@
     {
       "id": "figshare",
       "status": "working",
-      "count": 9
+      "count": 10
     },
     {
       "id": "worldbank",
