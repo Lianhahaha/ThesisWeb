@@ -357,6 +357,14 @@ const META = {
     label: "SciELO", blurb: "Open-access journals from Latin America, Spain, Portugal and South Africa, mostly Spanish and Portuguese with English titles and abstracts", color: "#d52b1e",
     region: "Latin America", fields: ["all"], kind: "journals", url: "https://www.scielo.org",
   },
+  europeana: {
+    label: "Europeana", blurb: "European cultural heritage from museums, libraries and archives: books, newspapers, manuscripts, images and sound recordings (free key)", color: "#0f5ea8",
+    region: "Europe", fields: ["humanities", "social", "sciences"], kind: "repository", url: "https://www.europeana.eu",
+  },
+  dpla: {
+    label: "DPLA", blurb: "Digital Public Library of America: books, newspapers, photographs, manuscripts and government documents from U.S. libraries and archives (free key)", color: "#1b6ca8",
+    region: "United States", fields: ["humanities", "social", "sciences"], kind: "repository", url: "https://dp.la",
+  },
   persee: {
     label: "Persée", blurb: "French humanities and social science journals, books and reviews, many with free full text", color: "#4b6cb7",
     region: "France", fields: ["humanities", "social"], kind: "journals", url: "https://www.persee.fr",

@@ -76,6 +76,8 @@ import { searchSearca } from "@/lib/sources/adapters/searca";
 import { searchAsean } from "@/lib/sources/adapters/asean";
 import { searchScielo } from "@/lib/sources/adapters/scielo";
 import { searchPersee } from "@/lib/sources/adapters/persee";
+import { searchEuropeana } from "@/lib/sources/adapters/europeana";
+import { searchDpla } from "@/lib/sources/adapters/dpla";
 import { searchClinicalTrials } from "@/lib/sources/adapters/clinicaltrials";
 import { searchIsrctn } from "@/lib/sources/adapters/isrctn";
 import { searchCtis } from "@/lib/sources/adapters/ctis";
@@ -217,6 +219,8 @@ export const ADAPTERS: Record<SourceId, AdapterEntry> = {
   searca:          { run: searchSearca, boolean: false, deadlineMs: 22000 },
   pcaarrd:         { run: searchPcaarrd, boolean: false, country: "Philippines", deadlineMs: 16000 },
   scielo:          { run: searchScielo, boolean: false },
+  europeana:       { run: searchEuropeana, boolean: false, deadlineMs: 12000 },
+  dpla:            { run: searchDpla, boolean: false, deadlineMs: 12000 },
   persee:          { run: searchPersee, boolean: false },
   ctis:            { run: searchCtis, boolean: false, deadlineMs: 15000 },
   euctr:           { run: searchEuCtr, boolean: false, deadlineMs: 15000 },

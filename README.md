@@ -84,6 +84,7 @@ All free; IEEE Xplore and Google Books need free registration keys. The in-app [
 | LA Referencia | Latin American repositories (Spanish, Portuguese) |
 | SciELO | Latin American, Spanish, Portuguese and South African open-access journals (English abstracts) |
 | Persée | French humanities and social science journals, books and reviews |
+| Europeana, DPLA | European and U.S. cultural-heritage collections: books, newspapers, manuscripts, images and government documents (free keys) |
 | Zenodo, Figshare, HAL | Repository copies, reports, small-journal papers |
 | DataCite Theses, theses.fr, BDTD (Brazil) | Theses and dissertations |
 | Open Library, Google Books | Books and textbooks (catalogue records and previews; Google Books needs a free API key) |
@@ -143,6 +144,7 @@ Firebase ships that range, and let `npm audit` be the reminder.
 | `SPRINGER_NATURE_API_KEY` | Optional | Adds Springer Nature's 16M+ metadata records. Free Basic key; 500 hits/day, 100/min. Without it the source returns nothing |
 | `NASA_ADS_TOKEN` | Optional | Adds NASA ADS (astronomy, physics, earth and space science). Free personal token; 5,000 requests/day |
 | `COURTLISTENER_API_TOKEN` | Optional | Adds U.S. case law and RECAP. Free token; default limits are 5/min, 50/hour and 125/day |
+| `EUROPEANA_API_KEY`, `DPLA_API_KEY` | Optional | Add European and U.S. cultural-heritage collections. Free keys; without them the sources return nothing |
 | `CORE_API_KEY` | Optional | Higher CORE rate limit (works without, but may fail when busy). Free at [core.ac.uk/services/api](https://core.ac.uk/services/api); a revoked or expired key gets `401` and CORE shows as failed until it is replaced |
 | `CINII_APP_ID` | Optional | Adds CiNii Research (Japanese and Asian articles, theses and books). A free Application ID (`appid`) raises its rate limit; the endpoint also answers anonymously, and the adapter falls back to that if a new appid is refused. Register at [support.nii.ac.jp/en/cir/r_opensearch](https://support.nii.ac.jp/en/cir/r_opensearch) |
 | `IEEE_XPLORE_API_KEY` | Optional | Adds IEEE Xplore (engineering and computing). Free at [developer.ieee.org/apps/register](https://developer.ieee.org/apps/register); the key allows 200 calls/day, so responses are cached for 24 h and the source stops when the daily budget is spent. A `403 Developer Inactive` reply means the key is not usable yet: finish the portal registration or get a new key |
