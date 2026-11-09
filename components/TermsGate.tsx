@@ -17,13 +17,15 @@ const BOTTOM_SLACK = 16;
  */
 function SectionHeader({ id, index, title, first = false }: { id: string; index: number; title: string; first?: boolean }) {
   return (
-    <div className={`sticky top-0 z-10 -mx-4 border-b border-border bg-surface px-4 pb-2 pt-3 ${first ? "-mt-4" : ""}`}>
-      <p className="eyebrow flex items-center gap-2" style={{ color: "rgb(var(--accent))" }}>
-        <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: "rgb(var(--accent))" }} aria-hidden />
-        Section {index} of 2
-      </p>
-      <h2 id={id} className="display mt-1" style={{ fontSize: "1.5rem" }}>{title}</h2>
-      <p className="mt-0.5 text-xs text-subtle">Last updated {LEGAL_UPDATED}</p>
+    <div className={`sticky top-0 z-10 -mx-4 border-b border-border bg-surface px-4 pb-2 pt-2 ${first ? "-mt-4" : ""}`}>
+      <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
+        <p className="eyebrow flex items-center gap-1.5" style={{ color: "rgb(var(--accent))" }}>
+          <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: "rgb(var(--accent))" }} aria-hidden />
+          Section {index} of 2
+        </p>
+        <p className="text-[11px] text-subtle">Updated {LEGAL_UPDATED}</p>
+      </div>
+      <h2 id={id} className="display !mb-0 !mt-0.5" style={{ fontSize: "1.375rem" }}>{title}</h2>
     </div>
   );
 }
@@ -70,9 +72,10 @@ export function TermsGate() {
       onClose={() => {}}
       dismissible={false}
       placement="center"
-      className="max-h-[85vh] max-w-md"
+      className="max-h-[90vh] max-w-md sm:max-h-[85vh] [@media(max-height:520px)]:max-h-[96vh]"
       overlayClassName="bg-black/60 backdrop-blur-md"
       bodyRef={body}
+      bodyClassName=""
       footer={
         <div className="space-y-3">
           <label
@@ -92,30 +95,35 @@ export function TermsGate() {
               I have read and agree to the Terms of Use and the Privacy Policy.
             </span>
           </label>
-          <p className="flex items-start justify-center gap-1.5 text-center text-xs text-subtle" aria-live="polite">
-            <Info className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden />
-            <span>
-              {reachedEnd
-                ? "Read the Terms of Use and Privacy Policy first to proceed."
-                : "Read the Terms of Use and Privacy Policy first — scroll to the end to continue."}
-            </span>
-          </p>
-          <button
-            type="button"
-            disabled={!reachedEnd || !accepted}
-            onClick={() => {
-              acceptTerms();
-              setOpen(false);
-            }}
-            className="btn-primary w-full"
-          >
-            <ShieldCheck className="h-4 w-4" aria-hidden />
-            Accept and continue
-          </button>
+          <div className="flex flex-col gap-2 [@media(max-height:520px)]:flex-row [@media(max-height:520px)]:items-center [@media(max-height:520px)]:gap-3">
+            <p
+              className="flex items-center justify-center gap-1.5 text-center text-[11px] leading-snug text-subtle [@media(max-height:520px)]:flex-1 [@media(max-height:520px)]:justify-start [@media(max-height:520px)]:text-left"
+              aria-live="polite"
+            >
+              <Info className="h-3.5 w-3.5 shrink-0" aria-hidden />
+              <span>
+                {reachedEnd
+                  ? "Read the Terms and Privacy first to proceed."
+                  : "Read the Terms and Privacy first — scroll to the end to continue."}
+              </span>
+            </p>
+            <button
+              type="button"
+              disabled={!reachedEnd || !accepted}
+              onClick={() => {
+                acceptTerms();
+                setOpen(false);
+              }}
+              className="btn-primary w-full [@media(max-height:520px)]:w-auto [@media(max-height:520px)]:shrink-0"
+            >
+              <ShieldCheck className="h-4 w-4" aria-hidden />
+              Accept and continue
+            </button>
+          </div>
         </div>
       }
     >
-      <div className="prose-read">
+      <div className="prose-read p-4">
         <section aria-labelledby="gate-terms">
           <SectionHeader id="gate-terms" index={1} title="Terms of Use" first />
           <TermsContent />

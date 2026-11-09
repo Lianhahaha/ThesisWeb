@@ -41,6 +41,13 @@ test("a first visit must read the terms before accepting", async ({ page }) => {
   const termsHeader = dialog.getByRole("heading", { name: "Terms of Use" }).locator("..");
   await expect(termsHeader).toHaveCSS("position", "sticky");
 
+  const axe = await new AxeBuilder({ page })
+    .include('[role="dialog"]')
+    .withTags(["wcag2a", "wcag2aa"])
+    .analyze();
+  const serious = axe.violations.filter((v) => v.impact === "serious" || v.impact === "critical");
+  expect(serious, serious.map((v) => v.id).join(", ")).toEqual([]);
+
   await dialog.getByText("End of the Terms of Use and Privacy Policy.").scrollIntoViewIfNeeded();
   await expect(box).toBeEnabled();
   await expect(dialog.getByText(/first to proceed/i)).toBeVisible();

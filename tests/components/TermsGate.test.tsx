@@ -46,7 +46,7 @@ describe("TermsGate", () => {
     fireEvent.scroll(scroller);
 
     expect(checkbox.disabled).toBe(false);
-    expect(screen.getByText(/read the terms of use and privacy policy first to proceed/i)).toBeTruthy();
+    expect(screen.getByText(/read the terms and privacy first to proceed/i)).toBeTruthy();
     await userEvent.click(checkbox);
     expect(accept.disabled).toBe(false);
 

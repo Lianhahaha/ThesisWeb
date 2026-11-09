@@ -27,6 +27,7 @@ export function Dialog({
   dismissible = true,
   overlayClassName = "bg-black/50",
   bodyRef,
+  bodyClassName = "p-4",
 }: {
   title: React.ReactNode;
   onClose: () => void;
@@ -42,6 +43,8 @@ export function Dialog({
   overlayClassName?: string;
   /** The scrolling content area, for callers that track how far it is read. */
   bodyRef?: React.Ref<HTMLDivElement>;
+  /** Padding of the scrolling content area; pass "" when the content pads itself. */
+  bodyClassName?: string;
 }) {
   const titleId = useId();
   const panel = useRef<HTMLDivElement>(null);
@@ -116,7 +119,7 @@ export function Dialog({
             </button>
           )}
         </header>
-        <div ref={bodyRef} className="overflow-y-auto p-4">{children}</div>
+        <div ref={bodyRef} className={`overflow-y-auto ${bodyClassName}`}>{children}</div>
         {footer && <footer className="border-t border-border p-4 text-sm">{footer}</footer>}
       </div>
     </div>
