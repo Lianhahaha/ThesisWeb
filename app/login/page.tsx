@@ -132,10 +132,10 @@ export default function LoginPage() {
   return (
     <div className="mx-auto mt-4 max-w-md sm:mt-12">
       <p className="eyebrow">Account</p>
-      <h1 className="display mt-3 text-3xl">
+      <h1 className="display mt-3 text-2xl">
         {mode === "login" ? "Sign in" : "Create an account"}
       </h1>
-      <p className="mt-2 text-muted">
+      <p className="mt-2 text-sm text-muted">
         An account keeps your saved papers on every device. Searching works without one.
       </p>
 
@@ -151,8 +151,9 @@ export default function LoginPage() {
       <div className="panel mt-4">
         {inApp && (
           <p className="notice notice-info mb-3 text-sm">
-            Google sign-in doesn&apos;t work inside Facebook or Messenger. Open this page in Chrome or Safari
-            (menu → <em>Open in browser</em>), or use email below.
+            Google sign-in doesn&apos;t work inside this app&apos;s built-in browser (Facebook, Messenger,
+            Instagram, Gmail, etc.). Open this page in Chrome or Safari (menu →{" "}
+            <em>Open in browser</em>), or use email below.
           </p>
         )}
         <GoogleButton onClick={continueWithGoogle} busy={googleBusy} />

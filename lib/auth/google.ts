@@ -94,10 +94,13 @@ export function hasGoogle(user: User): boolean {
 /**
  * Facebook, Messenger, Instagram and similar apps open links in their own
  * browser, where Google refuses to sign anyone in. Students share links
- * there constantly, so the sign-in page says what to do instead.
+ * there constantly, so the sign-in page says what to do instead. Electron
+ * shells (desktop app browsers) and Android WebViews are blocked by Google too.
  */
 export function isInAppBrowser(userAgent: string): boolean {
-  return /FBAN|FBAV|FB_IAB|Messenger|Instagram|Line\/|TikTok|Twitter/i.test(userAgent);
+  return /FBAN|FBAV|FB_IAB|Messenger|Instagram|Line\/|TikTok|Twitter|Threads|Snapchat|Pinterest|LinkedInApp|MicroMessenger|Discord|Slack|Reddit|WhatsApp|KakaoTalk|Naver|DaumApps|Electron|; wv\)|opencode|Claude|ChatGPT/i.test(
+    userAgent
+  );
 }
 
 /** Google sign-in errors in plain words; null when the student just closed the window. */
@@ -114,10 +117,21 @@ export function googleErrorMessage(err: unknown): string | null {
       return "Google sign-in isn't switched on for this site yet. Use email and password for now.";
     case "auth/unauthorized-domain":
       return "This web address isn't allowed to use Google sign-in yet.";
+    case "auth/operation-not-supported-in-this-environment":
+      return "Google sign-in doesn't work in this app's browser. Open the site in Chrome or Safari.";
+    case "auth/internal-error":
+    case "auth/app-not-authorized":
+      return "Google blocked this sign-in. Open the site in Chrome or Safari (not inside another app) and try again, or use email and password.";
+    case "auth/invalid-api-key":
+      return "Sign-in is not configured for this site. Please report this.";
     case "auth/account-exists-with-different-credential":
       return "This email already has a Thesisweb account. Sign in with your email and password.";
+    case "auth/credential-already-in-use":
+      return "This Google account is already linked to another Thesisweb account.";
     case "auth/user-mismatch":
       return "That's a different Google account from the one you're signed in with.";
+    case "auth/user-disabled":
+      return "This Google account is disabled.";
     case "auth/web-storage-unsupported":
       return "This browser blocks the storage Google sign-in needs. Open the site in Chrome or Safari.";
     case "auth/network-request-failed":
@@ -125,6 +139,7 @@ export function googleErrorMessage(err: unknown): string | null {
     case "auth/too-many-requests":
       return "Too many attempts. Wait a few minutes and try again.";
     default:
-      return "Google sign-in failed. Try again, or use email and password.";
+      if (code) console.warn("Google sign-in failed:", code, err);
+      return "Google sign-in failed. Open the site in Chrome or Safari and try again, or use email and password.";
   }
 }

@@ -39,6 +39,12 @@ export function authMessage(err: unknown, fallback = "Something went wrong. Try 
     case "auth/internal-error":
       return "The sign-in service had a problem. Try again in a moment.";
     default:
+      // The SDK builds this code from the origin, e.g.
+      // auth/requests-from-referer-http://localhost:3004/-are-blocked.
+      if (code.startsWith("auth/requests-from-referer")) {
+        return "This web address isn't allowed to use sign-in. Open the main site or contact support.";
+      }
+      if (code) console.warn("Auth error:", code, err);
       return fallback;
   }
 }
