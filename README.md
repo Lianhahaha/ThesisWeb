@@ -45,7 +45,6 @@ All free; IEEE Xplore, Google Books, Springer Nature, NASA ADS, CourtListener, E
 | ASEAN Resource Centre | Books and reports published by the ASEAN Secretariat on trade, environment, social policy and regional cooperation |
 | Philippine Journals (Crossref) | One search across the Philippine Journal of Science, engineering/applied science, teacher education, agriculture/fisheries and psychology journals |
 | Philippine Engineering Journal | UP National Engineering Center's peer-reviewed engineering journal: civil, mechanical, electrical, industrial, chemical and mining engineering |
-| SSOAR | Social sciences, politics, psychology, communication (free full text) |
 | DOAJ, PLOS, J-STAGE | Peer-reviewed open-access journals |
 | AJOL (African Journals Online) | Peer-reviewed African journals across health, agriculture, engineering, education and social sciences |
 | Philippine E-Journals | Articles from hundreds of Philippine university journals, most with a free PDF |
@@ -209,7 +208,7 @@ lib/sources/         the databases (server, except meta.ts)
   adapters/          one file per database
   platforms/         shared clients: dspace7 (World Bank, CGSpace, IDRC, WHO, DR-NTU,
                      UPSpace, UPOU, UPV, Krishikosh, AIIAS), dspace6 (OpenSearch feed:
-                     SEAFDEC/AQD, SSOAR), vufind (LA Referencia, BDTD),
+                     SEAFDEC/AQD), vufind (LA Referencia, BDTD),
                      ncbi (PubMed, PMC), ojs (Acta Medica Philippina, PNU)
 lib/search/          search page (browser): params.ts (URL <-> form, shared with
                      the API), rank.ts (merge + rank, shared with the API),

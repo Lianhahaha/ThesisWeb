@@ -1,5 +1,5 @@
 import { paperId } from "@/lib/utils";
-import { fetchWithTimeout, readJson } from "@/lib/server/http";
+import { fetchWithTimeout, readJson, sleep } from "@/lib/server/http";
 import { USER_AGENT } from "@/lib/server/config";
 import { extractDoi } from "@/lib/text";
 import type { Paper } from "@/lib/types";
@@ -38,8 +38,17 @@ export async function searchThesesFr(query: string, opts: AdapterOptions = {}): 
 
   // No year filter in the API: ask for more and keep the defended, recent ones.
   const params = new URLSearchParams({ q: query, nombre: String(perSource * 3), debut: "0" });
-  // theses.fr often takes 5-8 s; the default 8 s cut it off from servers further away.
-  const res = await fetchWithTimeout(`${BASE}?${params}`, { headers: { "User-Agent": USER_AGENT } }, 11000);
+  // theses.fr often takes 5-8 s; the default 8 s cut it off from servers
+  // further away. Its host also drops the occasional connection, so retry once.
+  const request = () =>
+    fetchWithTimeout(`${BASE}?${params}`, { headers: { "User-Agent": USER_AGENT } }, 9000);
+  let res: Response;
+  try {
+    res = await request();
+  } catch {
+    await sleep(1000);
+    res = await request();
+  }
   if (!res.ok) throw new Error(`theses.fr ${res.status}`);
   const data = await readJson<{ theses?: ThesisRecord[] }>(res);
 

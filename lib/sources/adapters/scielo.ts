@@ -1,5 +1,5 @@
 import { paperId } from "@/lib/utils";
-import { fetchWithTimeout, readText } from "@/lib/server/http";
+import { fetchWithTimeout, readText, sleep } from "@/lib/server/http";
 import { decodeEntities, extractDoi, extractYear, flipName, stripHtml } from "@/lib/text";
 import type { Paper } from "@/lib/types";
 import type { AdapterOptions } from "@/lib/sources/types";
@@ -83,17 +83,26 @@ export async function searchScielo(query: string, opts: AdapterOptions = {}): Pr
   const { fromYear, perSource = 15 } = opts;
   const params = new URLSearchParams({ q: query, lang: "en", count: String(Math.min(perSource, 50)) });
 
-  const res = await fetchWithTimeout(
-    `${SEARCH}?${params}`,
-    {
-      headers: {
-        "User-Agent": BROWSER_UA,
-        Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-        "Accept-Language": "en-US,en;q=0.9",
+  const request = () =>
+    fetchWithTimeout(
+      `${SEARCH}?${params}`,
+      {
+        headers: {
+          "User-Agent": BROWSER_UA,
+          Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+          "Accept-Language": "en-US,en;q=0.9",
+        },
       },
-    },
-    12000
-  );
+      9000
+    );
+
+  let res = await request();
+  // The edge occasionally answers a burst with 403/429; one short retry
+  // usually succeeds without changing the query.
+  if (res.status === 403 || res.status === 429) {
+    await sleep(1500);
+    res = await request();
+  }
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
   const html = await readText(res);
   if (!html.includes('class="results"')) throw new Error("unexpected page");

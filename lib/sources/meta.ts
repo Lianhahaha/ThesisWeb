@@ -224,10 +224,6 @@ const META = {
     label: "SEAFDEC/AQD", blurb: "Aquaculture and fisheries research from SEAFDEC's Aquaculture Department in Iloilo: articles, manuals, theses and conference papers", color: "#1f9ece",
     region: "Philippines", fields: ["agriculture", "sciences"], kind: "repository", url: "https://repository.seafdec.org.ph",
   },
-  ssoar: {
-    label: "SSOAR", blurb: "Social science articles, working papers and reports, all free full text (GESIS, Germany)", color: "#c2185b",
-    region: "Germany (GESIS)", fields: ["social", "education"], kind: "repository", url: "https://www.ssoar.info",
-  },
   nice: {
     label: "NICE", blurb: "UK National Institute for Health and Care Excellence: clinical guidelines, quality standards, technology appraisals and public-health guidance", color: "#6d28d9",
     region: "United Kingdom", fields: ["medicine", "social"], kind: "reports", url: "https://www.nice.org.uk",

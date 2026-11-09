@@ -42,7 +42,6 @@ import { searchHuggingFace } from "@/lib/sources/adapters/huggingface";
 import { searchOpenReview } from "@/lib/sources/adapters/openreview";
 import { searchSeafdec } from "@/lib/sources/adapters/seafdec";
 import { searchBsu } from "@/lib/sources/adapters/bsu";
-import { searchSsoar } from "@/lib/sources/adapters/ssoar";
 import { searchWho } from "@/lib/sources/adapters/who";
 import { searchPaho } from "@/lib/sources/adapters/paho";
 import { searchNice } from "@/lib/sources/adapters/nice";
@@ -134,7 +133,7 @@ export const ADAPTERS: Record<SourceId, AdapterEntry> = {
   // The EBI endpoint can take 10-12 s on a cold query.
   europepmc:       { run: searchEuropePMC, boolean: true, deadlineMs: 18000 },
   pubmed:          { run: searchPubMed, boolean: true },
-  arxiv:           { run: searchArxiv, boolean: true },
+  arxiv:           { run: searchArxiv, boolean: true, deadlineMs: 28000 },
   eric:            { run: searchEric, boolean: false },
   edarxiv:         { run: searchEdArxiv, boolean: false },
   huggingface:     { run: searchHuggingFace, boolean: false },
@@ -171,11 +170,10 @@ export const ADAPTERS: Record<SourceId, AdapterEntry> = {
   gbif:            { run: searchGbif, boolean: false },
   lareferencia:    { run: searchLaReferencia, boolean: false },
   bdtd:            { run: searchBdtd, boolean: false, country: "Brazil" },
-  thesesfr:        { run: searchThesesFr, boolean: false, country: "France" },
+  thesesfr:        { run: searchThesesFr, boolean: false, country: "France", deadlineMs: 22000 },
   osf:             { run: searchOsf, boolean: false },
   bsu:             { run: searchBsu, boolean: false, country: "Philippines" },
   seafdec:         { run: searchSeafdec, boolean: false, country: "Philippines" },
-  ssoar:           { run: searchSsoar, boolean: false },
   // Slow server (8-13 s), so it gets extra room.
   nice:            { run: searchNice, boolean: false, deadlineMs: 15000 },
   paho:            { run: searchPaho, boolean: false, deadlineMs: 16000 },
@@ -218,7 +216,7 @@ export const ADAPTERS: Record<SourceId, AdapterEntry> = {
   asean:           { run: searchAsean, boolean: false, deadlineMs: 12000 },
   searca:          { run: searchSearca, boolean: false, deadlineMs: 22000 },
   pcaarrd:         { run: searchPcaarrd, boolean: false, country: "Philippines", deadlineMs: 16000 },
-  scielo:          { run: searchScielo, boolean: false },
+  scielo:          { run: searchScielo, boolean: false, deadlineMs: 22000 },
   europeana:       { run: searchEuropeana, boolean: false, deadlineMs: 12000 },
   dpla:            { run: searchDpla, boolean: false, deadlineMs: 12000 },
   persee:          { run: searchPersee, boolean: false },

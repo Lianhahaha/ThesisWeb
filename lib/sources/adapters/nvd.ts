@@ -33,10 +33,8 @@ export async function searchNvd(query: string, opts: AdapterOptions = {}): Promi
     keywordSearch: query,
     resultsPerPage: String(Math.min(perSource * 2, 50)),
   });
-  if (fromYear && fromYear > 0) {
-    params.set("pubStartDate", `${fromYear}-01-01T00:00:00.000`);
-    params.set("pubEndDate", new Date().toISOString().slice(0, 23));
-  }
+  // NVD rejects a pubStartDate/pubEndDate range wider than 120 days with a
+  // bare 404. Filter by year after parsing instead of asking NVD for the range.
 
   const res = await fetchWithTimeout(`${BASE}?${params}`, { headers: { "User-Agent": USER_AGENT, Accept: "application/json" } }, 15000);
   if (!res.ok) throw new Error(`NVD ${res.status}`);
