@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { ieeeArticleToPaper, ieeePages } from "@/lib/sources/adapters/ieee";
+import { ieeeArticleToPaper, ieeePages, parseIeeeKeys } from "@/lib/sources/adapters/ieee";
 
 const article = {
   title: "  A   Study of Reading Comprehension  ",
@@ -30,6 +30,14 @@ const article = {
     ieee_terms: { terms: ["Reading", "Machine learning"] },
   },
 };
+
+describe("parseIeeeKeys", () => {
+  it("accepts comma- or space-separated keys and drops duplicates", () => {
+    expect(parseIeeeKeys("aaa, bbb bbb,ccc")).toEqual(["aaa", "bbb", "ccc"]);
+    expect(parseIeeeKeys("")).toEqual([]);
+    expect(parseIeeeKeys(undefined)).toEqual([]);
+  });
+});
 
 describe("ieeeArticleToPaper", () => {
   it("maps a conference paper into the app's shape", () => {

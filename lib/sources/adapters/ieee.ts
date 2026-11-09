@@ -4,8 +4,16 @@ import { USER_AGENT } from "@/lib/server/config";
 import type { Paper, WorkType } from "@/lib/types";
 import type { AdapterOptions } from "@/lib/sources/types";
 
-const API_KEY = process.env.IEEE_XPLORE_API_KEY?.trim() || "";
 const BASE = "https://ieeexploreapi.ieee.org/api/v1/search/articles";
+
+/** One or more keys, comma- or space-separated; duplicates are dropped. */
+export function parseIeeeKeys(value: string | undefined): string[] {
+  return [...new Set((value ?? "").split(/[,\s]+/).map((k) => k.trim()).filter(Boolean))];
+}
+
+const API_KEYS = parseIeeeKeys(process.env.IEEE_XPLORE_API_KEY);
+/** The last key IEEE accepted; tried first on the next search. */
+let activeKey = "";
 
 const CACHE_TTL_MS = 24 * 60 * 60 * 1000;
 const CACHE_MAX = 300;
@@ -166,7 +174,7 @@ async function takeCall(): Promise<boolean> {
 }
 
 export async function searchIeee(query: string, opts: AdapterOptions = {}): Promise<Paper[]> {
-  if (!API_KEY) return [];
+  if (!API_KEYS.length) return [];
 
   const { fromYear, perSource = 15, openAccessOnly } = opts;
   const cacheKey = JSON.stringify([query, fromYear ?? 0, perSource, !!openAccessOnly]);
@@ -175,7 +183,6 @@ export async function searchIeee(query: string, opts: AdapterOptions = {}): Prom
   if (!(await takeCall())) throw new Error("daily API limit reached; try again tomorrow");
 
   const params = new URLSearchParams({
-    apikey: API_KEY,
     format: "json",
     querytext: query,
     max_records: String(Math.min(perSource, 200)),
@@ -184,16 +191,36 @@ export async function searchIeee(query: string, opts: AdapterOptions = {}): Prom
   if (fromYear) params.set("start_year", String(fromYear));
   if (openAccessOnly) params.set("open_access", "true");
 
-  const res = await fetchWithTimeout(
-    `${BASE}?${params}`,
-    { headers: { Accept: "application/json", "User-Agent": USER_AGENT } },
-    10000
-  );
-  if (res.status === 403) {
-    throw new Error("IEEE Xplore rejected the key (inactive). Register a new key at developer.ieee.org.");
+  // IEEE can take a while to activate a key. Try the last working key first,
+  // then the rest in order, so an admin can paste several without a redeploy.
+  const ordered = activeKey ? [activeKey, ...API_KEYS.filter((k) => k !== activeKey)] : API_KEYS;
+  let res: Response | null = null;
+  let rejected = 0;
+
+  for (const key of ordered) {
+    params.set("apikey", key);
+    res = await fetchWithTimeout(
+      `${BASE}?${params}`,
+      { headers: { Accept: "application/json", "User-Agent": USER_AGENT } },
+      10000
+    );
+    if (res.status === 403) {
+      rejected++;
+      continue;
+    }
+    if (res.status === 429) throw new Error("rate limited");
+    if (!res.ok) throw upstreamError("IEEE Xplore", res.status);
+    activeKey = key;
+    break;
   }
-  if (res.status === 429) throw new Error("rate limited");
-  if (!res.ok) throw upstreamError("IEEE Xplore", res.status);
+
+  if (!res || res.status === 403) {
+    throw new Error(
+      rejected > 1
+        ? "IEEE Xplore rejected all keys (waiting for activation)."
+        : "IEEE Xplore rejected the key (inactive). Register a new key at developer.ieee.org."
+    );
+  }
 
   const data = await readJson<{ articles?: IeeeArticle[] }>(res, {});
   const papers = (data?.articles ?? [])
