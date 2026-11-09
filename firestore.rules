@@ -62,8 +62,10 @@ service cloud.firestore {
     match /suggestions/{suggestionId} {
       function validSuggestion() {
         let d = request.resource.data;
+        // Older clients may not send `author` yet; accept them, but if it is
+        // present it must match the signed-in account.
         return d.keys().hasOnly(['body', 'nickname', 'anonymous', 'kind', 'page', 'createdAt', 'author'])
-          && d.author == request.auth.uid
+          && (!('author' in d) || (d.author is string && d.author == request.auth.uid))
           && d.body is string && d.body.size() >= 10 && d.body.size() <= 2000
           && d.anonymous is bool
           && d.kind is string && (d.kind == 'problem' || d.kind == 'suggestion')
@@ -86,7 +88,7 @@ service cloud.firestore {
       function validReply() {
         let d = request.resource.data;
         return d.keys().hasOnly(['suggestionId', 'body', 'nickname', 'anonymous', 'createdAt', 'author'])
-          && d.author == request.auth.uid
+          && (!('author' in d) || (d.author is string && d.author == request.auth.uid))
           && d.suggestionId is string
           && d.suggestionId.size() >= 1 && d.suggestionId.size() <= 128
           && d.suggestionId.matches('^[A-Za-z0-9]+$')
