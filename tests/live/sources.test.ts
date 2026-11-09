@@ -26,6 +26,7 @@ const SKIP: Partial<Record<SourceId, string>> = {};
 if (!process.env.IEEE_XPLORE_API_KEY) SKIP.ieee = "IEEE_XPLORE_API_KEY not configured";
 if (!process.env.CORE_API_KEY) SKIP.core = "CORE_API_KEY not configured";
 if (!process.env.GOOGLE_BOOKS_API_KEY) SKIP.googlebooks = "GOOGLE_BOOKS_API_KEY not configured";
+if (!process.env.SPRINGER_NATURE_API_KEY) SKIP.springer = "SPRINGER_NATURE_API_KEY not configured";
 
 /**
  * A rate limit, anti-bot block, timeout or outage is not an adapter bug. It is
@@ -50,7 +51,7 @@ afterAll(() => {
 
 /** A topic each database holds plenty of. Typed over every source, so a new one needs a probe. */
 const PROBES: Record<SourceId, string> = {
-  openalex: "climate change", crossref: "climate change", semanticscholar: "climate change", doaj: "teacher education",
+  openalex: "climate change", crossref: "climate change", semanticscholar: "climate change", springer: "machine learning", doaj: "teacher education",
   europepmc: "dengue", pubmed: "dengue", arxiv: "neural network", eric: "reading comprehension",
   edarxiv: "teacher education", huggingface: "large language models",
   openreview: "large language models", zbmath: "algebra", zenodo: "climate change",

@@ -60,6 +60,10 @@ const META = {
     label: "Semantic Scholar", blurb: "AI-written TLDRs and citation graph", color: "#bc8cff",
     region: "Global", fields: ["all"], kind: "index", url: "https://www.semanticscholar.org",
   },
+  springer: {
+    label: "Springer Nature", blurb: "16M+ journal articles, book chapters and protocols across science, technology, medicine and some social sciences, with open-access PDFs where available (free key, 500 hits/day)", color: "#0b5cad",
+    region: "Global", fields: ["all"], kind: "index", url: "https://www.springernature.com",
+  },
   doaj: {
     label: "DOAJ", blurb: "Fully open-access journals worldwide", color: "#d29922",
     region: "Global", fields: ["all"], kind: "journals", url: "https://doaj.org",

@@ -3,6 +3,7 @@ import type { AdapterEntry } from "@/lib/sources/types";
 import { searchOpenAlex } from "@/lib/sources/adapters/openalex";
 import { searchCrossref } from "@/lib/sources/adapters/crossref";
 import { searchSemanticScholar } from "@/lib/sources/adapters/semanticscholar";
+import { searchSpringer } from "@/lib/sources/adapters/springer";
 import { searchDoaj } from "@/lib/sources/adapters/doaj";
 import { searchEuropePMC } from "@/lib/sources/adapters/europepmc";
 import { searchPubMed } from "@/lib/sources/adapters/pubmed";
@@ -124,6 +125,7 @@ export const ADAPTERS: Record<SourceId, AdapterEntry> = {
   crossref:        { run: searchCrossref, boolean: false },
   // Retries through 429s from its shared public pool, so it needs extra room.
   semanticscholar: { run: searchSemanticScholar, boolean: false, deadlineMs: 16000 },
+  springer:        { run: searchSpringer, boolean: false, deadlineMs: 15000 },
   doaj:            { run: searchDoaj, boolean: true },
   // The EBI endpoint can take 10-12 s on a cold query.
   europepmc:       { run: searchEuropePMC, boolean: true, deadlineMs: 18000 },

@@ -31,6 +31,7 @@ All free; IEEE Xplore and Google Books need free registration keys. The in-app [
 | Database | Best for |
 |---|---|
 | OpenAlex, Crossref, Semantic Scholar, OpenAIRE, CORE | Broad first pass across every field, citation data, AI summaries (CORE = free copies from 10k+ repositories) |
+| Springer Nature | 16M+ journal articles, book chapters and protocols, with open-access PDFs where available (free key) |
 | SEAFDEC/AQD | Philippine research: aquaculture and fisheries |
 | UP Open University | Philippine theses: online and distance education, development communication, health informatics |
 | Philippine eLib | Union catalogue of the National Library, UP, DOST, DA and CHED: books, theses, government documents and Filipiniana |
@@ -137,6 +138,7 @@ Firebase ships that range, and let `npm audit` be the reminder.
 | `SEMANTIC_SCHOLAR_API_KEY`, `OPENALEX_API_KEY` | Recommended | Higher rate limits on the two biggest sources |
 | `GOOGLE_BOOKS_API_KEY` | Optional | Adds Google Books (textbooks and monographs). Requires a free key; without it the source is skipped instead of using Google's shared anonymous quota |
 | `NCBI_API_KEY` | Optional | 10 instead of 3 requests/s to PubMed and PubMed Central |
+| `SPRINGER_NATURE_API_KEY` | Optional | Adds Springer Nature's 16M+ metadata records. Free Basic key; 500 hits/day, 100/min. Without it the source returns nothing |
 | `CORE_API_KEY` | Optional | Higher CORE rate limit (works without, but may fail when busy). Free at [core.ac.uk/services/api](https://core.ac.uk/services/api); a revoked or expired key gets `401` and CORE shows as failed until it is replaced |
 | `CINII_APP_ID` | Optional | Adds CiNii Research (Japanese and Asian articles, theses and books). A free Application ID (`appid`) raises its rate limit; the endpoint also answers anonymously, and the adapter falls back to that if a new appid is refused. Register at [support.nii.ac.jp/en/cir/r_opensearch](https://support.nii.ac.jp/en/cir/r_opensearch) |
 | `IEEE_XPLORE_API_KEY` | Optional | Adds IEEE Xplore (engineering and computing). Free at [developer.ieee.org/apps/register](https://developer.ieee.org/apps/register); the key allows 200 calls/day, so responses are cached for 24 h and the source stops when the daily budget is spent. A `403 Developer Inactive` reply means the key is not usable yet: finish the portal registration or get a new key |
