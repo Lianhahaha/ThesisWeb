@@ -4,7 +4,7 @@
 
 A free web app that helps thesis students find related literature (RRL), keep it organised, and cite it correctly.
 
-- **Search** — one topic, 90 free academic databases at once, merged, de-duplicated and ranked, with preprint, retraction and expression-of-concern warnings. Save a search and the next time you open it, papers that weren't there before are marked *New*.
+- **Search** — one topic, 91 free academic databases at once, merged, de-duplicated and ranked, with preprint, retraction and expression-of-concern warnings. Save a search and the next time you open it, papers that weren't there before are marked *New*.
 - **Library** — save papers, group them by chapter, take notes, fill a synthesis matrix, or import a .bib/.ris file from Zotero, Mendeley or EndNote. Each paper is tagged **Local** or **Foreign** (guessed from the paper, changeable), to filter the library and split the exported reference list. **Share** a collection with your thesis group by link: they can read it, export it and copy it into their own library.
 - **Cite** — paste DOIs and get references in APA, MLA, IEEE or Chicago, or export your whole library.
 
@@ -72,6 +72,7 @@ All free; IEEE Xplore and Google Books need free registration keys. The in-app [
 | Zenodo, Figshare, HAL | Repository copies, reports, small-journal papers |
 | DataCite Theses, theses.fr, BDTD (Brazil) | Theses and dissertations |
 | Open Library, Google Books | Books and textbooks (catalogue records and previews; Google Books needs a free API key) |
+| OpenStax | Free, peer-reviewed university textbooks from Rice University: maths, science, business, social science and the humanities, with a free PDF |
 | Internet Archive | Books, texts, reports and historical primary sources from libraries and archives worldwide |
 | ClinicalTrials.gov | Clinical studies worldwide: status, sponsor, conditions, interventions and outcomes (U.S. NLM) |
 | Federal Register | U.S. rules, proposed rules, notices and executive orders, with abstracts and free PDFs |

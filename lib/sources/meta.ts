@@ -212,6 +212,10 @@ const META = {
     label: "Google Books", blurb: "Books, textbooks and monographs across every field, with previews where the publisher allows them", color: "#4285f4",
     region: "Global", fields: ["all"], kind: "books", url: "https://books.google.com",
   },
+  openstax: {
+    label: "OpenStax", blurb: "Free, peer-reviewed university textbooks from Rice University: maths, science, business, social science and the humanities, each with a free PDF", color: "#0b6e4f",
+    region: "United States (Rice University)", fields: ["sciences", "computing", "business", "social", "education", "humanities"], kind: "books", url: "https://openstax.org",
+  },
   core: {
     label: "CORE", blurb: "300M+ open-access papers harvested from 10,000+ university repositories and journals worldwide, incl. Philippine ones (Open University & Jisc, UK)", color: "#b75400",
     region: "Global (UK)", fields: ["all"], kind: "index", url: "https://core.ac.uk",

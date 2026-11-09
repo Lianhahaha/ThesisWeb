@@ -62,6 +62,7 @@ const PROBES: Record<SourceId, string> = {
   seafdec: "shrimp", ssoar: "migration", who: "dengue", nber: "inflation", openlibrary: "statistics",
   core: "climate change", ntu: "engineering", upspace: "education", upou: "distance education", upv: "fisheries",
   googlebooks: "education",
+  openstax: "algebra",
   herdin: "dengue", serpp: "poverty", krishikosh: "rice", upd: "education",
   aiias: "education", actamedica: "dengue", pnu: "teachers", ejournalsph: "education",
   saliksik: "education", pcaarrd: "rice", scielo: "education", persee: "education",
