@@ -172,6 +172,10 @@ const META = {
     label: "IEEE Xplore", blurb: "IEEE journals, conference papers and standards: engineering, computing, electronics, communications (free registration key)", color: "#00629b",
     region: "Global", fields: ["engineering", "computing", "sciences"], kind: "index", url: "https://ieeexplore.ieee.org",
   },
+  agris: {
+    label: "AGRIS", blurb: "15M+ records on agriculture, forestry, fisheries, food, nutrition and the environment from FAO's international information system, multilingual and AGROVOC-indexed", color: "#4c8c2b",
+    region: "Global (FAO)", fields: ["agriculture", "sciences", "social"], kind: "index", url: "https://agris.fao.org",
+  },
   gbif: {
     label: "GBIF Literature", blurb: "Biodiversity research: species, ecosystems, conservation, fisheries and agriculture (Global Biodiversity Information Facility)", color: "#4c9f38",
     region: "Global (GBIF)", fields: ["sciences", "agriculture"], kind: "index", url: "https://www.gbif.org/resource/search?contentType=literature",

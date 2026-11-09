@@ -58,6 +58,7 @@ All free; IEEE Xplore and Google Books need free registration keys. The in-app [
 | NCJRS Virtual Library | U.S. criminal justice research: policing, courts, corrections, victims, drugs and crime prevention |
 | CGSpace (CGIAR, incl. IRRI), GBIF Literature, Krishikosh | Agriculture, fisheries, food, biodiversity (Krishikosh = Indian agricultural theses) |
 | FAO OpenKnowledge | Food security, fisheries and aquaculture, agriculture, forestry, climate and rural development reports |
+| AGRIS | 15M+ multilingual agriculture, forestry, fisheries, food and environment records (FAO) |
 | OSTI.GOV, NASA NTRS, USGS | Engineering, energy, aerospace, earth science reports |
 | IEEE Xplore | Engineering and computing journal articles, conference papers and standards (free key, 200 calls/day) |
 | arXiv, INSPIRE-HEP | Physics, maths, computing (arXiv = preprints) |
