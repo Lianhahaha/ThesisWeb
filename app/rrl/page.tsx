@@ -111,6 +111,20 @@ export default function RrlIndexPage() {
         </ul>
       </section>
 
+      <section aria-labelledby="guides-h" className="panel mb-8">
+        <h2 id="guides-h" className="text-lg">RRL writing guides</h2>
+        <p className="mt-1 text-sm text-muted">
+          Practical how-to pages for Chapter 2, synthesis matrices, citations and research gaps.
+        </p>
+        <div className="mt-3 flex flex-wrap gap-2">
+          <Link href="/guides/how-to-write-rrl" className="chip">How to write Chapter 2 RRL</Link>
+          <Link href="/guides/synthesis-matrix-template" className="chip">Synthesis matrix template</Link>
+          <Link href="/guides/how-to-find-research-gap" className="chip">How to find the research gap</Link>
+          <Link href="/guides/local-and-foreign-rrl-examples" className="chip">Local and foreign RRL examples</Link>
+          <Link href="/guides" className="chip">All guides</Link>
+        </div>
+      </section>
+
       <section aria-labelledby="faq-h" className="panel mb-8">
         <h2 id="faq-h" className="text-lg">Frequently asked questions about finding RRL</h2>
         <dl className="mt-4 space-y-4">

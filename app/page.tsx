@@ -8,6 +8,7 @@ import { SearchPanel, DEFAULT_FROM_YEAR } from "@/components/SearchPanel";
 import { DatabasesDialog } from "@/components/DatabasesDialog";
 import { SOURCE_COUNT } from "@/lib/sources/meta";
 import { RRL_GUIDES } from "@/lib/rrl-guides";
+import { GUIDES } from "@/lib/guides";
 import { buildSearchParams, type SearchInput } from "@/lib/search/params";
 import { fromYearFor, getPreferences } from "@/lib/preferences";
 
@@ -131,6 +132,30 @@ export default function HomePage() {
             {RRL_GUIDES.map((g) => (
               <Link key={g.slug} href={`/rrl/${g.slug}`} className="chip">
                 {g.shortTitle}
+              </Link>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="mx-auto max-w-4xl pb-8" aria-labelledby="guides-h">
+        <div className="panel">
+          <div className="flex flex-wrap items-baseline justify-between gap-2">
+            <h2 id="guides-h" className="eyebrow !text-sm !font-semibold !text-text">
+              RRL WRITING GUIDES
+            </h2>
+            <Link href="/guides" className="text-xs font-medium text-accent hover:underline">
+              All {GUIDES.length} guides →
+            </Link>
+          </div>
+          <p className="mt-1 text-sm text-muted">
+            Step-by-step help with Chapter 2, synthesis matrices, APA citations, research gaps and
+            more.
+          </p>
+          <div className="mt-3 flex flex-wrap gap-2">
+            {GUIDES.slice(0, 6).map((g) => (
+              <Link key={g.slug} href={`/guides/${g.slug}`} className="chip">
+                {g.title}
               </Link>
             ))}
           </div>
