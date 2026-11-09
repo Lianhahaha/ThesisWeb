@@ -79,7 +79,7 @@ export async function searchCourtListener(query: string, opts: AdapterOptions = 
     15000
   );
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
-  return parseCourtListener(await readJson<CourtResponse>(res)).filter(
-    (p) => !(fromYear && fromYear > 0 && p.year != null && p.year < fromYear)
-  );
+  return parseCourtListener(await readJson<CourtResponse>(res))
+    .filter((p) => !(fromYear && fromYear > 0 && p.year != null && p.year < fromYear))
+    .slice(0, Math.max(1, perSource));
 }
