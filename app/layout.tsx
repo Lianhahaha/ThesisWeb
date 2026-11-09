@@ -27,8 +27,11 @@ export const metadata: Metadata = {
   title: { default: `${SITE_NAME}: ${SITE_TAGLINE}`, template: `%s · ${SITE_NAME}` },
   description: SITE_DESCRIPTION,
   keywords: [
-    "RRL", "review of related literature", "related literature and studies", "thesis", "research paper",
-    "Philippines", "local studies", "foreign studies", "synthesis matrix", "APA citation generator",
+    "RRL", "RRL finder", "RRL finder tool", "review of related literature", "related literature and studies",
+    "local and foreign RRL", "Philippine RRL finder", "local studies Philippines", "foreign studies",
+    "agriculture RRL", "education RRL", "nursing RRL", "engineering RRL", "computer science RRL",
+    "business RRL", "psychology RRL", "criminology RRL", "mathematics RRL",
+    "thesis", "research paper", "synthesis matrix", "APA citation generator",
     "free academic databases", "senior high school research", "college thesis",
   ],
   alternates: { canonical: "/" },

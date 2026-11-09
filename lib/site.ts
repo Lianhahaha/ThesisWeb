@@ -5,12 +5,12 @@ import { SOURCE_COUNT } from "@/lib/sources/meta";
  * The site's public address and the words search engines and link previews
  * show. NEXT_PUBLIC_SITE_URL overrides the address (a custom domain later).
  */
-export const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || "https://thesiswebph.vercel.app").replace(/\/$/, "");
+export const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || "https://thesiswebph.site").replace(/\/$/, "");
 export const SITE_NAME = "Thesisweb";
-export const SITE_TAGLINE = "Free RRL finder for thesis students";
+export const SITE_TAGLINE = "Free RRL Finder Tool for Thesis & Research Students";
 export const SITE_DESCRIPTION =
-  `Find related literature (RRL) for your thesis in one search across ${SOURCE_COUNT} free academic databases, ` +
-  "including Philippine theses and journals. Save papers, fill a synthesis matrix, and cite in APA, MLA, IEEE or Chicago. Free, no sign-up needed.";
+  `Free Review of Related Literature (RRL) finder tool. Search ${SOURCE_COUNT} academic databases at once, ` +
+  "including Philippine local theses and journals, across agriculture, education, nursing, engineering, computing, business and social sciences. Save papers, build a synthesis matrix, and cite in APA, MLA, IEEE or Chicago.";
 
 /** The share card that app/opengraph-image.tsx draws. */
 export const SITE_IMAGE = { url: "/opengraph-image", width: 1200, height: 630, alt: `${SITE_NAME}: ${SITE_TAGLINE}` };
@@ -45,6 +45,7 @@ export const SITE_JSON_LD = {
       "@id": `${SITE_URL}/#website`,
       url: SITE_URL,
       name: SITE_NAME,
+      alternateName: ["ThesisWeb PH", "Thesisweb RRL Finder", "ThesisWeb"],
       description: SITE_DESCRIPTION,
       inLanguage: "en",
       potentialAction: {
