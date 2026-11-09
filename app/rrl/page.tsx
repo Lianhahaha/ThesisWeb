@@ -50,18 +50,18 @@ const FAQ_JSON_LD = {
 
 export default function RrlIndexPage() {
   return (
-    <div className="mx-auto max-w-4xl">
+    <div className="mx-auto max-w-3xl">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(FAQ_JSON_LD).replace(/</g, "\\u003c") }}
       />
 
-      <header className="mb-8">
+      <header className="mb-6">
         <p className="eyebrow">RRL Finder Guides</p>
-        <h1 className="display mt-2 text-3xl sm:text-4xl">
+        <h1 className="display mt-2 text-2xl sm:text-3xl">
           Find related literature by <em>field</em>
         </h1>
-        <p className="mt-2 max-w-2xl text-muted">
+        <p className="mt-2 max-w-2xl text-sm text-muted">
           Choose your thesis subject to see starter RRL search topics, adviser tips, and the exact
           open-access databases Thesisweb searches for your discipline — or{" "}
           <Link href="/search" className="text-accent underline">
@@ -71,23 +71,23 @@ export default function RrlIndexPage() {
         </p>
       </header>
 
-      <section aria-labelledby="fields-h" className="mb-10">
+      <section aria-labelledby="fields-h" className="mb-6">
         <h2 id="fields-h" className="sr-only">RRL guides by subject area</h2>
-        <ul className="grid gap-4 sm:grid-cols-2">
+        <ul className="grid gap-2.5 sm:grid-cols-2">
           {RRL_GUIDES.map((g) => {
             const count = sourcesForGuide(g).length;
             return (
-              <li key={g.slug} className="panel flex flex-col justify-between gap-3">
+              <li key={g.slug} className="panel flex flex-col justify-between gap-2.5">
                 <div>
                   <div className="flex items-baseline justify-between gap-2">
-                    <Link href={`/rrl/${g.slug}`} className="font-semibold hover:text-accent hover:underline">
+                    <Link href={`/rrl/${g.slug}`} className="text-sm font-semibold hover:text-accent hover:underline">
                       {g.shortTitle}
                     </Link>
-                    <span className="text-xs text-subtle">{count} databases</span>
+                    <span className="shrink-0 text-[11px] text-subtle">{count} databases</span>
                   </div>
-                  <p className="mt-1.5 text-sm text-muted">{g.intro}</p>
+                  <p className="mt-1 text-xs text-muted">{g.intro}</p>
                 </div>
-                <div className="flex flex-wrap items-center justify-between gap-2 border-t border-border pt-2.5 text-xs">
+                <div className="flex flex-wrap items-center justify-between gap-2 border-t border-border pt-2 text-[11px]">
                   <Link
                     href={`/rrl/${g.slug}`}
                     className="inline-flex items-center gap-1 font-medium text-accent hover:underline"
@@ -111,9 +111,9 @@ export default function RrlIndexPage() {
         </ul>
       </section>
 
-      <section aria-labelledby="guides-h" className="panel mb-8">
-        <h2 id="guides-h" className="text-lg">RRL writing guides</h2>
-        <p className="mt-1 text-sm text-muted">
+      <section aria-labelledby="guides-h" className="panel mb-6">
+        <h2 id="guides-h" className="text-base">RRL writing guides</h2>
+        <p className="mt-1 text-xs text-muted">
           Practical how-to pages for Chapter 2, synthesis matrices, citations and research gaps.
         </p>
         <div className="mt-3 flex flex-wrap gap-2">
@@ -125,9 +125,9 @@ export default function RrlIndexPage() {
         </div>
       </section>
 
-      <section aria-labelledby="faq-h" className="panel mb-8">
-        <h2 id="faq-h" className="text-lg">Frequently asked questions about finding RRL</h2>
-        <dl className="mt-4 space-y-4">
+      <section aria-labelledby="faq-h" className="panel mb-6">
+        <h2 id="faq-h" className="text-base">Frequently asked questions about finding RRL</h2>
+        <dl className="mt-3 space-y-3">
           {FAQ.map(({ q, a }) => (
             <div key={q} className="border-t border-border pt-3 first:border-t-0 first:pt-0">
               <dt className="text-sm font-semibold">{q}</dt>
@@ -135,7 +135,7 @@ export default function RrlIndexPage() {
             </div>
           ))}
         </dl>
-        <p className="mt-4 border-t border-border pt-3 text-xs text-subtle">
+        <p className="mt-3 break-all border-t border-border pt-2.5 text-xs text-subtle">
           Public URL: <a href={`${SITE_URL}/rrl`} className="underline">{SITE_URL}/rrl</a>
         </p>
       </section>

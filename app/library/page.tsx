@@ -248,7 +248,7 @@ export default function LibraryPage() {
       <header className="mb-6 flex flex-wrap items-end justify-between gap-4">
         <div>
           <p className="eyebrow">Your sources</p>
-          <h1 className="display mt-3 text-3xl sm:text-4xl">Library</h1>
+          <h1 className="display mt-3 text-2xl sm:text-3xl">Library</h1>
           <p className="mt-2 text-muted">
             {total} saved {total === 1 ? "paper" : "papers"}
             {user ? " · synced to your account" : " · stored in this browser only"}

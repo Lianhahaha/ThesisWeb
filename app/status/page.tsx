@@ -15,8 +15,8 @@ export default function StatusPage() {
   return (
     <div className="mx-auto max-w-2xl py-4">
       <p className="eyebrow">Status</p>
-      <h1 className="display mt-3 text-3xl">Service status</h1>
-      <p className="mt-2 text-muted">
+      <h1 className="display mt-3 text-2xl">Service status</h1>
+      <p className="mt-2 text-sm text-muted">
         A quick liveness check for the web app and its optional integrations.
       </p>
       <StatusClient />

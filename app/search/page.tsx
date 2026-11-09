@@ -247,14 +247,14 @@ export default function SearchPage() {
   return (
     // Phones: one column. From lg up the sidebar sits right of the results;
     // in the DOM it comes first so on a phone the filter precedes the list.
-    <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_280px] lg:items-start lg:gap-8">
+    <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_260px] lg:items-start lg:gap-6">
       <div className="min-w-0">
-        <header className="mb-5">
+        <header className="mb-4">
           <p className="eyebrow">Search</p>
-          <h1 className="display mt-2 text-3xl sm:text-4xl">
+          <h1 className="display mt-2 text-2xl sm:text-3xl">
             Find <em>sources</em>
           </h1>
-          <p className="mt-2 text-muted">
+          <p className="mt-1.5 text-sm text-muted">
             <Link href="/databases" className="underline decoration-dotted underline-offset-2 hover:text-text">
               {SOURCE_COUNT} free databases
             </Link>
@@ -302,7 +302,7 @@ export default function SearchPage() {
             </p>
             <div className="card mt-3 divide-y divide-border" aria-hidden>
               {Array.from({ length: 5 }).map((_, i) => (
-                <div key={i} className="space-y-2.5 p-4">
+                <div key={i} className="space-y-2.5 p-3">
                   <div className="h-4 w-3/4 rounded bg-surface3" />
                   <div className="h-3 w-1/3 rounded bg-surface2" />
                   <div className="h-3 w-full rounded bg-surface2" />
@@ -314,8 +314,8 @@ export default function SearchPage() {
 
         {result && showResults && (
           <section aria-label="Results" aria-busy={pending}>
-            <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border pb-3">
-              <h2 className="text-xl" aria-live="polite">
+            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border pb-2.5">
+              <h2 className="text-lg" aria-live="polite">
                 {visible.length}
                 {visible.length !== result.papers.length && (
                   <span className="text-muted"> of {result.papers.length}</span>

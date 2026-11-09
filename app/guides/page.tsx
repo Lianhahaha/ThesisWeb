@@ -48,23 +48,23 @@ const JSON_LD = {
 
 export default function GuidesPage() {
   return (
-    <div className="mx-auto max-w-4xl">
+    <div className="mx-auto max-w-3xl">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(JSON_LD).replace(/</g, "\\u003c") }}
       />
 
-      <header className="mb-8">
+      <header className="mb-6">
         <p className="eyebrow">Writing guides</p>
-        <h1 className="display mt-2 text-3xl sm:text-4xl">
+        <h1 className="display mt-2 text-2xl sm:text-3xl">
           Write a better <em>Chapter 2</em>
         </h1>
-        <p className="mt-2 max-w-2xl text-muted">
+        <p className="mt-2 max-w-2xl text-sm text-muted">
           {GUIDES.length} practical guides on finding related literature, synthesizing studies,
           writing the gap, and citing correctly. No sign-up. Every guide links to the free search
           tool.
         </p>
-        <div className="mt-4 flex flex-wrap gap-2">
+        <div className="mt-3 flex flex-wrap gap-2">
           <Link href="/search" className="btn btn-sm">
             Search databases
             <ArrowRight className="h-3.5 w-3.5" aria-hidden />
@@ -79,18 +79,18 @@ export default function GuidesPage() {
         const list = guidesByCategory(category);
         if (!list.length) return null;
         return (
-          <section key={category} className="mb-8" aria-labelledby={`cat-${category.replace(/\W+/g, "-")}`}>
-            <h2 id={`cat-${category.replace(/\W+/g, "-")}`} className="text-xl">
-              {category} <span className="text-sm font-normal text-subtle">· {list.length}</span>
+          <section key={category} className="mb-6" aria-labelledby={`cat-${category.replace(/\W+/g, "-")}`}>
+            <h2 id={`cat-${category.replace(/\W+/g, "-")}`} className="text-lg">
+              {category} <span className="text-xs font-normal text-subtle">· {list.length}</span>
             </h2>
-            <ul className="mt-3 grid gap-3 sm:grid-cols-2">
+            <ul className="mt-2.5 grid gap-2.5 sm:grid-cols-2">
               {list.map((g) => (
-                <li key={g.slug} className="panel flex flex-col gap-2">
-                  <Link href={`/guides/${g.slug}`} className="font-semibold hover:text-accent hover:underline">
+                <li key={g.slug} className="panel flex flex-col gap-1.5">
+                  <Link href={`/guides/${g.slug}`} className="text-sm font-semibold hover:text-accent hover:underline">
                     {g.title}
                   </Link>
-                  <p className="text-sm text-muted">{g.description}</p>
-                  <div className="mt-auto flex items-center gap-4 border-t border-border pt-2 text-xs text-subtle">
+                  <p className="text-xs text-muted">{g.description}</p>
+                  <div className="mt-auto flex items-center gap-3 border-t border-border pt-2 text-[11px] text-subtle">
                     <span className="inline-flex items-center gap-1">
                       <BookOpen className="h-3.5 w-3.5" aria-hidden />
                       Guide

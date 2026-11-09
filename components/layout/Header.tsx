@@ -57,10 +57,10 @@ export function Header() {
   return (
     <>
       <header className="sticky top-0 z-40 border-b border-border bg-surface">
-        <div className="mx-auto w-full max-w-6xl px-4 md:px-6">
-          <div className="flex h-14 items-center gap-3 md:grid md:grid-cols-[1fr_auto_1fr]">
+        <div className="mx-auto w-full max-w-5xl px-3 sm:px-5">
+          <div className="flex h-12 items-center gap-2.5 md:grid md:grid-cols-[1fr_auto_1fr]">
             <Link href="/" className="flex min-w-0 shrink items-center" aria-label="Thesisweb home">
-              <span className="serif text-[21px] font-medium leading-none">Thesisweb</span>
+              <span className="serif text-[19px] font-medium leading-none">Thesisweb</span>
             </Link>
 
             <nav className="hidden md:block" aria-label="Main">

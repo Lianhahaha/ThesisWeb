@@ -82,7 +82,7 @@ export default function CitePage() {
     <div className="mx-auto max-w-3xl">
       <header className="mb-5">
         <p className="eyebrow">Citation generator</p>
-        <h1 className="display mt-2 text-3xl sm:text-4xl">
+        <h1 className="display mt-2 text-2xl sm:text-3xl">
           Cite <em>fast</em>
         </h1>
         <p className="mt-2 text-muted">

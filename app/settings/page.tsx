@@ -47,7 +47,7 @@ export default function SettingsPage() {
     <div className="mx-auto max-w-2xl space-y-4">
       <header className="mb-2">
         <p className="eyebrow">{user ? "Your profile" : "Settings"}</p>
-        <h1 className="display mt-2 text-3xl sm:text-4xl">{user ? username || "Your account" : "Settings"}</h1>
+        <h1 className="display mt-2 text-2xl sm:text-3xl">{user ? username || "Your account" : "Settings"}</h1>
         {user ? (
           <p className="mt-2 break-all text-muted">{email}</p>
         ) : (

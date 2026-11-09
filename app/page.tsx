@@ -45,16 +45,16 @@ export default function HomePage() {
 
   return (
     <div>
-      <section className="mx-auto max-w-3xl pb-10 pt-4 text-center sm:pt-10">
+      <section className="mx-auto max-w-3xl pb-8 pt-2 text-center sm:pt-6">
         <p className="eyebrow">Related literature, found faster</p>
-        <h1 className="display mt-4 text-4xl sm:text-5xl">
+        <h1 className="display mt-3 text-3xl sm:text-4xl">
           Research, <em>simplified.</em>
         </h1>
-        <p className="mx-auto mt-4 max-w-lg text-muted">
+        <p className="mx-auto mt-3 max-w-lg text-sm text-muted sm:text-base">
           One search across {SOURCE_COUNT} free academic databases.
         </p>
 
-        <div className="mt-8">
+        <div className="mt-6">
           <SearchPanel
             value={form}
             onChange={setForm}
@@ -62,36 +62,36 @@ export default function HomePage() {
           />
         </div>
 
-        <button type="button" onClick={() => setShowDatabases(true)} className="btn-ghost btn-sm mt-6">
+        <button type="button" onClick={() => setShowDatabases(true)} className="btn-ghost btn-sm mt-4">
           See all {SOURCE_COUNT} databases
           <ChevronRight className="h-3.5 w-3.5" aria-hidden />
         </button>
         {showDatabases && <DatabasesDialog onClose={() => setShowDatabases(false)} />}
       </section>
 
-      <section id="readme" className="mx-auto max-w-4xl py-8" aria-labelledby="readme-h">
+      <section id="readme" className="mx-auto max-w-3xl py-6" aria-labelledby="readme-h">
         <div className="panel">
           <h2 id="readme-h" className="eyebrow !text-sm !font-semibold !text-text">READ ME</h2>
           <p className="mt-1 text-sm text-muted">How to go from a topic to a reference list.</p>
 
-          <ol className="mt-4 grid gap-x-8 gap-y-0 md:grid-cols-3">
+          <ol className="mt-3 grid gap-x-5 gap-y-0 md:grid-cols-3">
             {STEPS.map((s, i) => (
               <li
                 key={s.title}
-                className="flex gap-3 border-t border-border py-3 first:border-t-0 md:border-t-0"
+                className="flex gap-2.5 border-t border-border py-2.5 first:border-t-0 md:border-t-0"
               >
-                <span className="serif text-xl leading-none text-subtle" aria-hidden>
+                <span className="serif text-lg leading-none text-subtle" aria-hidden>
                   {i + 1}
                 </span>
                 <div className="min-w-0">
-                  <h3 className="text-base">{s.title}</h3>
+                  <h3 className="text-sm font-semibold">{s.title}</h3>
                   <p className="mt-0.5 text-sm text-muted">{s.body}</p>
                 </div>
               </li>
             ))}
           </ol>
 
-          <div className="mt-4 border-t border-border pt-3">
+          <div className="mt-3 border-t border-border pt-2.5">
             <p className="text-sm font-semibold">Good to know</p>
             <ul className="mt-1.5 list-disc space-y-1 pl-5 text-sm text-muted">
               <li>
@@ -115,7 +115,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className="mx-auto max-w-4xl pb-8" aria-labelledby="fields-h">
+      <section className="mx-auto max-w-3xl pb-6" aria-labelledby="fields-h">
         <div className="panel">
           <div className="flex flex-wrap items-baseline justify-between gap-2">
             <h2 id="fields-h" className="eyebrow !text-sm !font-semibold !text-text">
@@ -138,7 +138,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className="mx-auto max-w-4xl pb-8" aria-labelledby="guides-h">
+      <section className="mx-auto max-w-3xl pb-6" aria-labelledby="guides-h">
         <div className="panel">
           <div className="flex flex-wrap items-baseline justify-between gap-2">
             <h2 id="guides-h" className="eyebrow !text-sm !font-semibold !text-text">
