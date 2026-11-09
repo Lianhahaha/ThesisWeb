@@ -1,6 +1,5 @@
 import { paperId } from "@/lib/utils";
 import { fetchWithTimeout, readJson, sleep } from "@/lib/server/http";
-import { USER_AGENT } from "@/lib/server/config";
 import { extractDoi } from "@/lib/text";
 import type { Paper } from "@/lib/types";
 import type { AdapterOptions } from "@/lib/sources/types";
@@ -13,6 +12,9 @@ import type { AdapterOptions } from "@/lib/sources/types";
  */
 
 const BASE = "https://theses.fr/api/v1/theses/recherche/";
+// ABES sits behind a WAF that refuses non-browser clients from data-centre IPs.
+const BROWSER_UA =
+  "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36";
 
 interface Person {
   nom?: string | null;
@@ -41,7 +43,11 @@ export async function searchThesesFr(query: string, opts: AdapterOptions = {}): 
   // theses.fr often takes 5-8 s; the default 8 s cut it off from servers
   // further away. Its host also drops the occasional connection, so retry once.
   const request = () =>
-    fetchWithTimeout(`${BASE}?${params}`, { headers: { "User-Agent": USER_AGENT } }, 12000);
+    fetchWithTimeout(
+      `${BASE}?${params}`,
+      { headers: { "User-Agent": BROWSER_UA, Accept: "application/json" } },
+      12000
+    );
   let res: Response;
   try {
     res = await request();
