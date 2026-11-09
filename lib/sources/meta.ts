@@ -140,6 +140,10 @@ const META = {
     label: "World Bank OKR", blurb: "World Bank research, working papers and country studies on development, poverty, health and education, all free", color: "#2f81f7",
     region: "Global (World Bank)", fields: ["social", "business", "education", "agriculture"], kind: "reports", url: "https://openknowledge.worldbank.org",
   },
+  fao: {
+    label: "FAO OpenKnowledge", blurb: "Food and Agriculture Organization publications: food security, fisheries and aquaculture, agriculture, forestry, climate and rural development, all free", color: "#2f6f4e",
+    region: "Global (FAO)", fields: ["agriculture", "sciences", "social", "business"], kind: "reports", url: "https://openknowledge.fao.org",
+  },
   cgspace: {
     label: "CGSpace (CGIAR)", blurb: "Agricultural research from CGIAR centres incl. IRRI (Los Baños): crops, fisheries, livestock, nutrition, climate", color: "#56d364",
     region: "Global (CGIAR)", fields: ["agriculture", "sciences"], kind: "repository", url: "https://cgspace.cgiar.org",

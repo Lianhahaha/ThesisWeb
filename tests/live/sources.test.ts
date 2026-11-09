@@ -56,7 +56,7 @@ const PROBES: Record<SourceId, string> = {
   openreview: "large language models", zbmath: "algebra", zenodo: "climate change",
   hal: "climate change", openaire: "climate change", inspire: "dark matter", plos: "malaria", datacite: "education",
   osti: "solar energy", cinii: "education", jstage: "education", figshare: "climate change", worldbank: "poverty",
-  cgspace: "rice", idrc: "climate change", pmc: "dengue", ntrs: "aerospace", econbiz: "inflation", usgs: "earthquake",
+  cgspace: "rice", fao: "rice", idrc: "climate change", pmc: "dengue", ntrs: "aerospace", econbiz: "inflation", usgs: "earthquake",
   ieee: "engineering",
   gbif: "biodiversity", lareferencia: "educación", bdtd: "educação", thesesfr: "climat", osf: "psychology",
   seafdec: "shrimp", bsu: "rice", ssoar: "migration", paho: "dengue", who: "dengue", nber: "inflation", openlibrary: "statistics",

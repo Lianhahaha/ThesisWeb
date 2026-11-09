@@ -20,6 +20,7 @@ import { searchJstage } from "@/lib/sources/adapters/jstage";
 import { searchFigshare } from "@/lib/sources/adapters/figshare";
 import { searchWorldBank } from "@/lib/sources/adapters/worldbank";
 import { searchCgspace } from "@/lib/sources/adapters/cgspace";
+import { searchFao } from "@/lib/sources/adapters/fao";
 import { searchIdrc } from "@/lib/sources/adapters/idrc";
 import { searchPmc } from "@/lib/sources/adapters/pmc";
 import { searchNtrs } from "@/lib/sources/adapters/ntrs";
@@ -132,6 +133,7 @@ export const ADAPTERS: Record<SourceId, AdapterEntry> = {
   figshare:        { run: searchFigshare, boolean: false, deadlineMs: 15000 },
   // Slow server (5-12 s), so it gets extra room.
   worldbank:       { run: searchWorldBank, boolean: false, deadlineMs: 14000 },
+  fao:             { run: searchFao, boolean: false, deadlineMs: 20000 },
   cgspace:         { run: searchCgspace, boolean: false },
   idrc:            { run: searchIdrc, boolean: false },
   // The same NCBI E-utilities search as PubMed, which takes AND/OR.
