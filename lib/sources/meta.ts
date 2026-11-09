@@ -417,6 +417,10 @@ const META = {
     label: "University of Melbourne Minerva Access", blurb: "Melbourne theses, reports and papers across all fields", color: "#094183",
     region: "Australia", fields: ["all"], kind: "repository", url: "https://minerva-access.unimelb.edu.au",
   },
+  digitalnz: {
+    label: "DigitalNZ", blurb: "New Zealand cultural heritage and research: archives, newspapers, magazines, images, government documents and some theses from libraries and museums", color: "#0b6b6b",
+    region: "New Zealand", fields: ["humanities", "social", "sciences"], kind: "repository", url: "https://digitalnz.org",
+  },
   auckland: {
     label: "University of Auckland ResearchSpace", blurb: "Auckland theses, reports and papers across all fields", color: "#00467f",
     region: "New Zealand", fields: ["all"], kind: "repository", url: "https://researchspace.auckland.ac.nz",

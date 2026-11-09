@@ -85,7 +85,7 @@ const PROBES: Record<SourceId, string> = {
   googlepatents: "semiconductor",
   oapen: "education",
   doab: "education",
-  harvard: "machine learning",
+  digitalnz: "education", harvard: "machine learning",
   melbourne: "artificial intelligence",
   auckland: "machine learning",
   caltech: "artificial intelligence",

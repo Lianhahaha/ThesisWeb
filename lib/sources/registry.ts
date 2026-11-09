@@ -91,6 +91,7 @@ import { searchDoab } from "@/lib/sources/adapters/doab";
 import { searchHarvard } from "@/lib/sources/adapters/harvard";
 import { searchMelbourne } from "@/lib/sources/adapters/melbourne";
 import { searchAuckland } from "@/lib/sources/adapters/auckland";
+import { searchDigitalNz } from "@/lib/sources/adapters/digitalnz";
 import { searchCaltech } from "@/lib/sources/adapters/caltech";
 import { searchPangaea } from "@/lib/sources/adapters/pangaea";
 import { searchDryad } from "@/lib/sources/adapters/dryad";
@@ -222,6 +223,7 @@ export const ADAPTERS: Record<SourceId, AdapterEntry> = {
   doab:            { run: searchDoab, boolean: false },
   harvard:         { run: searchHarvard, boolean: false, country: "United States" },
   melbourne:       { run: searchMelbourne, boolean: false, country: "Australia" },
+  digitalnz:       { run: searchDigitalNz, boolean: false, country: "New Zealand" },
   auckland:        { run: searchAuckland, boolean: false, country: "New Zealand" },
   caltech:         { run: searchCaltech, boolean: false, country: "United States" },
   dryad:           { run: searchDryad, boolean: false, deadlineMs: 12000 },

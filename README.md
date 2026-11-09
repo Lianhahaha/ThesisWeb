@@ -69,6 +69,7 @@ All free; IEEE Xplore and Google Books need free registration keys. The in-app [
 | OSF Preprints | Psychology, education, social sciences (preprints) |
 | IDRC Digital Library | Development research in Asia, Africa, Latin America |
 | CiNii Research | Japanese and Asian research |
+| DigitalNZ | New Zealand archives, newspapers, magazines, images, government documents and some theses |
 | DR-NTU (Singapore) | Southeast Asian theses and papers: engineering, computing, business, education |
 | UPSpace (South Africa) | African theses and research: education, health, veterinary, engineering |
 | LA Referencia | Latin American repositories (Spanish, Portuguese) |
