@@ -100,6 +100,7 @@ const PROBES: Record<SourceId, string> = {
   cisakev: "router",
   prospero: "dengue", pedro: "stroke",
   philpolitics: "governance",
+  ndltd: "education",
   philagri: "rice",
 };
 

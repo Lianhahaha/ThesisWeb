@@ -35,6 +35,7 @@ import { searchGbif } from "@/lib/sources/adapters/gbif";
 import { searchAgris } from "@/lib/sources/adapters/agris";
 import { searchLaReferencia } from "@/lib/sources/adapters/lareferencia";
 import { searchBdtd } from "@/lib/sources/adapters/bdtd";
+import { searchNdltd } from "@/lib/sources/adapters/ndltd";
 import { searchEdArxiv, searchOsf } from "@/lib/sources/adapters/osf";
 import { searchZbmath } from "@/lib/sources/adapters/zbmath";
 import { searchHuggingFace } from "@/lib/sources/adapters/huggingface";
@@ -169,6 +170,8 @@ export const ADAPTERS: Record<SourceId, AdapterEntry> = {
   gbif:            { run: searchGbif, boolean: false },
   lareferencia:    { run: searchLaReferencia, boolean: false },
   bdtd:            { run: searchBdtd, boolean: false, country: "Brazil" },
+  // The global ETD union catalog; its JSON API understands AND/OR.
+  ndltd:           { run: searchNdltd, boolean: true },
   osf:             { run: searchOsf, boolean: false },
   bsu:             { run: searchBsu, boolean: false, country: "Philippines" },
   seafdec:         { run: searchSeafdec, boolean: false, country: "Philippines" },

@@ -208,6 +208,10 @@ const META = {
     label: "BDTD Brazil", blurb: "900k+ master's and doctoral theses from Brazilian universities, full text free (IBICT)", color: "#2ea043",
     region: "Brazil", fields: ["all"], kind: "theses", url: "https://bdtd.ibict.br",
   },
+  ndltd: {
+    label: "NDLTD (Global ETDs)", blurb: "Millions of electronic theses and dissertations harvested from university repositories worldwide (Networked Digital Library of Theses and Dissertations)", color: "#1f5c99",
+    region: "Global", fields: ["all"], kind: "theses", url: "https://ndltd.org",
+  },
   osf: {
     label: "OSF Preprints", blurb: "Moderated preprint servers: PsyArXiv, SocArXiv, EdArXiv, AfricArXiv, INA-Rxiv (Indonesia) and more. Not peer-reviewed", color: "#36b37e",
     region: "Global (COS)", fields: ["social", "education", "medicine", "sciences"], kind: "preprints", url: "https://osf.io/preprints",
