@@ -120,6 +120,10 @@ const META = {
     label: "DataCite Theses", blurb: "Theses and dissertations from university repositories worldwide", color: "#7ee787",
     region: "Global", fields: ["all"], kind: "theses", url: "https://commons.datacite.org",
   },
+  nist: {
+    label: "NIST Publications", blurb: "National Institute of Standards and Technology papers and reports: physics, chemistry, materials, metrology, engineering, computing and cybersecurity, all free", color: "#1f4e79",
+    region: "United States", fields: ["engineering", "sciences", "computing"], kind: "reports", url: "https://www.nist.gov/publications",
+  },
   osti: {
     label: "OSTI.GOV", blurb: "U.S. Dept. of Energy research: energy, engineering, physics and environment reports and articles", color: "#f0b72f",
     region: "United States", fields: ["engineering", "sciences"], kind: "reports", url: "https://www.osti.gov",

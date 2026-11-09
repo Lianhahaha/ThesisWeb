@@ -15,6 +15,7 @@ import { searchInspire } from "@/lib/sources/adapters/inspire";
 import { searchPlos } from "@/lib/sources/adapters/plos";
 import { searchDataCite } from "@/lib/sources/adapters/datacite";
 import { searchOsti } from "@/lib/sources/adapters/osti";
+import { searchNist } from "@/lib/sources/adapters/nist";
 import { searchCinii } from "@/lib/sources/adapters/cinii";
 import { searchJstage } from "@/lib/sources/adapters/jstage";
 import { searchFigshare } from "@/lib/sources/adapters/figshare";
@@ -135,6 +136,7 @@ export const ADAPTERS: Record<SourceId, AdapterEntry> = {
   inspire:         { run: searchInspire, boolean: false },
   plos:            { run: searchPlos, boolean: false },
   datacite:        { run: searchDataCite, boolean: false },
+  nist:            { run: searchNist, boolean: false, deadlineMs: 15000 },
   osti:            { run: searchOsti, boolean: false },
   cinii:           { run: searchCinii, boolean: false, country: "Japan" },
   jstage:          { run: searchJstage, boolean: false, country: "Japan" },
