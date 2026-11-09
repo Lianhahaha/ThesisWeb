@@ -69,6 +69,7 @@ import { searchScielo } from "@/lib/sources/adapters/scielo";
 import { searchPersee } from "@/lib/sources/adapters/persee";
 import { searchClinicalTrials } from "@/lib/sources/adapters/clinicaltrials";
 import { searchIsrctn } from "@/lib/sources/adapters/isrctn";
+import { searchCtis } from "@/lib/sources/adapters/ctis";
 import { searchFederalRegister } from "@/lib/sources/adapters/federalregister";
 import { searchInternetArchive } from "@/lib/sources/adapters/internetarchive";
 import { searchPapersWithCode } from "@/lib/sources/adapters/paperswithcode";
@@ -195,6 +196,7 @@ export const ADAPTERS: Record<SourceId, AdapterEntry> = {
   pcaarrd:         { run: searchPcaarrd, boolean: false, country: "Philippines", deadlineMs: 16000 },
   scielo:          { run: searchScielo, boolean: false },
   persee:          { run: searchPersee, boolean: false },
+  ctis:            { run: searchCtis, boolean: false, deadlineMs: 15000 },
   isrctn:          { run: searchIsrctn, boolean: false, deadlineMs: 12000 },
   clinicaltrials:  { run: searchClinicalTrials, boolean: false },
   federalregister: { run: searchFederalRegister, boolean: false },

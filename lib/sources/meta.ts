@@ -325,6 +325,10 @@ const META = {
     label: "Persée", blurb: "French humanities and social science journals, books and reviews, many with free full text", color: "#4b6cb7",
     region: "France", fields: ["humanities", "social"], kind: "journals", url: "https://www.persee.fr",
   },
+  ctis: {
+    label: "CTIS (EU)", blurb: "EU Clinical Trials Information System: authorised trials under the EU Clinical Trials Regulation, with status, sponsor, conditions, phase and participating countries", color: "#1e4f91",
+    region: "Europe (EU)", fields: ["medicine", "social"], kind: "index", url: "https://euclinicaltrials.eu/ctis-public/search",
+  },
   isrctn: {
     label: "ISRCTN Registry", blurb: "International register of randomised controlled trials: status, sponsor, conditions, interventions and outcomes, with CC0 metadata (UK)", color: "#b45309",
     region: "Global (UK)", fields: ["medicine", "social"], kind: "index", url: "https://www.isrctn.com",

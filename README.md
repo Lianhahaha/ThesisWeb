@@ -81,6 +81,7 @@ All free; IEEE Xplore and Google Books need free registration keys. The in-app [
 | Internet Archive | Books, texts, reports and historical primary sources from libraries and archives worldwide |
 | ClinicalTrials.gov | Clinical studies worldwide: status, sponsor, conditions, interventions and outcomes (U.S. NLM) |
 | ISRCTN Registry | UK and international randomised controlled trials: status, sponsor, conditions, interventions and outcomes |
+| CTIS (EU) | EU clinical trials under the EU Clinical Trials Regulation: status, sponsor, conditions, phase and countries |
 | Federal Register | U.S. rules, proposed rules, notices and executive orders, with abstracts and free PDFs |
 | Papers with Code | Machine-learning papers linked to code, tasks and benchmarks (mostly arXiv preprints) |
 | MIT DSpace, Georgia Tech SMARTech, Cornell eCommons, DukeSpace, VTechWorks, UMN Conservancy, University of Arizona | Theses, technical reports and papers strong in AI, computing and engineering |
