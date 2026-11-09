@@ -26,6 +26,7 @@ import { searchPmc } from "@/lib/sources/adapters/pmc";
 import { searchNtrs } from "@/lib/sources/adapters/ntrs";
 import { searchEconBiz } from "@/lib/sources/adapters/econbiz";
 import { searchUsgs } from "@/lib/sources/adapters/usgs";
+import { searchAgricola, searchPubag } from "@/lib/sources/adapters/nal";
 import { searchIeee } from "@/lib/sources/adapters/ieee";
 import { searchGbif } from "@/lib/sources/adapters/gbif";
 import { searchAgris } from "@/lib/sources/adapters/agris";
@@ -141,6 +142,8 @@ export const ADAPTERS: Record<SourceId, AdapterEntry> = {
   pmc:             { run: searchPmc, boolean: true },
   ntrs:            { run: searchNtrs, boolean: false },
   econbiz:         { run: searchEconBiz, boolean: false },
+  pubag:           { run: searchPubag, boolean: false, deadlineMs: 18000 },
+  agricola:        { run: searchAgricola, boolean: false, deadlineMs: 18000 },
   usgs:            { run: searchUsgs, boolean: false },
   ieee:            { run: searchIeee, boolean: true },
   agris:           { run: searchAgris, boolean: false, deadlineMs: 18000 },

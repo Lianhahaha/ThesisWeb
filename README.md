@@ -59,6 +59,7 @@ All free; IEEE Xplore and Google Books need free registration keys. The in-app [
 | CGSpace (CGIAR, incl. IRRI), GBIF Literature, Krishikosh | Agriculture, fisheries, food, biodiversity (Krishikosh = Indian agricultural theses) |
 | FAO OpenKnowledge | Food security, fisheries and aquaculture, agriculture, forestry, climate and rural development reports |
 | AGRIS | 15M+ multilingual agriculture, forestry, fisheries, food and environment records (FAO) |
+| PubAg, AGRICOLA | USDA agriculture, food, nutrition, forestry, fisheries, veterinary and rural development literature |
 | OSTI.GOV, NASA NTRS, USGS | Engineering, energy, aerospace, earth science reports |
 | IEEE Xplore | Engineering and computing journal articles, conference papers and standards (free key, 200 calls/day) |
 | arXiv, INSPIRE-HEP | Physics, maths, computing (arXiv = preprints) |

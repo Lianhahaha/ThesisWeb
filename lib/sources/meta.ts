@@ -164,6 +164,14 @@ const META = {
     label: "EconBiz", blurb: "Economics and business: articles, working papers and books from RePEc, EconStor and publishers (ZBW Germany)", color: "#d4a72c",
     region: "Global (ZBW, Germany)", fields: ["business", "social"], kind: "index", url: "https://www.econbiz.de",
   },
+  pubag: {
+    label: "PubAg", blurb: "USDA National Agricultural Library's index of peer-reviewed agricultural literature: agronomy, food, nutrition, forestry, fisheries and veterinary science", color: "#2e6b3a",
+    region: "United States (USDA)", fields: ["agriculture", "sciences", "medicine"], kind: "index", url: "https://pubag.nal.usda.gov",
+  },
+  agricola: {
+    label: "AGRICOLA", blurb: "USDA National Agricultural Library catalogue and article index, back to the 15th century: agriculture, forestry, nutrition, veterinary medicine and rural life", color: "#4f7a28",
+    region: "United States (USDA)", fields: ["agriculture", "sciences", "medicine", "social"], kind: "index", url: "https://search.nal.usda.gov",
+  },
   usgs: {
     label: "USGS Publications", blurb: "U.S. Geological Survey reports and articles: earthquakes, volcanoes, water, minerals, ecosystems, climate", color: "#6e9a3c",
     region: "United States", fields: ["sciences", "agriculture", "engineering"], kind: "reports", url: "https://pubs.usgs.gov",
