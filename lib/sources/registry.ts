@@ -170,7 +170,7 @@ export const ADAPTERS: Record<SourceId, AdapterEntry> = {
   gbif:            { run: searchGbif, boolean: false },
   lareferencia:    { run: searchLaReferencia, boolean: false },
   bdtd:            { run: searchBdtd, boolean: false, country: "Brazil" },
-  thesesfr:        { run: searchThesesFr, boolean: false, country: "France", deadlineMs: 22000 },
+  thesesfr:        { run: searchThesesFr, boolean: false, country: "France", deadlineMs: 28000 },
   osf:             { run: searchOsf, boolean: false },
   bsu:             { run: searchBsu, boolean: false, country: "Philippines" },
   seafdec:         { run: searchSeafdec, boolean: false, country: "Philippines" },

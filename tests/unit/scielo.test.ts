@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { parseScielo } from "@/lib/sources/adapters/scielo";
+import { parseScielo, parseScieloOrg } from "@/lib/sources/adapters/scielo";
 
 const html = `
   <div class="results">
@@ -42,5 +42,35 @@ describe("parseScielo", () => {
     });
     expect(paper.openAccessUrl).toContain("sci_pdf");
     expect(paper.url).toContain("sci_arttext");
+  });
+});
+
+describe("parseScieloOrg", () => {
+  it("reads the network search page used when search.scielo.org is blocked", () => {
+    const html = `
+      <div class="entry-title title-sm">
+        <h2><a href="http://https://scielo.do/scielo.php?script=sci_arttext&amp;pid=S2636-21472025000124526">Retroalimentación efectiva en educación a distancia</a></h2>
+      </div>
+      <div class="entry-meta">
+        <ul><li><span>Cáceres-BacaNone, Edgar Filiberto</span></li></ul>
+        <br/>
+        <ul>
+          <li><span>2026</span></li>
+          <li><span>Volume 9</span></li>
+          <li><span>elocation e9841</span></li>
+          <li><span>Revista Caribeña de Investigación Educativa</span></li>
+        </ul>
+      </div>`;
+    const [paper] = parseScieloOrg(html);
+    expect(paper).toMatchObject({
+      title: "Retroalimentación efectiva en educación a distancia",
+      authors: ["Edgar Filiberto Cáceres-Baca"],
+      year: 2026,
+      venue: "Revista Caribeña de Investigación Educativa",
+      type: "article",
+      isOpenAccess: true,
+      sources: ["scielo"],
+    });
+    expect(paper.url).toMatch(/^https:\/\/scielo\.do\//);
   });
 });

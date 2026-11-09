@@ -41,7 +41,7 @@ export async function searchThesesFr(query: string, opts: AdapterOptions = {}): 
   // theses.fr often takes 5-8 s; the default 8 s cut it off from servers
   // further away. Its host also drops the occasional connection, so retry once.
   const request = () =>
-    fetchWithTimeout(`${BASE}?${params}`, { headers: { "User-Agent": USER_AGENT } }, 9000);
+    fetchWithTimeout(`${BASE}?${params}`, { headers: { "User-Agent": USER_AGENT } }, 12000);
   let res: Response;
   try {
     res = await request();

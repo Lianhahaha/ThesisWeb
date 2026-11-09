@@ -79,6 +79,69 @@ export function parseScielo(html: string): Paper[] {
     .filter((p): p is Paper => p !== null);
 }
 
+/** Parse the scielo.org network search page, the fallback when search.scielo.org is blocked. */
+export function parseScieloOrg(html: string): Paper[] {
+  const papers: Paper[] = [];
+
+  for (const part of html.split(/<div class="entry-title title-sm">/i).slice(1)) {
+    const link = part.match(/<h2><a href="([^"]+)"[^>]*>([\s\S]*?)<\/a>/i);
+    if (!link) continue;
+    const title = stripHtml(link[2]);
+    if (!title) continue;
+    const href = link[1].replace(/^http:\/\/https?:\/\//i, "https://");
+
+    const [authorBlock = "", afterBreak = ""] = part.split(/<br\s*\/?>/i);
+    const authors = [...authorBlock.matchAll(/<span>([\s\S]*?)<\/span>/gi)]
+      .map((m) => stripHtml(m[1]).replace(/None(?=,|$)/, "").trim())
+      .map(flipName)
+      .filter(Boolean)
+      .slice(0, 10);
+
+    const meta = [...afterBreak.matchAll(/<li><span>([\s\S]*?)<\/span><\/li>/gi)]
+      .map((m) => stripHtml(m[1]).trim())
+      .filter(Boolean);
+    const year = Number(meta.find((m) => /^(19|20)\d{2}$/.test(m))) || null;
+    const venue = meta.find((m) => !/^(19|20)\d{2}$/.test(m) && !/^Volume\b/i.test(m) && !/^Issue\b/i.test(m) && !/elocation/i.test(m)) ?? "SciELO";
+
+    papers.push({
+      id: paperId(null, title),
+      title,
+      authors,
+      year,
+      venue,
+      type: "article",
+      doi: null,
+      abstract: null,
+      openAccessUrl: href,
+      isOpenAccess: true,
+      keywords: [],
+      url: href,
+      sources: ["scielo"],
+    });
+  }
+  return papers;
+}
+
+async function searchScieloOrg(query: string, opts: AdapterOptions): Promise<Paper[]> {
+  const { fromYear, perSource = 15 } = opts;
+  const params = new URLSearchParams({ q: query });
+  const res = await fetchWithTimeout(
+    `https://www.scielo.org/en/search/?${params}`,
+    {
+      headers: {
+        "User-Agent": BROWSER_UA,
+        Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+        "Accept-Language": "en-US,en;q=0.9",
+      },
+    },
+    12000
+  );
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  return parseScieloOrg(await readText(res))
+    .filter((p) => !fromYear || !p.year || p.year >= fromYear)
+    .slice(0, perSource);
+}
+
 export async function searchScielo(query: string, opts: AdapterOptions = {}): Promise<Paper[]> {
   const { fromYear, perSource = 15 } = opts;
   const params = new URLSearchParams({ q: query, lang: "en", count: String(Math.min(perSource, 50)) });
@@ -96,18 +159,26 @@ export async function searchScielo(query: string, opts: AdapterOptions = {}): Pr
       9000
     );
 
-  let res = await request();
-  // The edge occasionally answers a burst with 403/429; one short retry
-  // usually succeeds without changing the query.
-  if (res.status === 403 || res.status === 429) {
-    await sleep(1500);
-    res = await request();
-  }
-  if (!res.ok) throw new Error(`HTTP ${res.status}`);
-  const html = await readText(res);
-  if (!html.includes('class="results"')) throw new Error("unexpected page");
+  try {
+    let res = await request();
+    // The edge occasionally answers a burst with 403/429; one short retry
+    // usually succeeds without changing the query.
+    if (res.status === 403 || res.status === 429) {
+      await sleep(1500);
+      res = await request();
+    }
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const html = await readText(res);
+    if (!html.includes('class="results"')) throw new Error("unexpected page");
 
-  return parseScielo(html)
-    .filter((p) => !fromYear || !p.year || p.year >= fromYear)
-    .slice(0, perSource);
+    return parseScielo(html)
+      .filter((p) => !fromYear || !p.year || p.year >= fromYear)
+      .slice(0, perSource);
+  } catch (error) {
+    try {
+      return await searchScieloOrg(query, opts);
+    } catch {
+      throw error;
+    }
+  }
 }
