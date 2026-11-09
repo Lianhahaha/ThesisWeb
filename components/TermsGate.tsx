@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { ShieldCheck } from "lucide-react";
+import { Info, ShieldCheck } from "lucide-react";
 import { Dialog } from "@/components/Dialog";
 import { TermsContent } from "@/components/legal/TermsContent";
 import { PrivacyContent } from "@/components/legal/PrivacyContent";
@@ -10,6 +10,23 @@ import { acceptTerms, hasAcceptedTerms } from "@/lib/terms";
 
 /** How close to the bottom counts as "read the end". */
 const BOTTOM_SLACK = 16;
+
+/**
+ * A document title that sticks to the top of the scrolling panel while its
+ * section is in view, so the reader always knows which document they are in.
+ */
+function SectionHeader({ id, index, title, first = false }: { id: string; index: number; title: string; first?: boolean }) {
+  return (
+    <div className={`sticky top-0 z-10 -mx-4 border-b border-border bg-surface px-4 pb-2 pt-3 ${first ? "-mt-4" : ""}`}>
+      <p className="eyebrow flex items-center gap-2" style={{ color: "rgb(var(--accent))" }}>
+        <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: "rgb(var(--accent))" }} aria-hidden />
+        Section {index} of 2
+      </p>
+      <h2 id={id} className="display mt-1" style={{ fontSize: "1.5rem" }}>{title}</h2>
+      <p className="mt-0.5 text-xs text-subtle">Last updated {LEGAL_UPDATED}</p>
+    </div>
+  );
+}
 
 /**
  * Blocks the app until the visitor accepts the Terms of Use and the Privacy
@@ -75,10 +92,13 @@ export function TermsGate() {
               I have read and agree to the Terms of Use and the Privacy Policy.
             </span>
           </label>
-          <p className="text-center text-xs text-subtle" aria-live="polite">
-            {reachedEnd
-              ? "The box is unlocked."
-              : "Scroll to the end of both documents to unlock the box."}
+          <p className="flex items-start justify-center gap-1.5 text-center text-xs text-subtle" aria-live="polite">
+            <Info className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden />
+            <span>
+              {reachedEnd
+                ? "Read the Terms of Use and Privacy Policy first to proceed."
+                : "Read the Terms of Use and Privacy Policy first — scroll to the end to continue."}
+            </span>
           </p>
           <button
             type="button"
@@ -97,16 +117,14 @@ export function TermsGate() {
     >
       <div className="prose-read">
         <section aria-labelledby="gate-terms">
-          <h2 id="gate-terms" className="display text-xl">Terms of Use</h2>
-          <p className="mt-1 text-xs text-subtle">Last updated {LEGAL_UPDATED}</p>
+          <SectionHeader id="gate-terms" index={1} title="Terms of Use" first />
           <TermsContent />
         </section>
 
         <hr className="my-8 border-border" />
 
         <section aria-labelledby="gate-privacy">
-          <h2 id="gate-privacy" className="display text-xl">Privacy Policy</h2>
-          <p className="mt-1 text-xs text-subtle">Last updated {LEGAL_UPDATED}</p>
+          <SectionHeader id="gate-privacy" index={2} title="Privacy Policy" />
           <PrivacyContent />
         </section>
 

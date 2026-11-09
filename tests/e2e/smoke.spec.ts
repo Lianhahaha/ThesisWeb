@@ -36,14 +36,44 @@ test("a first visit must read the terms before accepting", async ({ page }) => {
   const accept = dialog.getByRole("button", { name: /accept and continue/i });
   await expect(box).toBeDisabled();
   await expect(accept).toBeDisabled();
+  await expect(dialog.getByText(/scroll to the end to continue/i)).toBeVisible();
+
+  const termsHeader = dialog.getByRole("heading", { name: "Terms of Use" }).locator("..");
+  await expect(termsHeader).toHaveCSS("position", "sticky");
 
   await dialog.getByText("End of the Terms of Use and Privacy Policy.").scrollIntoViewIfNeeded();
   await expect(box).toBeEnabled();
+  await expect(dialog.getByText(/first to proceed/i)).toBeVisible();
+  await expect(dialog.getByText(/unlocked/i)).toHaveCount(0);
 
   await box.check();
   await accept.click();
   await expect(dialog).toBeHidden();
   await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+});
+
+test("the terms gate fits and scrolls on a small phone", async ({ page }) => {
+  await page.setViewportSize({ width: 320, height: 568 });
+  await page.addInitScript(() => localStorage.removeItem("tw-terms-accepted"));
+  await page.goto("/");
+
+  const dialog = page.getByRole("dialog", { name: "Before you continue" });
+  await expect(dialog).toBeVisible();
+
+  const overflow = await page.evaluate(
+    () => document.documentElement.scrollWidth - document.documentElement.clientWidth
+  );
+  expect(overflow).toBeLessThanOrEqual(1);
+
+  const scroller = dialog.locator(".overflow-y-auto");
+  const metrics = await scroller.evaluate((el) => ({
+    scrollHeight: el.scrollHeight,
+    clientHeight: el.clientHeight,
+  }));
+  expect(metrics.scrollHeight).toBeGreaterThan(metrics.clientHeight);
+
+  await dialog.getByRole("heading", { name: "Privacy Policy" }).scrollIntoViewIfNeeded();
+  await expect(dialog.getByRole("heading", { name: "Privacy Policy" })).toBeInViewport();
 });
 
 test("a missing page shows the custom 404", async ({ page }) => {

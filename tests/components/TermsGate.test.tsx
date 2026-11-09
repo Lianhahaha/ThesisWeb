@@ -31,6 +31,11 @@ describe("TermsGate", () => {
     expect(screen.getByRole("heading", { name: "Terms of Use" })).toBeTruthy();
     expect(screen.getByRole("heading", { name: "Privacy Policy" })).toBeTruthy();
 
+    expect(screen.getByText("Section 1 of 2")).toBeTruthy();
+    expect(screen.getByText("Section 2 of 2")).toBeTruthy();
+    expect(screen.getByText(/scroll to the end to continue/i)).toBeTruthy();
+    expect(screen.queryByText(/unlocked/i)).toBeNull();
+
     const checkbox = screen.getByRole("checkbox") as HTMLInputElement;
     const accept = screen.getByRole("button", { name: /accept and continue/i }) as HTMLButtonElement;
     expect(checkbox.disabled).toBe(true);
@@ -41,6 +46,7 @@ describe("TermsGate", () => {
     fireEvent.scroll(scroller);
 
     expect(checkbox.disabled).toBe(false);
+    expect(screen.getByText(/read the terms of use and privacy policy first to proceed/i)).toBeTruthy();
     await userEvent.click(checkbox);
     expect(accept.disabled).toBe(false);
 
