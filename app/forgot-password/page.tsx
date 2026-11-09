@@ -44,8 +44,8 @@ export default function ForgotPasswordPage() {
       </Link>
 
       <p className="eyebrow">Account</p>
-      <h1 className="display mt-3 text-2xl">Reset your password</h1>
-      <p className="mt-2 text-sm text-muted">
+      <h1 className="display mt-3 text-2xl sm:text-3xl">Reset your password</h1>
+      <p className="mt-2 text-muted">
         Signed up with Google? There is no Thesisweb password to reset: go back and use{" "}
         <em>Continue with Google</em>.
       </p>

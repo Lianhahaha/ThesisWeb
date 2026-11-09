@@ -25,14 +25,14 @@ export function PaperCard({ paper, showScore, refNum, isNew, localSaved }: Props
   const long = (summary?.length ?? 0) > 220;
 
   return (
-    <article className="p-3 sm:p-4">
+    <article className="p-4 sm:p-5">
       <div className="flex items-start gap-3">
         {refNum != null && (
           <span className="mt-0.5 shrink-0 font-mono text-xs text-subtle">{refNum}</span>
         )}
 
         <div className="min-w-0 flex-1">
-          <h3 className="text-sm font-semibold leading-snug">
+          <h3 className="text-[15px] font-semibold leading-snug">
             <Link
               href={`/paper/${encodeURIComponent(paper.id)}`}
               className="hover:underline"

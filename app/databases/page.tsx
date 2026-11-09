@@ -57,7 +57,7 @@ export default function DatabasesPage() {
     <div className="mx-auto max-w-4xl">
       <header className="mb-6">
         <p className="eyebrow">Sources</p>
-        <h1 className="display mt-2 text-2xl sm:text-3xl">
+        <h1 className="display mt-2 text-2xl sm:text-4xl">
           The <em>databases</em>
         </h1>
         <p className="mt-2 max-w-2xl text-muted">

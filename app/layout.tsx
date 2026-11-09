@@ -80,7 +80,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <Providers>
           <a href="#main" className="skip-link">Skip to content</a>
           <Header />
-          <main id="main" className="mx-auto w-full max-w-5xl px-3 pt-4 sm:px-5 sm:pt-6">
+          <main id="main" className="mx-auto w-full max-w-6xl px-4 pt-6 sm:px-6 sm:pt-8">
             {children}
           </main>
           {/* The footer carries the bottom padding that clears the mobile tab bar. */}

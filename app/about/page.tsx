@@ -18,10 +18,10 @@ export default function AboutPage() {
   return (
     <article className="prose-read mx-auto max-w-2xl py-4">
       <p className="eyebrow">About</p>
-      <h1 className="display mt-3 text-2xl">What this tool is — and is not</h1>
+      <h1 className="display mt-3 text-2xl sm:text-3xl">What this tool is — and is not</h1>
       <p className="mt-2 text-sm text-muted">Last updated {UPDATED}</p>
 
-      <p className="mt-4">
+      <p className="mt-6">
         {SITE_NAME} is a free search tool for thesis and research students. One query goes to{" "}
         <Link href="/databases">{SOURCE_COUNT} free academic databases</Link>, and the results come
         back in one list. It is built for the first pass of a review of related literature: finding

@@ -132,10 +132,10 @@ export default function LoginPage() {
   return (
     <div className="mx-auto mt-4 max-w-md sm:mt-12">
       <p className="eyebrow">Account</p>
-      <h1 className="display mt-3 text-2xl">
+      <h1 className="display mt-3 text-2xl sm:text-3xl">
         {mode === "login" ? "Sign in" : "Create an account"}
       </h1>
-      <p className="mt-2 text-sm text-muted">
+      <p className="mt-2 text-sm text-muted sm:text-base">
         An account keeps your saved papers on every device. Searching works without one.
       </p>
 

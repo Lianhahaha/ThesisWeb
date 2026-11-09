@@ -73,7 +73,7 @@ export default function SharedLibraryPage({ params }: { params: Promise<{ id: st
       <header className="mb-6 flex flex-wrap items-end justify-between gap-4">
         <div className="min-w-0">
           <p className="eyebrow">Shared library</p>
-          <h1 className="display mt-3 break-words text-2xl sm:text-3xl">{share.name}</h1>
+          <h1 className="display mt-3 break-words text-2xl sm:text-4xl">{share.name}</h1>
           <p className="mt-2 text-muted">
             {papers.length} papers · shared by {share.ownerName} · updated{" "}
             {new Date(share.updatedAt).toLocaleDateString("en-PH", { month: "short", day: "numeric", year: "numeric" })}

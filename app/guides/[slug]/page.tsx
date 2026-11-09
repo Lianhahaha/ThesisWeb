@@ -95,7 +95,7 @@ export default async function GuidePage({
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }}
       />
 
-      <nav aria-label="Breadcrumb" className="mb-3 text-xs text-subtle">
+      <nav aria-label="Breadcrumb" className="mb-4 text-xs text-subtle">
         <Link href="/" className="hover:text-text">Home</Link>
         {" / "}
         <Link href="/guides" className="hover:text-text">Guides</Link>
@@ -104,13 +104,13 @@ export default async function GuidePage({
       </nav>
 
       <article>
-        <header className="mb-5">
+        <header className="mb-6">
           <p className="eyebrow">{guide.category}</p>
-          <h1 className="display mt-2 text-2xl sm:text-3xl">{guide.title}</h1>
-          <p className="mt-1.5 text-xs text-subtle">
+          <h1 className="display mt-2 text-2xl sm:text-4xl">{guide.title}</h1>
+          <p className="mt-2 text-sm text-subtle">
             Updated {guide.updated} · {minutes} min read
           </p>
-          <div className="prose-read mt-3 space-y-2.5 text-muted">
+          <div className="prose-read mt-4 space-y-3 text-muted">
             {guide.intro.map((p) => (
               <p key={p}>{p}</p>
             ))}
@@ -118,7 +118,7 @@ export default async function GuidePage({
         </header>
 
         {guide.sections.length > 3 && (
-          <nav aria-label="On this page" className="panel mb-5">
+          <nav aria-label="On this page" className="panel mb-6">
             <p className="text-sm font-semibold">On this page</p>
             <ol className="mt-2 list-decimal space-y-1 pl-5 text-sm text-muted">
               {guide.sections.map((s, i) => (
@@ -132,10 +132,10 @@ export default async function GuidePage({
           </nav>
         )}
 
-        <div className="prose-read space-y-6">
+        <div className="prose-read space-y-7">
           {guide.sections.map((section, i) => (
             <section key={section.heading} id={`section-${i + 1}`}>
-              <h2 className="display text-xl">{section.heading}</h2>
+              <h2 className="display text-xl sm:text-2xl">{section.heading}</h2>
               {section.paragraphs?.map((p) => (
                 <p key={p} className="mt-2 text-muted">{p}</p>
               ))}
@@ -150,9 +150,9 @@ export default async function GuidePage({
           ))}
         </div>
 
-        <section className="panel mt-6" aria-labelledby="faq-h">
-          <h2 id="faq-h" className="text-base">Frequently asked questions</h2>
-          <dl className="mt-3 space-y-3">
+        <section className="panel mt-8" aria-labelledby="faq-h">
+          <h2 id="faq-h" className="text-lg">Frequently asked questions</h2>
+          <dl className="mt-3 space-y-4">
             {guide.faqs.map(({ q, a }) => (
               <div key={q} className="border-t border-border pt-3 first:border-t-0 first:pt-0">
                 <dt className="text-sm font-semibold">{q}</dt>
@@ -162,8 +162,8 @@ export default async function GuidePage({
           </dl>
         </section>
 
-        <section className="panel mt-6" aria-labelledby="try-h">
-          <h2 id="try-h" className="text-base">Find sources for this guide</h2>
+        <section className="panel mt-8" aria-labelledby="try-h">
+          <h2 id="try-h" className="text-lg">Find sources for this guide</h2>
           <p className="mt-1 text-sm text-muted">
             Run one of these starter searches across the free databases.
           </p>
@@ -172,12 +172,12 @@ export default async function GuidePage({
               <li key={s.query + (s.localOnly ? "-local" : "")}>
                 <Link
                   href={searchHref(s)}
-                  className="flex items-start gap-2 rounded-lg border border-border bg-bg/60 p-2.5 text-sm hover:border-accent/50"
+                  className="flex items-start gap-2 rounded-lg border border-border bg-bg/60 p-3 text-sm hover:border-accent/50"
                 >
                   <Search className="mt-0.5 h-4 w-4 shrink-0 text-accent" aria-hidden />
-                  <span className="min-w-0">
+                  <span>
                     <span className="font-medium text-text">{s.label}</span>
-                    <span className="mt-0.5 block break-words text-xs text-subtle">
+                    <span className="mt-0.5 block text-xs text-subtle">
                       <code>{s.query}</code>
                       {s.localOnly ? " · Philippine sources" : ""}
                     </span>
@@ -188,8 +188,8 @@ export default async function GuidePage({
           </ul>
         </section>
 
-        <section className="panel mt-6" aria-labelledby="related-h">
-          <h2 id="related-h" className="text-base">Related guides</h2>
+        <section className="panel mt-8" aria-labelledby="related-h">
+          <h2 id="related-h" className="text-lg">Related guides</h2>
           <ul className="mt-3 space-y-2">
             {related.map((r) => (
               <li key={r.slug}>
@@ -202,7 +202,7 @@ export default async function GuidePage({
           </ul>
         </section>
 
-        <p className="mt-6 break-all text-xs text-subtle">
+        <p className="mt-8 text-xs text-subtle">
           Canonical URL: <a href={`${SITE_URL}/guides/${guide.slug}`} className="underline">{SITE_URL}/guides/{guide.slug}</a>
         </p>
       </article>
