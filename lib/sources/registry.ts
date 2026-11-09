@@ -35,6 +35,7 @@ import { searchZbmath } from "@/lib/sources/adapters/zbmath";
 import { searchHuggingFace } from "@/lib/sources/adapters/huggingface";
 import { searchOpenReview } from "@/lib/sources/adapters/openreview";
 import { searchSeafdec } from "@/lib/sources/adapters/seafdec";
+import { searchBsu } from "@/lib/sources/adapters/bsu";
 import { searchSsoar } from "@/lib/sources/adapters/ssoar";
 import { searchWho } from "@/lib/sources/adapters/who";
 import { searchNber } from "@/lib/sources/adapters/nber";
@@ -143,6 +144,7 @@ export const ADAPTERS: Record<SourceId, AdapterEntry> = {
   bdtd:            { run: searchBdtd, boolean: false, country: "Brazil" },
   thesesfr:        { run: searchThesesFr, boolean: false, country: "France" },
   osf:             { run: searchOsf, boolean: false },
+  bsu:             { run: searchBsu, boolean: false, country: "Philippines" },
   seafdec:         { run: searchSeafdec, boolean: false, country: "Philippines" },
   ssoar:           { run: searchSsoar, boolean: false },
   // Slow server (8-13 s), so it gets extra room.

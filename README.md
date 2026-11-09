@@ -4,7 +4,7 @@
 
 A free web app that helps thesis students find related literature (RRL), keep it organised, and cite it correctly.
 
-- **Search** — one topic, 91 free academic databases at once, merged, de-duplicated and ranked, with preprint, retraction and expression-of-concern warnings. Save a search and the next time you open it, papers that weren't there before are marked *New*.
+- **Search** — one topic, 90+ free academic databases at once, merged, de-duplicated and ranked, with preprint, retraction and expression-of-concern warnings. Save a search and the next time you open it, papers that weren't there before are marked *New*.
 - **Library** — save papers, group them by chapter, take notes, fill a synthesis matrix, or import a .bib/.ris file from Zotero, Mendeley or EndNote. Each paper is tagged **Local** or **Foreign** (guessed from the paper, changeable), to filter the library and split the exported reference list. **Share** a collection with your thesis group by link: they can read it, export it and copy it into their own library.
 - **Cite** — paste DOIs and get references in APA, MLA, IEEE or Chicago, or export your whole library.
 
@@ -33,6 +33,7 @@ All free; IEEE Xplore and Google Books need free registration keys. The in-app [
 | OpenAlex, Crossref, Semantic Scholar, OpenAIRE, CORE | Broad first pass across every field, citation data, AI summaries (CORE = free copies from 10k+ repositories) |
 | SEAFDEC/AQD | Philippine research: aquaculture and fisheries |
 | UP Open University | Philippine theses: online and distance education, development communication, health informatics |
+| BSU Repository | Benguet State University theses and research: Cordillera agriculture, rice, nursing, education and indigenous studies |
 | UP Visayas | Philippine theses and research: fisheries, ocean sciences, food science, social sciences |
 | UP Diliman | Philippine theses and dissertations from every UP Diliman college, with abstracts |
 | AIIAS Repository | Philippine graduate theses: education, business, public health, nursing, theology |

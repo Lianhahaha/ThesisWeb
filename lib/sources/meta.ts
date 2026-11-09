@@ -188,6 +188,10 @@ const META = {
     label: "OSF Preprints", blurb: "Moderated preprint servers: PsyArXiv, SocArXiv, EdArXiv, AfricArXiv, INA-Rxiv (Indonesia) and more. Not peer-reviewed", color: "#36b37e",
     region: "Global (COS)", fields: ["social", "education", "medicine", "sciences"], kind: "preprints", url: "https://osf.io/preprints",
   },
+  bsu: {
+    label: "BSU Repository", blurb: "Benguet State University theses, dissertations and research: Cordillera agriculture, rice, nursing, education and indigenous community studies", color: "#2e7d32",
+    region: "Philippines", fields: ["agriculture", "education", "medicine", "social"], kind: "theses", url: "https://repository.bsu.edu.ph",
+  },
   seafdec: {
     label: "SEAFDEC/AQD", blurb: "Aquaculture and fisheries research from SEAFDEC's Aquaculture Department in Iloilo: articles, manuals, theses and conference papers", color: "#1f9ece",
     region: "Philippines", fields: ["agriculture", "sciences"], kind: "repository", url: "https://repository.seafdec.org.ph",
