@@ -59,7 +59,11 @@ export function Dialog({
 
   useEffect(() => {
     const opener = document.activeElement instanceof HTMLElement ? document.activeElement : null;
-    (closeButton.current ?? panel.current)?.focus();
+    // A dialog with no close button focuses its scroll body, not the panel:
+    // the body can then be scrolled with the keyboard, and the panel does not
+    // pick up the global focus ring as a purple border around the whole modal.
+    const body = panel.current?.querySelector<HTMLElement>("[data-dialog-body]");
+    (closeButton.current ?? body ?? panel.current)?.focus();
     const overflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
 
@@ -107,7 +111,7 @@ export function Dialog({
         aria-labelledby={titleId}
         tabIndex={-1}
         onClick={(e) => e.stopPropagation()}
-        className={`flex w-full flex-col border border-border bg-surface text-left ${
+        className={`flex w-full flex-col border border-border bg-surface text-left focus:outline-none focus-visible:outline-none ${
           placement === "center" ? "rounded-2xl" : "rounded-t-2xl sm:rounded-2xl"
         } ${className}`}
       >
@@ -119,7 +123,14 @@ export function Dialog({
             </button>
           )}
         </header>
-        <div ref={bodyRef} className={`overflow-y-auto ${bodyClassName}`}>{children}</div>
+        <div
+          ref={bodyRef}
+          data-dialog-body
+          tabIndex={-1}
+          className={`overflow-y-auto focus:outline-none focus-visible:outline-none ${bodyClassName}`}
+        >
+          {children}
+        </div>
         {footer && <footer className="border-t border-border p-4 text-sm">{footer}</footer>}
       </div>
     </div>

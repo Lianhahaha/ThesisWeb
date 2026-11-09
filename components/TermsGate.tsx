@@ -17,15 +17,12 @@ const BOTTOM_SLACK = 16;
  */
 function SectionHeader({ id, index, title, first = false }: { id: string; index: number; title: string; first?: boolean }) {
   return (
-    <div className={`sticky top-0 z-10 -mx-4 border-b border-border bg-surface px-4 pb-2 pt-2 ${first ? "-mt-4" : ""}`}>
-      <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
-        <p className="eyebrow flex items-center gap-1.5" style={{ color: "rgb(var(--accent))" }}>
-          <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: "rgb(var(--accent))" }} aria-hidden />
-          Section {index} of 2
-        </p>
+    <div className={`sticky top-0 z-10 -mx-4 border-b border-border bg-surface px-4 pb-1.5 pt-0 ${first ? "-mt-4" : ""}`}>
+      <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-0.5">
+        <p className="eyebrow">Section {index} of 2</p>
         <p className="text-[11px] text-subtle">Updated {LEGAL_UPDATED}</p>
       </div>
-      <h2 id={id} className="display !mb-0 !mt-0.5" style={{ fontSize: "1.375rem" }}>{title}</h2>
+      <h2 id={id} className="display !mb-0 !mt-0" style={{ fontSize: "1.375rem" }}>{title}</h2>
     </div>
   );
 }
@@ -128,8 +125,6 @@ export function TermsGate() {
           <SectionHeader id="gate-terms" index={1} title="Terms of Use" first />
           <TermsContent />
         </section>
-
-        <hr className="my-8 border-border" />
 
         <section aria-labelledby="gate-privacy">
           <SectionHeader id="gate-privacy" index={2} title="Privacy Policy" />

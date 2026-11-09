@@ -13,6 +13,8 @@ const PAGES = [
   { path: "/login", heading: /sign in/i },
   { path: "/status", heading: /service status/i },
   { path: "/suggestions", heading: /problems and suggestions/i },
+  { path: "/terms", heading: /terms of use/i },
+  { path: "/privacy", heading: /privacy policy/i },
 ];
 
 for (const entry of PAGES) {
@@ -40,6 +42,14 @@ test("a first visit must read the terms before accepting", async ({ page }) => {
 
   const termsHeader = dialog.getByRole("heading", { name: "Terms of Use" }).locator("..");
   await expect(termsHeader).toHaveCSS("position", "sticky");
+
+  const scroller = dialog.locator(".overflow-y-auto");
+  await expect(scroller).toBeFocused();
+  await expect(dialog).not.toHaveCSS("outline-color", "rgb(198, 180, 240)");
+
+  const before = await scroller.evaluate((el) => el.scrollTop);
+  await page.keyboard.press("PageDown");
+  await expect.poll(() => scroller.evaluate((el) => el.scrollTop)).toBeGreaterThan(before);
 
   const axe = await new AxeBuilder({ page })
     .include('[role="dialog"]')
@@ -101,6 +111,7 @@ test("public pages fit a phone viewport without sideways scrolling", async ({ pa
   await page.setViewportSize({ width: 320, height: 800 });
   for (const path of [
     "/", "/search", "/library", "/cite", "/settings", "/status", "/suggestions", "/databases", "/about",
+    "/terms", "/privacy",
   ]) {
     await page.goto(path);
     const overflow = await page.evaluate(
@@ -111,7 +122,7 @@ test("public pages fit a phone viewport without sideways scrolling", async ({ pa
 });
 
 test("public pages have no serious accessibility violations", async ({ page }) => {
-  for (const path of ["/", "/about", "/databases", "/login"]) {
+  for (const path of ["/", "/about", "/databases", "/login", "/terms", "/privacy"]) {
     await page.goto(path);
     const results = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa"]).analyze();
     const serious = results.violations.filter((v) => v.impact === "serious" || v.impact === "critical");
