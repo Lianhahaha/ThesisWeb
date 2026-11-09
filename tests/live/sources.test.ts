@@ -93,7 +93,7 @@ const PROBES: Record<SourceId, string> = {
   secedgar: "artificial intelligence",
   nvd: "sql injection",
   cisakev: "router",
-  pedro: "stroke",
+  prospero: "dengue", pedro: "stroke",
   philpolitics: "governance",
   philagri: "rice",
 };

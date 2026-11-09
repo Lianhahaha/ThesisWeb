@@ -95,6 +95,7 @@ All free; IEEE Xplore and Google Books need free registration keys. The in-app [
 | SEC EDGAR | U.S. corporate filings: business, finance, accounting and governance primary sources |
 | NVD (NIST), CISA KEV | Cybersecurity: CVE vulnerability records and confirmed exploited vulnerabilities |
 | PEDro | Physiotherapy evidence: trials, reviews and guidelines with quality scores (sports, rehab, performance) |
+| PROSPERO | Systematic review protocols: registration number, review status, type, population, intervention and outcomes |
 | Philippine Politics & Society Journals | Philippine Political Science Journal, Philippine Journal of Public Administration, Kasarinlan, Philippine Sociological Review |
 | Philippine Agriculture & Veterinary Journals | The Philippine Agricultural Scientist, Philippine Journal of Veterinary Medicine, Philippine Journal of Agricultural Economics |
 

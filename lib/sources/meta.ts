@@ -441,6 +441,10 @@ const META = {
     label: "CISA KEV", blurb: "Known Exploited Vulnerabilities catalog: CVEs confirmed exploited in the wild, with the required remediation action", color: "#b45309",
     region: "United States", fields: ["computing", "engineering"], kind: "reports", url: "https://www.cisa.gov/known-exploited-vulnerabilities-catalog",
   },
+  prospero: {
+    label: "PROSPERO", blurb: "International prospective register of systematic review protocols: 500,000+ records with review status, type, population, intervention and outcomes (CRD, University of York)", color: "#7c3aed",
+    region: "Global (UK)", fields: ["medicine", "social", "education"], kind: "index", url: "https://www.crd.york.ac.uk/PROSPERO",
+  },
   pedro: {
     label: "PEDro", blurb: "Physiotherapy Evidence Database: trials, systematic reviews and guidelines with a methodological quality score (sports, rehab, performance)", color: "#0f766e",
     region: "Global", fields: ["medicine"], kind: "index", url: "https://search.pedro.org.au",

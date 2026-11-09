@@ -97,6 +97,7 @@ import { searchSecEdgar } from "@/lib/sources/adapters/secedgar";
 import { searchNvd } from "@/lib/sources/adapters/nvd";
 import { searchCisaKev } from "@/lib/sources/adapters/cisa-kev";
 import { searchPedro } from "@/lib/sources/adapters/pedro";
+import { searchProspero } from "@/lib/sources/adapters/prospero";
 import { searchPhilpolitics } from "@/lib/sources/adapters/philpolitics";
 import { searchPhilagri } from "@/lib/sources/adapters/philagri";
 
@@ -226,6 +227,7 @@ export const ADAPTERS: Record<SourceId, AdapterEntry> = {
   secedgar:        { run: searchSecEdgar, boolean: false, country: "United States" },
   nvd:             { run: searchNvd, boolean: false, deadlineMs: 20000 },
   cisakev:         { run: searchCisaKev, boolean: false, deadlineMs: 20000 },
+  prospero:        { run: searchProspero, boolean: false, deadlineMs: 15000 },
   pedro:           { run: searchPedro, boolean: false, deadlineMs: 24000 },
   philpolitics:    { run: searchPhilpolitics, boolean: false, country: "Philippines" },
   philagri:        { run: searchPhilagri, boolean: false, country: "Philippines" },
