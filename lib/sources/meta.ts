@@ -321,6 +321,10 @@ const META = {
     label: "Saliksik (UP Diliman Journals)", blurb: "Peer-reviewed journals from UP Diliman colleges and units: public administration, social sciences, humanities, education, science and Filipino language", color: "#6f1d2c",
     region: "Philippines", fields: ["all"], kind: "journals", url: "https://saliksik.upd.edu.ph",
   },
+  searca: {
+    label: "SEARCA Library", blurb: "Southeast Asian Regional Center for Graduate Study and Research in Agriculture: 1,600+ theses and a wider catalogue of agriculture, fisheries, environment and rural-development material", color: "#3f7d20",
+    region: "Southeast Asia (SEARCA)", fields: ["agriculture", "sciences", "social"], kind: "theses", url: "https://lis.searcaapps.org",
+  },
   pcaarrd: {
     label: "PCAARRD eLibrary", blurb: "DOST-PCAARRD's agriculture, aquatic and natural resources library: theses, research papers, books, manuals and reports from Philippine consortia and state universities", color: "#2f7d32",
     region: "Philippines", fields: ["agriculture", "sciences", "social"], kind: "repository", url: "https://elibrary.pcaarrd.dost.gov.ph",

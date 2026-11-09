@@ -39,6 +39,7 @@ All free; IEEE Xplore and Google Books need free registration keys. The in-app [
 | AIIAS Repository | Philippine graduate theses: education, business, public health, nursing, theology |
 | Saliksik (UP Diliman Journals) | Philippine peer-reviewed journals: public administration, social sciences, humanities, education, science |
 | PCAARRD eLibrary | Philippine agriculture, aquatic and natural resources: theses, research papers, books, manuals |
+| SEARCA Library | Southeast Asian agriculture, fisheries and environment theses, books and reports |
 | Philippine Journals (Crossref) | One search across the Philippine Journal of Science, engineering/applied science, teacher education, agriculture/fisheries and psychology journals |
 | Philippine Engineering Journal | UP National Engineering Center's peer-reviewed engineering journal: civil, mechanical, electrical, industrial, chemical and mining engineering |
 | SSOAR | Social sciences, politics, psychology, communication (free full text) |
