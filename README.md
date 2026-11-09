@@ -85,7 +85,7 @@ All free; IEEE Xplore, Google Books, Springer Nature, NASA ADS, CourtListener, E
 | Persée | French humanities and social science journals, books and reviews |
 | Europeana, DPLA | European and U.S. cultural-heritage collections: books, newspapers, manuscripts, images and government documents (free keys) |
 | Zenodo, Figshare, HAL | Repository copies, reports, small-journal papers |
-| DataCite Theses, theses.fr, BDTD (Brazil) | Theses and dissertations |
+| DataCite Theses, BDTD (Brazil) | Theses and dissertations |
 | Open Library, Google Books | Books and textbooks (catalogue records and previews; Google Books needs a free API key) |
 | OpenStax | Free, peer-reviewed university textbooks from Rice University: maths, science, business, social science and the humanities, with a free PDF |
 | Internet Archive | Books, texts, reports and historical primary sources from libraries and archives worldwide |
