@@ -38,6 +38,11 @@ export interface Dspace7Config {
    * repositories that hold each document once per language.
    */
   language?: string;
+  /**
+   * Extra request headers for repositories behind a WAF that expects a
+   * Referer, or that need a different User-Agent.
+   */
+  headers?: Record<string, string>;
 }
 
 type Metadata = Record<string, { value?: string }[] | undefined>;
@@ -95,7 +100,7 @@ export function dspace7Adapter(cfg: Dspace7Config): Adapter {
 
     const res = await fetchWithTimeout(
       `${cfg.api}/discover/search/objects?${params}`,
-      { headers: { "User-Agent": USER_AGENT, Accept: "application/json" } },
+      { headers: { "User-Agent": USER_AGENT, Accept: "application/json", ...cfg.headers } },
       cfg.timeoutMs ?? 10000
     );
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
