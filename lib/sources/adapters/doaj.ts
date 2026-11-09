@@ -1,5 +1,5 @@
 import { paperId } from "@/lib/utils";
-import { fetchWithTimeout, readJson } from "@/lib/server/http";
+import { fetchWithTimeout, readJson, sleep } from "@/lib/server/http";
 import { extractDoi, pageRange } from "@/lib/text";
 import type { Paper } from "@/lib/types";
 import type { AdapterOptions } from "@/lib/sources/types";
@@ -21,7 +21,13 @@ export async function searchDoaj(
   // demand an exact match and swallow the country clause `AND ("A" OR "B")`.
   const url = `${BASE}/${encodeURIComponent(query)}?pageSize=${perSource}`;
 
-  const res = await fetchWithTimeout(url);
+  let res = await fetchWithTimeout(url);
+  // DOAJ occasionally answers 502/503 for a moment; one quick retry turns a
+  // transient upstream error into a normal result instead of "failed".
+  if (res.status === 502 || res.status === 503 || res.status === 504) {
+    await sleep(400);
+    res = await fetchWithTimeout(url);
+  }
   if (!res.ok) throw new Error(`DOAJ ${res.status}`);
   const data = await readJson<{ results: any[] }>(res);
   if (!data?.results) return [];

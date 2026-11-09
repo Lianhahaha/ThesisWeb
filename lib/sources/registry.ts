@@ -59,6 +59,10 @@ import { searchPhiljournals } from "@/lib/sources/adapters/philjournals";
 import { searchPlaridel } from "@/lib/sources/adapters/plaridel";
 import { searchPej } from "@/lib/sources/adapters/saliksik";
 import { searchAjol } from "@/lib/sources/adapters/ajol";
+import { searchBanglajol } from "@/lib/sources/adapters/banglajol";
+import { searchNepjol } from "@/lib/sources/adapters/nepjol";
+import { searchMongoliajol } from "@/lib/sources/adapters/mongoliajol";
+import { searchVietnamjol } from "@/lib/sources/adapters/vietnamjol";
 import { searchNcjrs } from "@/lib/sources/adapters/ncjrs";
 import { searchCourtListener } from "@/lib/sources/adapters/courtlistener";
 import { searchHerdin } from "@/lib/sources/adapters/herdin";
@@ -197,6 +201,10 @@ export const ADAPTERS: Record<SourceId, AdapterEntry> = {
   pej:             { run: searchPej, boolean: false, country: "Philippines", deadlineMs: 16000 },
   // Search page, then one small journal page per unique journal for its title.
   ajol:            { run: searchAjol, boolean: false, deadlineMs: 18000 },
+  banglajol:       { run: searchBanglajol, boolean: false, country: "Bangladesh", deadlineMs: 15000 },
+  nepjol:          { run: searchNepjol, boolean: false, country: "Nepal", deadlineMs: 15000 },
+  mongoliajol:     { run: searchMongoliajol, boolean: false, country: "Mongolia", deadlineMs: 15000 },
+  vietnamjol:      { run: searchVietnamjol, boolean: false, country: "Vietnam", deadlineMs: 15000 },
   courtlistener:   { run: searchCourtListener, boolean: false, deadlineMs: 15000 },
   ncjrs:           { run: searchNcjrs, boolean: false, country: "United States" },
   // A scraped page that is sometimes slow (8-12 s).
@@ -230,7 +238,7 @@ export const ADAPTERS: Record<SourceId, AdapterEntry> = {
   internetarchive: { run: searchInternetArchive, boolean: false },
   paperswithcode:  { run: searchPapersWithCode, boolean: false },
   mit:             { run: searchMit, boolean: false, country: "United States" },
-  epfl:            { run: searchEpfl, boolean: false, country: "Switzerland" },
+  epfl:            { run: searchEpfl, boolean: false, country: "Switzerland", deadlineMs: 18000 },
   gatech:          { run: searchGatech, boolean: false, country: "United States" },
   toronto:         { run: searchToronto, boolean: false, country: "Canada" },
   cornell:         { run: searchCornell, boolean: false, country: "United States" },

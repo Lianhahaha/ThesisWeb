@@ -292,6 +292,22 @@ const META = {
     label: "AJOL (African Journals Online)", blurb: "1,000+ peer-reviewed African journals: health, agriculture, engineering, education and social sciences, with English titles and abstracts", color: "#c65d21",
     region: "Africa", fields: ["all"], kind: "journals", url: "https://www.ajol.info",
   },
+  banglajol: {
+    label: "BanglaJOL (Bangladesh)", blurb: "Hundreds of peer-reviewed Bangladeshi journals: health, agriculture, education, sciences and social sciences", color: "#006a4e",
+    region: "Bangladesh", fields: ["all"], kind: "journals", url: "https://www.banglajol.info",
+  },
+  nepjol: {
+    label: "NepJOL (Nepal)", blurb: "Peer-reviewed Nepali journals: health, education, social sciences and the humanities", color: "#b31b1b",
+    region: "Nepal", fields: ["all"], kind: "journals", url: "https://www.nepjol.info",
+  },
+  mongoliajol: {
+    label: "Mongolia Journals Online", blurb: "Peer-reviewed Mongolian journals: health, education, social sciences and the humanities", color: "#1f5c99",
+    region: "Mongolia", fields: ["all"], kind: "journals", url: "https://mongoliajol.info",
+  },
+  vietnamjol: {
+    label: "Vietnam Journals Online", blurb: "Peer-reviewed Vietnamese journals: health, agriculture, education, sciences and social sciences", color: "#c8102e",
+    region: "Vietnam", fields: ["all"], kind: "journals", url: "https://vjol.info.vn",
+  },
 
   courtlistener: {
     label: "CourtListener", blurb: "U.S. case law and PACER/RECAP from the Free Law Project: opinions, dockets, judges and oral arguments (free token; low default limits)", color: "#1f3a5f",

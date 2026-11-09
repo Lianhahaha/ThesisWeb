@@ -101,6 +101,10 @@ const PROBES: Record<SourceId, string> = {
   prospero: "dengue", pedro: "stroke",
   philpolitics: "governance",
   ndltd: "education",
+  banglajol: "education",
+  nepjol: "education",
+  mongoliajol: "education",
+  vietnamjol: "education",
   philagri: "rice",
 };
 
