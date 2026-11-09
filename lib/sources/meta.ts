@@ -112,6 +112,10 @@ const META = {
     label: "OpenAIRE", blurb: "European open-science graph: repositories, publishers and funder-linked research", color: "#ff7b72",
     region: "Europe", fields: ["all"], kind: "index", url: "https://explore.openaire.eu",
   },
+  ads: {
+    label: "NASA ADS", blurb: "Astrophysics Data System: astronomy, physics, earth and space science literature with citation links and identifiers (free token, 5,000 requests/day)", color: "#8b1e3f",
+    region: "Global (NASA)", fields: ["sciences", "engineering"], kind: "index", url: "https://ui.adsabs.harvard.edu",
+  },
   inspire: {
     label: "INSPIRE-HEP", blurb: "High-energy physics, astrophysics and cosmology (CERN, Fermilab, DESY)", color: "#a5d6ff",
     region: "Global", fields: ["sciences"], kind: "index", url: "https://inspirehep.net",

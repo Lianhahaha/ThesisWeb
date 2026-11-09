@@ -13,6 +13,7 @@ import { searchZenodo } from "@/lib/sources/adapters/zenodo";
 import { searchHal } from "@/lib/sources/adapters/hal";
 import { searchOpenAire } from "@/lib/sources/adapters/openaire";
 import { searchInspire } from "@/lib/sources/adapters/inspire";
+import { searchAds } from "@/lib/sources/adapters/ads";
 import { searchPlos } from "@/lib/sources/adapters/plos";
 import { searchDataCite } from "@/lib/sources/adapters/datacite";
 import { searchOsti } from "@/lib/sources/adapters/osti";
@@ -140,6 +141,7 @@ export const ADAPTERS: Record<SourceId, AdapterEntry> = {
   hal:             { run: searchHal, boolean: false },
   // The Graph API can take 8-12 s when its index is busy.
   openaire:        { run: searchOpenAire, boolean: false, deadlineMs: 18000 },
+  ads:             { run: searchAds, boolean: false, deadlineMs: 15000 },
   inspire:         { run: searchInspire, boolean: false },
   plos:            { run: searchPlos, boolean: false },
   datacite:        { run: searchDataCite, boolean: false },

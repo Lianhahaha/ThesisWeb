@@ -27,6 +27,7 @@ if (!process.env.IEEE_XPLORE_API_KEY) SKIP.ieee = "IEEE_XPLORE_API_KEY not confi
 if (!process.env.CORE_API_KEY) SKIP.core = "CORE_API_KEY not configured";
 if (!process.env.GOOGLE_BOOKS_API_KEY) SKIP.googlebooks = "GOOGLE_BOOKS_API_KEY not configured";
 if (!process.env.SPRINGER_NATURE_API_KEY) SKIP.springer = "SPRINGER_NATURE_API_KEY not configured";
+if (!process.env.NASA_ADS_TOKEN) SKIP.ads = "NASA_ADS_TOKEN not configured";
 
 /**
  * A rate limit, anti-bot block, timeout or outage is not an adapter bug. It is
@@ -55,7 +56,7 @@ const PROBES: Record<SourceId, string> = {
   europepmc: "dengue", pubmed: "dengue", arxiv: "neural network", eric: "reading comprehension",
   edarxiv: "teacher education", huggingface: "large language models",
   openreview: "large language models", zbmath: "algebra", zenodo: "climate change",
-  hal: "climate change", openaire: "climate change", inspire: "dark matter", plos: "malaria", datacite: "education",
+  hal: "climate change", openaire: "climate change", ads: "dark matter", inspire: "dark matter", plos: "malaria", datacite: "education",
   nist: "machine learning", osti: "solar energy", cinii: "education", jstage: "education", figshare: "climate change", worldbank: "poverty",
   cgspace: "rice", fao: "rice", pubag: "rice", agricola: "rice", idrc: "climate change", pmc: "dengue", ntrs: "aerospace", econbiz: "inflation", usgs: "earthquake",
   ieee: "engineering",
