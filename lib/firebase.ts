@@ -2,7 +2,7 @@
 
 import { initializeApp, getApps } from "firebase/app";
 import { getAuth, connectAuthEmulator } from "firebase/auth";
-import { initializeAppCheck, ReCaptchaEnterpriseProvider } from "firebase/app-check";
+import { initializeAppCheck, ReCaptchaEnterpriseProvider, ReCaptchaV3Provider } from "firebase/app-check";
 import {
   getFirestore,
   initializeFirestore,
@@ -28,17 +28,34 @@ const firebaseConfig = {
 export const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
 
 // App Check attests that Firebase requests come from this app, not a script
-// using the (public) Firebase config. Skipped until the reCAPTCHA Enterprise
-// site key is configured, and against the emulators.
-const appCheckSiteKey = process.env.NEXT_PUBLIC_RECAPTCHA_ENTERPRISE_SITE_KEY?.trim();
-if (typeof window !== "undefined" && appCheckSiteKey && process.env.NEXT_PUBLIC_FIREBASE_EMULATORS !== "1") {
-  try {
-    initializeAppCheck(app, {
-      provider: new ReCaptchaEnterpriseProvider(appCheckSiteKey),
-      isTokenAutoRefreshEnabled: true,
-    });
-  } catch {
-    // Hot reload or a second initialization: the first one stays active.
+// using the (public) Firebase config. It is opt-in: a provider can fail in
+// ways that block Auth and Firestore for every user (for example, a reCAPTCHA
+// Enterprise key whose Google Cloud project has no billing account). While it
+// is off, Firestore security rules remain the access boundary.
+//
+// To turn it on: add a working reCAPTCHA key, set NEXT_PUBLIC_APP_CHECK_ENABLED=1
+// in Vercel, confirm App Check shows valid tokens, then enable enforcement for
+// Auth and Firestore in Firebase Console > App Check > APIs. reCAPTCHA v3 is
+// free; the Enterprise provider needs a billing account. The v3 key wins when
+// both are configured.
+const appCheckEnabled = process.env.NEXT_PUBLIC_APP_CHECK_ENABLED === "1";
+const appCheckV3Key = process.env.NEXT_PUBLIC_RECAPTCHA_V3_SITE_KEY?.trim();
+const appCheckEnterpriseKey = process.env.NEXT_PUBLIC_RECAPTCHA_ENTERPRISE_SITE_KEY?.trim();
+if (typeof window !== "undefined" && appCheckEnabled && process.env.NEXT_PUBLIC_FIREBASE_EMULATORS !== "1") {
+  const provider = appCheckV3Key
+    ? new ReCaptchaV3Provider(appCheckV3Key)
+    : appCheckEnterpriseKey
+    ? new ReCaptchaEnterpriseProvider(appCheckEnterpriseKey)
+    : null;
+  if (provider) {
+    try {
+      initializeAppCheck(app, {
+        provider,
+        isTokenAutoRefreshEnabled: true,
+      });
+    } catch {
+      // Hot reload or a second initialization: the first one stays active.
+    }
   }
 }
 
