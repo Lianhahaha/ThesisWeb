@@ -341,6 +341,10 @@ const META = {
     label: "ClinicalTrials.gov", blurb: "Clinical studies from around the world: status, sponsor, conditions, interventions and outcomes (U.S. NLM)", color: "#2d7d9a",
     region: "Global", fields: ["medicine"], kind: "reports", url: "https://clinicaltrials.gov",
   },
+  eurlex: {
+    label: "EUR-Lex", blurb: "EU treaties, legislation, case law and preparatory acts in every EU language, free to read and reuse (Publications Office of the EU)", color: "#003399",
+    region: "Europe (EU)", fields: ["social", "business", "humanities"], kind: "reports", url: "https://eur-lex.europa.eu",
+  },
   federalregister: {
     label: "Federal Register", blurb: "U.S. rules, proposed rules, notices and executive orders, with abstracts and free PDFs", color: "#8b5e3c",
     region: "United States", fields: ["social", "business", "humanities"], kind: "reports", url: "https://www.federalregister.gov",

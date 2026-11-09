@@ -72,6 +72,7 @@ import { searchIsrctn } from "@/lib/sources/adapters/isrctn";
 import { searchCtis } from "@/lib/sources/adapters/ctis";
 import { searchEuCtr } from "@/lib/sources/adapters/euctr";
 import { searchFederalRegister } from "@/lib/sources/adapters/federalregister";
+import { searchEurLex } from "@/lib/sources/adapters/eurlex";
 import { searchInternetArchive } from "@/lib/sources/adapters/internetarchive";
 import { searchPapersWithCode } from "@/lib/sources/adapters/paperswithcode";
 import { searchMit } from "@/lib/sources/adapters/mit";
@@ -202,6 +203,7 @@ export const ADAPTERS: Record<SourceId, AdapterEntry> = {
   euctr:           { run: searchEuCtr, boolean: false, deadlineMs: 15000 },
   isrctn:          { run: searchIsrctn, boolean: false, deadlineMs: 12000 },
   clinicaltrials:  { run: searchClinicalTrials, boolean: false },
+  eurlex:          { run: searchEurLex, boolean: false, deadlineMs: 18000 },
   federalregister: { run: searchFederalRegister, boolean: false },
   internetarchive: { run: searchInternetArchive, boolean: false },
   paperswithcode:  { run: searchPapersWithCode, boolean: false },

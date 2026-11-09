@@ -84,6 +84,7 @@ All free; IEEE Xplore and Google Books need free registration keys. The in-app [
 | CTIS (EU) | EU clinical trials under the EU Clinical Trials Regulation: status, sponsor, conditions, phase and countries |
 | EU Clinical Trials Register | Legacy EU/EEA trials in EudraCT: sponsor, condition, population, start date and results |
 | Federal Register | U.S. rules, proposed rules, notices and executive orders, with abstracts and free PDFs |
+| EUR-Lex | EU treaties, legislation, case law and preparatory acts, free in every EU language |
 | Papers with Code | Machine-learning papers linked to code, tasks and benchmarks (mostly arXiv preprints) |
 | MIT DSpace, Georgia Tech SMARTech, Cornell eCommons, DukeSpace, VTechWorks, UMN Conservancy, University of Arizona | Theses, technical reports and papers strong in AI, computing and engineering |
 | EPFL Infoscience, Toronto TSpace, UNSW UNSWorks | AI, robotics, computing and engineering theses and papers |
