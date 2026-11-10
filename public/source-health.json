@@ -1,5 +1,5 @@
 {
-  "checkedAt": "2026-11-09T01:33:26.316Z",
+  "checkedAt": "2026-11-10T04:03:12.918Z",
   "results": [
     {
       "id": "openalex",
@@ -15,6 +15,11 @@
       "id": "semanticscholar",
       "status": "working",
       "count": 10
+    },
+    {
+      "id": "springer",
+      "status": "skipped",
+      "detail": "SPRINGER_NATURE_API_KEY not configured"
     },
     {
       "id": "doaj",
@@ -77,6 +82,11 @@
       "count": 10
     },
     {
+      "id": "ads",
+      "status": "skipped",
+      "detail": "NASA_ADS_TOKEN not configured"
+    },
+    {
       "id": "inspire",
       "status": "working",
       "count": 10
@@ -88,6 +98,11 @@
     },
     {
       "id": "datacite",
+      "status": "working",
+      "count": 10
+    },
+    {
+      "id": "nist",
       "status": "working",
       "count": 10
     },
@@ -117,6 +132,11 @@
       "count": 10
     },
     {
+      "id": "fao",
+      "status": "working",
+      "count": 10
+    },
+    {
       "id": "cgspace",
       "status": "working",
       "count": 10
@@ -142,6 +162,16 @@
       "count": 10
     },
     {
+      "id": "pubag",
+      "status": "working",
+      "count": 10
+    },
+    {
+      "id": "agricola",
+      "status": "working",
+      "count": 10
+    },
+    {
       "id": "usgs",
       "status": "working",
       "count": 10
@@ -150,6 +180,11 @@
       "id": "ieee",
       "status": "unavailable",
       "detail": "IEEE Xplore rejected the key (inactive). Register a new key at developer.ieee.org."
+    },
+    {
+      "id": "agris",
+      "status": "working",
+      "count": 10
     },
     {
       "id": "gbif",
@@ -167,9 +202,9 @@
       "count": 10
     },
     {
-      "id": "thesesfr",
+      "id": "ndltd",
       "status": "working",
-      "count": 10
+      "count": 20
     },
     {
       "id": "osf",
@@ -177,14 +212,24 @@
       "count": 10
     },
     {
+      "id": "bsu",
+      "status": "working",
+      "count": 7
+    },
+    {
       "id": "seafdec",
       "status": "working",
       "count": 10
     },
     {
-      "id": "ssoar",
-      "status": "unavailable",
-      "detail": "The operation was aborted due to timeout"
+      "id": "nice",
+      "status": "working",
+      "count": 10
+    },
+    {
+      "id": "paho",
+      "status": "working",
+      "count": 10
     },
     {
       "id": "who",
@@ -207,6 +252,11 @@
       "count": 10
     },
     {
+      "id": "openstax",
+      "status": "working",
+      "count": 10
+    },
+    {
       "id": "core",
       "status": "skipped",
       "detail": "CORE_API_KEY not configured"
@@ -222,14 +272,24 @@
       "count": 10
     },
     {
+      "id": "elib",
+      "status": "working",
+      "count": 10
+    },
+    {
       "id": "upou",
       "status": "working",
       "count": 10
     },
     {
       "id": "upv",
+      "status": "unavailable",
+      "detail": "The operation was aborted due to timeout"
+    },
+    {
+      "id": "plaridel",
       "status": "working",
-      "count": 10
+      "count": 4
     },
     {
       "id": "philjournals",
@@ -245,6 +305,31 @@
       "id": "ajol",
       "status": "working",
       "count": 10
+    },
+    {
+      "id": "banglajol",
+      "status": "working",
+      "count": 10
+    },
+    {
+      "id": "nepjol",
+      "status": "working",
+      "count": 10
+    },
+    {
+      "id": "mongoliajol",
+      "status": "working",
+      "count": 10
+    },
+    {
+      "id": "vietnamjol",
+      "status": "working",
+      "count": 10
+    },
+    {
+      "id": "courtlistener",
+      "status": "skipped",
+      "detail": "COURTLISTENER_API_TOKEN not configured"
     },
     {
       "id": "ncjrs",
@@ -263,8 +348,8 @@
     },
     {
       "id": "krishikosh",
-      "status": "working",
-      "count": 10
+      "status": "unavailable",
+      "detail": "The operation was aborted due to timeout"
     },
     {
       "id": "upd",
@@ -297,14 +382,34 @@
       "count": 10
     },
     {
+      "id": "asean",
+      "status": "working",
+      "count": 5
+    },
+    {
+      "id": "searca",
+      "status": "working",
+      "count": 10
+    },
+    {
       "id": "pcaarrd",
       "status": "working",
       "count": 10
     },
     {
       "id": "scielo",
-      "status": "unavailable",
-      "detail": "HTTP 403"
+      "status": "working",
+      "count": 10
+    },
+    {
+      "id": "europeana",
+      "status": "skipped",
+      "detail": "EUROPEANA_API_KEY not configured"
+    },
+    {
+      "id": "dpla",
+      "status": "skipped",
+      "detail": "DPLA_API_KEY not configured"
     },
     {
       "id": "persee",
@@ -312,7 +417,27 @@
       "count": 10
     },
     {
+      "id": "ctis",
+      "status": "working",
+      "count": 10
+    },
+    {
+      "id": "euctr",
+      "status": "working",
+      "count": 10
+    },
+    {
+      "id": "isrctn",
+      "status": "working",
+      "count": 10
+    },
+    {
       "id": "clinicaltrials",
+      "status": "working",
+      "count": 10
+    },
+    {
+      "id": "eurlex",
       "status": "working",
       "count": 10
     },
@@ -407,12 +532,22 @@
       "count": 10
     },
     {
+      "id": "digitalnz",
+      "status": "working",
+      "count": 10
+    },
+    {
       "id": "auckland",
       "status": "working",
       "count": 10
     },
     {
       "id": "caltech",
+      "status": "working",
+      "count": 10
+    },
+    {
+      "id": "dryad",
       "status": "working",
       "count": 10
     },
@@ -433,6 +568,11 @@
     },
     {
       "id": "cisakev",
+      "status": "working",
+      "count": 10
+    },
+    {
+      "id": "prospero",
       "status": "working",
       "count": 10
     },
