@@ -20,19 +20,24 @@ afterEach(() => {
 });
 
 describe("rateLimit with shared Redis counters", () => {
-  it("counts the caller and the site in one pipeline, and lets them through under the limit", async () => {
-    const { rateLimit, fetchMock } = await withRedis(() => Response.json([{ result: 3 }, { result: 1 }, { result: 50 }, { result: 0 }]));
+  it("counts the caller, their burst and the site in one pipeline, and lets them through under the limit", async () => {
+    const { rateLimit, fetchMock } = await withRedis(() =>
+      Response.json([{ result: 3 }, { result: 1 }, { result: 1 }, { result: 0 }, { result: 50 }, { result: 0 }])
+    );
     expect(await rateLimit(req("203.0.113.9"), "search")).toBeNull();
     const [url, init] = fetchMock.mock.calls[0];
     expect(url).toBe("https://redis.example/pipeline");
     const body = JSON.parse(String(init.body)) as string[][];
-    expect(body.map((c) => c[0])).toEqual(["INCR", "PEXPIRE", "INCR", "PEXPIRE"]);
+    expect(body.map((c) => c[0])).toEqual(["INCR", "PEXPIRE", "INCR", "PEXPIRE", "INCR", "PEXPIRE"]);
     expect(body[0][1]).toMatch(/^tw:rl:search:203\.0\.113\.9:\d+$/);
-    expect(body[2][1]).toMatch(/^tw:rl:search:\*:\d+$/);
+    expect(body[2][1]).toMatch(/^tw:rl:search:203\.0\.113\.9:burst:\d+$/);
+    expect(body[4][1]).toMatch(/^tw:rl:search:\*:\d+$/);
   });
 
   it("uses Vercel's sanitized headers instead of a spoofable x-forwarded-for", async () => {
-    const { rateLimit, fetchMock } = await withRedis(() => Response.json([{ result: 1 }, { result: 0 }, { result: 1 }, { result: 0 }]));
+    const { rateLimit, fetchMock } = await withRedis(() =>
+      Response.json([{ result: 1 }, { result: 0 }, { result: 1 }, { result: 0 }, { result: 1 }, { result: 0 }])
+    );
     const spoofed = new NextRequest("http://localhost/api/search", {
       headers: {
         "x-forwarded-for": "1.2.3.4, 198.51.100.7",
@@ -46,7 +51,9 @@ describe("rateLimit with shared Redis counters", () => {
   });
 
   it("falls back to x-real-ip when Vercel's own header is absent", async () => {
-    const { rateLimit, fetchMock } = await withRedis(() => Response.json([{ result: 1 }, { result: 0 }, { result: 1 }, { result: 0 }]));
+    const { rateLimit, fetchMock } = await withRedis(() =>
+      Response.json([{ result: 1 }, { result: 0 }, { result: 1 }, { result: 0 }, { result: 1 }, { result: 0 }])
+    );
     const proxied = new NextRequest("http://localhost/api/search", {
       headers: { "x-forwarded-for": "1.2.3.4, 198.51.100.7", "x-real-ip": "203.0.113.9" },
     });
@@ -56,16 +63,21 @@ describe("rateLimit with shared Redis counters", () => {
   });
 
   it("adds a site-wide bucket to expensive routes, not only search", async () => {
-    const { rateLimit, fetchMock } = await withRedis(() => Response.json([{ result: 1 }, { result: 0 }, { result: 1 }, { result: 0 }]));
+    const { rateLimit, fetchMock } = await withRedis(() =>
+      Response.json([{ result: 1 }, { result: 0 }, { result: 1 }, { result: 0 }, { result: 1 }, { result: 0 }])
+    );
     expect(await rateLimit(req("203.0.113.9"), "cite")).toBeNull();
     const body = JSON.parse(String(fetchMock.mock.calls[0][1].body)) as string[][];
-    expect(body.map((c) => c[0])).toEqual(["INCR", "PEXPIRE", "INCR", "PEXPIRE"]);
+    expect(body.map((c) => c[0])).toEqual(["INCR", "PEXPIRE", "INCR", "PEXPIRE", "INCR", "PEXPIRE"]);
     expect(body[0][1]).toMatch(/^tw:rl:cite:203\.0\.113\.9:\d+$/);
-    expect(body[2][1]).toMatch(/^tw:rl:cite:\*:\d+$/);
+    expect(body[2][1]).toMatch(/^tw:rl:cite:203\.0\.113\.9:burst:\d+$/);
+    expect(body[4][1]).toMatch(/^tw:rl:cite:\*:\d+$/);
   });
 
   it("refuses over the limit, with the seconds left in the window", async () => {
-    const { rateLimit } = await withRedis(() => Response.json([{ result: 13 }, { result: 0 }, { result: 60 }, { result: 0 }]));
+    const { rateLimit } = await withRedis(() =>
+      Response.json([{ result: 13 }, { result: 0 }, { result: 1 }, { result: 0 }, { result: 60 }, { result: 0 }])
+    );
     const refused = await rateLimit(req("203.0.113.9"), "search");
     expect(refused?.status).toBe(429);
     const wait = Number(refused?.headers.get("Retry-After"));
@@ -73,9 +85,21 @@ describe("rateLimit with shared Redis counters", () => {
     expect(wait).toBeLessThanOrEqual(60);
   });
 
+  it("refuses a burst even while the minute's budget is unspent", async () => {
+    // Under the 12/minute limit, over the 3/5s burst limit.
+    const { rateLimit } = await withRedis(() =>
+      Response.json([{ result: 2 }, { result: 0 }, { result: 4 }, { result: 0 }, { result: 50 }, { result: 0 }])
+    );
+    const refused = await rateLimit(req("203.0.113.11"), "search");
+    expect(refused?.status).toBe(429);
+    const wait = Number(refused?.headers.get("Retry-After"));
+    expect(wait).toBeGreaterThan(0);
+    expect(wait).toBeLessThanOrEqual(5);
+  });
+
   it("falls back to counting in memory when Redis fails", async () => {
     const { rateLimit } = await withRedis(() => new Response("down", { status: 503 }));
-    for (let i = 0; i < 12; i++) expect(await rateLimit(req("203.0.113.10"), "search")).toBeNull();
+    for (let i = 0; i < 3; i++) expect(await rateLimit(req("203.0.113.10"), "search")).toBeNull();
     expect((await rateLimit(req("203.0.113.10"), "search"))?.status).toBe(429);
   });
 });

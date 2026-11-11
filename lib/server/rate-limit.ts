@@ -20,18 +20,30 @@ interface Rule {
   windowMs: number;
 }
 
+interface RouteRule extends Rule {
+  /**
+   * A second, shorter window. A per-minute budget alone lets a script spend it
+   * in one burst: twelve searches in a second also means twelve simultaneous
+   * fan-outs to ~60 databases each, which the sources answer with blocks. The
+   * burst rule caps the speed, the minute rule caps the volume.
+   */
+  burst: Rule;
+}
+
 const LIMITS = {
   // A search fans out to every database, so it gets the tightest budget.
-  search: { limit: 12, windowMs: 60_000 },
-  cite: { limit: 10, windowMs: 60_000 },
-  related: { limit: 20, windowMs: 60_000 },
-  pdf: { limit: 30, windowMs: 60_000 },
+  search: { limit: 12, windowMs: 60_000, burst: { limit: 3, windowMs: 5_000 } },
+  cite: { limit: 10, windowMs: 60_000, burst: { limit: 3, windowMs: 5_000 } },
+  related: { limit: 20, windowMs: 60_000, burst: { limit: 5, windowMs: 5_000 } },
+  pdf: { limit: 30, windowMs: 60_000, burst: { limit: 8, windowMs: 5_000 } },
   // One per opened paper that came without an abstract.
-  abstract: { limit: 30, windowMs: 60_000 },
-  summarize: { limit: 30, windowMs: 60_000 },
+  abstract: { limit: 30, windowMs: 60_000, burst: { limit: 8, windowMs: 5_000 } },
+  summarize: { limit: 30, windowMs: 60_000, burst: { limit: 10, windowMs: 5_000 } },
   // One per search, plus one per opened paper.
-  retractions: { limit: 40, windowMs: 60_000 },
-} satisfies Record<string, Rule>;
+  retractions: { limit: 40, windowMs: 60_000, burst: { limit: 10, windowMs: 5_000 } },
+  // Uptime monitors poll every 30s or so; anything faster than this is abuse.
+  health: { limit: 60, windowMs: 60_000, burst: { limit: 10, windowMs: 5_000 } },
+} satisfies Record<string, RouteRule>;
 
 /**
  * All visitors combined, per route. These bound the total number of upstream
@@ -47,6 +59,7 @@ const GLOBAL: Partial<Record<keyof typeof LIMITS, Rule>> = {
   abstract: { limit: 300, windowMs: 60_000 },
   summarize: { limit: 300, windowMs: 60_000 },
   retractions: { limit: 400, windowMs: 60_000 },
+  health: { limit: 600, windowMs: 60_000 },
 };
 
 function clientIp(req: NextRequest): string {
@@ -102,7 +115,7 @@ let lastSweep = Date.now();
 
 /** Longest window of any rule; a key idle this long holds nothing that counts. */
 const MAX_WINDOW_MS = Math.max(
-  ...Object.values(LIMITS).map((r) => r.windowMs),
+  ...Object.values(LIMITS).flatMap((r) => [r.windowMs, r.burst.windowMs]),
   ...Object.values(GLOBAL).map((r) => r?.windowMs ?? 0)
 );
 
@@ -140,7 +153,12 @@ function localWait(checks: [string, Rule][], now: number): number {
  */
 export async function rateLimit(req: NextRequest, name: keyof typeof LIMITS): Promise<NextResponse | null> {
   const now = Date.now();
-  const checks: [string, Rule][] = [[`${name}:${clientIp(req)}`, LIMITS[name]]];
+  const ip = clientIp(req);
+  const rule = LIMITS[name];
+  const checks: [string, Rule][] = [
+    [`${name}:${ip}`, rule],
+    [`${name}:${ip}:burst`, rule.burst],
+  ];
   const global = GLOBAL[name];
   if (global) checks.push([`${name}:*`, global]);
 

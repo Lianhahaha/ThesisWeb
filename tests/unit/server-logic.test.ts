@@ -52,8 +52,8 @@ describe("dedupePapers", () => {
 describe("rateLimit", () => {
   const req = (ip: string) => new NextRequest("http://localhost/api/cite", { headers: { "x-forwarded-for": ip } });
 
-  it("allows up to the limit per address, then answers 429 with Retry-After", async () => {
-    for (let i = 0; i < 10; i++) expect(await rateLimit(req("203.0.113.1"), "cite")).toBeNull();
+  it("allows the burst budget per address, then answers 429 with Retry-After", async () => {
+    for (let i = 0; i < 3; i++) expect(await rateLimit(req("203.0.113.1"), "cite")).toBeNull();
     const refused = await rateLimit(req("203.0.113.1"), "cite");
     expect(refused?.status).toBe(429);
     expect(Number(refused?.headers.get("Retry-After"))).toBeGreaterThan(0);
