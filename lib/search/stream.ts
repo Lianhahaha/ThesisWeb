@@ -1,6 +1,7 @@
 "use client";
 
 import type { Paper } from "@/lib/types";
+import { authHeaders } from "@/lib/auth/id-token";
 import { buildSearchParams, type SearchInput } from "@/lib/search/params";
 
 /**
@@ -30,7 +31,10 @@ export async function streamSearch(
   input: SearchInput,
   { signal, onSource }: { signal?: AbortSignal; onSource: (update: SourceUpdate) => void }
 ): Promise<{ tookMs: number }> {
-  const res = await fetch(`/api/search?${buildSearchParams(input)}&stream=1`, { signal });
+  const res = await fetch(`/api/search?${buildSearchParams(input)}&stream=1`, {
+    signal,
+    headers: await authHeaders(),
+  });
   if (!res.ok || !res.body) {
     const err = await res.json().catch(() => ({ error: "Search failed" }));
     throw new Error(err.error || "Search failed");

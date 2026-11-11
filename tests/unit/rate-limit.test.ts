@@ -17,6 +17,7 @@ async function withRedis(reply: (body: string[][]) => Response | Promise<Respons
 afterEach(() => {
   vi.unstubAllEnvs();
   vi.unstubAllGlobals();
+  vi.doUnmock("@/lib/server/identity");
 });
 
 describe("rateLimit with shared Redis counters", () => {
@@ -29,8 +30,8 @@ describe("rateLimit with shared Redis counters", () => {
     expect(url).toBe("https://redis.example/pipeline");
     const body = JSON.parse(String(init.body)) as string[][];
     expect(body.map((c) => c[0])).toEqual(["INCR", "PEXPIRE", "INCR", "PEXPIRE", "INCR", "PEXPIRE"]);
-    expect(body[0][1]).toMatch(/^tw:rl:search:203\.0\.113\.9:\d+$/);
-    expect(body[2][1]).toMatch(/^tw:rl:search:203\.0\.113\.9:burst:\d+$/);
+    expect(body[0][1]).toMatch(/^tw:rl:search:ip:203\.0\.113\.9:\d+$/);
+    expect(body[2][1]).toMatch(/^tw:rl:search:ip:203\.0\.113\.9:burst:\d+$/);
     expect(body[4][1]).toMatch(/^tw:rl:search:\*:\d+$/);
   });
 
@@ -47,7 +48,7 @@ describe("rateLimit with shared Redis counters", () => {
     });
     expect(await rateLimit(spoofed, "search")).toBeNull();
     const body = JSON.parse(String(fetchMock.mock.calls[0][1].body)) as string[][];
-    expect(body[0][1]).toMatch(/^tw:rl:search:198\.51\.100\.7:\d+$/);
+    expect(body[0][1]).toMatch(/^tw:rl:search:ip:198\.51\.100\.7:\d+$/);
   });
 
   it("falls back to x-real-ip when Vercel's own header is absent", async () => {
@@ -59,7 +60,7 @@ describe("rateLimit with shared Redis counters", () => {
     });
     expect(await rateLimit(proxied, "search")).toBeNull();
     const body = JSON.parse(String(fetchMock.mock.calls[0][1].body)) as string[][];
-    expect(body[0][1]).toMatch(/^tw:rl:search:203\.0\.113\.9:\d+$/);
+    expect(body[0][1]).toMatch(/^tw:rl:search:ip:203\.0\.113\.9:\d+$/);
   });
 
   it("adds a site-wide bucket to expensive routes, not only search", async () => {
@@ -69,8 +70,8 @@ describe("rateLimit with shared Redis counters", () => {
     expect(await rateLimit(req("203.0.113.9"), "cite")).toBeNull();
     const body = JSON.parse(String(fetchMock.mock.calls[0][1].body)) as string[][];
     expect(body.map((c) => c[0])).toEqual(["INCR", "PEXPIRE", "INCR", "PEXPIRE", "INCR", "PEXPIRE"]);
-    expect(body[0][1]).toMatch(/^tw:rl:cite:203\.0\.113\.9:\d+$/);
-    expect(body[2][1]).toMatch(/^tw:rl:cite:203\.0\.113\.9:burst:\d+$/);
+    expect(body[0][1]).toMatch(/^tw:rl:cite:ip:203\.0\.113\.9:\d+$/);
+    expect(body[2][1]).toMatch(/^tw:rl:cite:ip:203\.0\.113\.9:burst:\d+$/);
     expect(body[4][1]).toMatch(/^tw:rl:cite:\*:\d+$/);
   });
 
@@ -95,6 +96,24 @@ describe("rateLimit with shared Redis counters", () => {
     const wait = Number(refused?.headers.get("Retry-After"));
     expect(wait).toBeGreaterThan(0);
     expect(wait).toBeLessThanOrEqual(5);
+  });
+
+  it("counts a signed-in caller by account instead of sharing the school's IP", async () => {
+    vi.resetModules();
+    vi.doMock("@/lib/server/identity", () => ({ verifiedUid: async () => "uid-123" }));
+    vi.stubEnv("UPSTASH_REDIS_REST_URL", "https://redis.example/");
+    vi.stubEnv("UPSTASH_REDIS_REST_TOKEN", "token");
+    const fetchMock = vi.fn(async (_url: string, _init: RequestInit) =>
+      Response.json([{ result: 1 }, { result: 0 }, { result: 1 }, { result: 0 }, { result: 1 }, { result: 0 }])
+    );
+    vi.stubGlobal("fetch", fetchMock);
+    const { rateLimit } = await import("@/lib/server/rate-limit");
+    const signedIn = new NextRequest("http://localhost/api/search", {
+      headers: { authorization: "Bearer token", "x-forwarded-for": "203.0.113.9" },
+    });
+    expect(await rateLimit(signedIn, "search")).toBeNull();
+    const body = JSON.parse(String(fetchMock.mock.calls[0][1].body)) as string[][];
+    expect(body[0][1]).toMatch(/^tw:rl:search:user:uid-123:\d+$/);
   });
 
   it("falls back to counting in memory when Redis fails", async () => {

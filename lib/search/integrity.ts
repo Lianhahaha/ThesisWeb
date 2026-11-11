@@ -2,6 +2,7 @@
 
 import type { Paper } from "@/lib/types";
 import type { IntegrityStatus } from "@/lib/types";
+import { authHeaders } from "@/lib/auth/id-token";
 
 /**
  * Ask the server which of these papers have been retracted or carry an
@@ -14,7 +15,7 @@ export async function fetchIntegrity(dois: string[]): Promise<Record<string, Int
   try {
     const res = await fetch("/api/retractions", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", ...(await authHeaders()) },
       body: JSON.stringify({ dois: unique }),
     });
     if (!res.ok) return {};

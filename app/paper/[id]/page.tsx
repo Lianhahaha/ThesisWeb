@@ -15,6 +15,7 @@ import { toast } from "@/components/Toaster";
 import { copyText } from "@/components/clipboard";
 import type { Paper, SavedPaper } from "@/lib/types";
 import { useAuth } from "@/lib/auth/store";
+import { authHeaders } from "@/lib/auth/id-token";
 import { RelatedPapers } from "@/components/RelatedPapers";
 import { sourceLabel } from "@/lib/sources/meta";
 import { getPreferences } from "@/lib/preferences";
@@ -111,7 +112,7 @@ export default function PaperDetailPage({ params }: { params: Promise<{ id: stri
 
   const findPdf = useMutation({
     mutationFn: async (doi: string) => {
-      const res = await fetch(`/api/pdf?doi=${encodeURIComponent(doi)}`);
+      const res = await fetch(`/api/pdf?doi=${encodeURIComponent(doi)}`, { headers: await authHeaders() });
       const body = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(body.error || "PDF lookup failed. Try again.");
       return body;
@@ -151,7 +152,8 @@ export default function PaperDetailPage({ params }: { params: Promise<{ id: stri
     const qs = new URLSearchParams();
     if (lookupDoi) qs.set("doi", lookupDoi);
     if (lookupUrl) qs.set("url", lookupUrl);
-    fetch(`/api/abstract?${qs}`)
+    authHeaders()
+      .then((headers) => fetch(`/api/abstract?${qs}`, { headers }))
       .then((r) => (r.ok ? r.json() : null))
       .catch(() => null)
       .then((r: { abstract?: string | null; source?: string | null } | null) => {
@@ -175,7 +177,7 @@ export default function PaperDetailPage({ params }: { params: Promise<{ id: stri
     mutationFn: async (text: string) => {
       const res = await fetch("/api/summarize", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...(await authHeaders()) },
         body: JSON.stringify({ text, sentences: 3 }),
       });
       const body = await res.json().catch(() => ({}));

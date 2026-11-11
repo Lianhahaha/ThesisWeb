@@ -16,6 +16,7 @@ import {
   type CitationStyle,
 } from "@/lib/citations";
 import { mergeRecentPapers } from "@/lib/search/recent-papers";
+import { authHeaders } from "@/lib/auth/id-token";
 import { extractDoi } from "@/lib/text";
 import { getPreferences } from "@/lib/preferences";
 import { downloadFile } from "@/lib/download";
@@ -33,7 +34,7 @@ export default function CitePage() {
     mutationFn: async (items: string[]) => {
       const res = await fetch("/api/cite", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...(await authHeaders()) },
         body: JSON.stringify({ items }),
       });
       const body = await res.json().catch(() => ({}));

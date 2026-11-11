@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { verifiedUid } from "@/lib/server/identity";
 import { redisPipeline } from "@/lib/server/redis";
 
 /**
@@ -150,14 +151,19 @@ function localWait(checks: [string, Rule][], now: number): number {
 /**
  * Resolves to a 429 response when the caller is over the limit, otherwise null.
  * Usage: `const limited = await rateLimit(req, "search"); if (limited) return limited;`
+ *
+ * A caller with a valid Firebase ID token is counted per account; everyone
+ * else per IP. Shared campus and office addresses would otherwise pool their
+ * budgets, and a signed-in student is the one person we can tell apart.
  */
 export async function rateLimit(req: NextRequest, name: keyof typeof LIMITS): Promise<NextResponse | null> {
   const now = Date.now();
-  const ip = clientIp(req);
+  const uid = await verifiedUid(req);
+  const caller = uid ? `user:${uid}` : `ip:${clientIp(req)}`;
   const rule = LIMITS[name];
   const checks: [string, Rule][] = [
-    [`${name}:${ip}`, rule],
-    [`${name}:${ip}:burst`, rule.burst],
+    [`${name}:${caller}`, rule],
+    [`${name}:${caller}:burst`, rule.burst],
   ];
   const global = GLOBAL[name];
   if (global) checks.push([`${name}:*`, global]);

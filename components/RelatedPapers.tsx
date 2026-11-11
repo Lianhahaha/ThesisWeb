@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { PaperCard } from "@/components/PaperCard";
 import { mergeRecentPapers } from "@/lib/search/recent-papers";
+import { authHeaders } from "@/lib/auth/id-token";
 import type { Paper, RelatedPapers as RelatedData } from "@/lib/types";
 
 type Tab = "citedBy" | "references" | "similar";
@@ -18,7 +19,9 @@ export function RelatedPapers({ doi }: { doi: string }) {
 
   const load = useMutation({
     mutationFn: async () => {
-      const res = await fetch(`/api/related?doi=${encodeURIComponent(doi)}`);
+      const res = await fetch(`/api/related?doi=${encodeURIComponent(doi)}`, {
+        headers: await authHeaders(),
+      });
       const body = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(body.error || "Could not load related papers.");
       return body as RelatedData;
