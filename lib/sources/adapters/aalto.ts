@@ -12,6 +12,8 @@ export const searchAalto = dspace7Adapter({
   publisher: "Aalto University",
   // Theses are published openly, but some records carry an embargo.
   allOpen: false,
-  // Answering this repository from outside Finland regularly takes >10s.
+  // Answering this repository from outside Finland regularly takes >10s, and
+  // its WAF wants a same-site Referer.
   timeoutMs: 15_000,
+  headers: { Referer: "https://aaltodoc.aalto.fi/" },
 });
