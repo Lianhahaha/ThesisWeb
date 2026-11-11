@@ -125,7 +125,20 @@ describe("formatCitation by record type", () => {
   it("starts with the title when there is no author", () => {
     const p = paper({ authors: [], type: "article", title: "Mental health", venue: "Asian Journal of Psychology", doi: null });
     expect(text(p, "apa")).toBe("Mental health. (2023). Asian Journal of Psychology.");
-    expect(inTextCitation(p, "apa")).toBe('("Mental health," 2023)');
+    expect(inTextCitation(p, "apa")).toBe('("Mental Health," 2023)');
+  });
+
+  it("normalises an all-caps title and does not end the quotation on a preposition", () => {
+    const p = paper({
+      authors: [],
+      type: "article",
+      title: "AWARENESS AND PRACTICES ON INVENTORY MANAGEMENT AMONG SARI-SARI STORE OWNERS",
+      year: 2025,
+      venue: null,
+      doi: null,
+    });
+    expect(inTextCitation(p, "apa")).toBe('("Awareness and Practices on Inventory…," 2025)');
+    expect(inTextCitation(p, "mla")).toBe('("Awareness and Practices on Inventory…")');
   });
 
   it("keeps organisations whole in every author list", () => {

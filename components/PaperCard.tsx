@@ -5,6 +5,7 @@ import Link from "next/link";
 import { FileText, ExternalLink, Quote, Check, Flag } from "lucide-react";
 import type { Paper } from "@/lib/types";
 import { truncate } from "@/lib/utils";
+import { displayTitle } from "@/lib/title-case";
 import { SaveButton } from "@/components/SaveButton";
 import { copyText } from "@/components/clipboard";
 import { mergeRecentPapers } from "@/lib/search/recent-papers";
@@ -41,7 +42,7 @@ export function PaperCard({ paper, showScore, refNum, isNew, localSaved }: Props
               onClick={() => mergeRecentPapers([paper])}
               onAuxClick={() => mergeRecentPapers([paper])}
             >
-              {paper.title}
+              {displayTitle(paper.title)}
             </Link>
           </h3>
 

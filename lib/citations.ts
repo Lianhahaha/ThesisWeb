@@ -437,9 +437,13 @@ export function inTextCitation(p: Paper, style: CitationStyle, refNum?: number):
   let authors: string;
   const surname = (name: string) => (isGroupAuthor(name) ? name.trim() : name.trim().split(/\s+/).pop());
   if (!p.authors.length) {
-    // No author: the first words of the title stand in, in quotation marks.
-    const words = (p.title || "Untitled").split(/\s+/);
-    const short = `${words.slice(0, 4).join(" ")}${words.length > 4 ? "…" : ""}`;
+    // No author: the first words of the title stand in, in quotation marks,
+    // in title case (APA 7, 8.14), without ending on a word like "on" or "of".
+    const words = titleCase(p.title || "Untitled").split(/\s+/).filter(Boolean);
+    const MINOR_END = new Set(["a", "an", "the", "of", "on", "in", "for", "to", "with", "and", "or", "at", "by", "from", "as"]);
+    let take = Math.min(5, words.length);
+    while (take > 2 && MINOR_END.has(words[take - 1].toLowerCase().replace(/[^\p{L}]/gu, ""))) take--;
+    const short = `${words.slice(0, take).join(" ")}${take < words.length ? "…" : ""}`;
     // APA puts the comma inside the quotation marks: ("Short title," 2024).
     if (style === "apa") return `("${short}," ${yr(p, "n.d.")})`;
     authors = `"${short}"`;

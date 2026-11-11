@@ -19,6 +19,7 @@ import { authHeaders } from "@/lib/auth/id-token";
 import { RelatedPapers } from "@/components/RelatedPapers";
 import { sourceLabel } from "@/lib/sources/meta";
 import { getPreferences } from "@/lib/preferences";
+import { displayTitle } from "@/lib/title-case";
 
 export default function PaperDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
@@ -302,7 +303,7 @@ export default function PaperDetailPage({ params }: { params: Promise<{ id: stri
         </p>
       )}
 
-      <h1 className="display text-xl leading-tight sm:text-3xl">{p.title}</h1>
+      <h1 className="display text-xl leading-tight sm:text-3xl">{displayTitle(p.title)}</h1>
 
       <p className="mt-3 text-muted">
         {p.authors.length > 0 ? p.authors.join(", ") : "Author not listed"}

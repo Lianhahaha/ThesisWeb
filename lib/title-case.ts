@@ -204,6 +204,23 @@ export function sentenceCase(title: string): string {
 }
 
 /**
+ * What to print in a list or a heading. Only repairs a title that arrived in
+ * capitals (common in repository metadata, where "AWARENESS AND PRACTICES …"
+ * is stored that way); a title already written in sentence or title case is
+ * returned untouched, so deliberate capitalisation isn't rewritten.
+ */
+export function displayTitle(title: string): string {
+  const t = title.trim();
+  if (!t) return t;
+  const letters = t.replace(/[^\p{L}]/gu, "");
+  if (letters.length < 12) return t;
+  const upper = (letters.match(/\p{Lu}/gu) ?? []).length;
+  const lower = (letters.match(/\p{Ll}/gu) ?? []).length;
+  // A few all-caps words ("WHO", "AI", "COVID") among normal ones are fine.
+  return upper > lower * 3 + 4 ? titleCase(t) : t;
+}
+
+/**
  * MLA 9 / Chicago 17 title case: every word capitalised except articles,
  * conjunctions and prepositions inside the title; acronyms and mixed-case
  * words stay. An all-caps title is first brought down to sentence case.

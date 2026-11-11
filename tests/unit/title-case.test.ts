@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { containerCase, sentenceCase, titleCase } from "@/lib/title-case";
+import { containerCase, displayTitle, sentenceCase, titleCase } from "@/lib/title-case";
 
 describe("sentenceCase (APA 7)", () => {
   it("lowercases a title-case title but keeps proper nouns", () => {
@@ -102,5 +102,23 @@ describe("containerCase", () => {
     for (const name of ["PLOS ONE", "eLife", "Revista de Educación", "Computers & Education", "arXiv"]) {
       expect(containerCase(name)).toBe(name);
     }
+  });
+});
+
+describe("displayTitle", () => {
+  it("repairs a title a repository stored in capitals", () => {
+    expect(displayTitle("AWARENESS AND PRACTICES ON INVENTORY MANAGEMENT")).toBe(
+      "Awareness and Practices on Inventory Management"
+    );
+  });
+
+  it("leaves a title already written in sentence or title case alone", () => {
+    expect(displayTitle("Effects of sleep on memory")).toBe("Effects of sleep on memory");
+    expect(displayTitle("Effects of Sleep on Memory")).toBe("Effects of Sleep on Memory");
+  });
+
+  it("keeps acronyms and short all-caps names", () => {
+    expect(displayTitle("WHO guidance on COVID-19")).toBe("WHO guidance on COVID-19");
+    expect(displayTitle("AI")).toBe("AI");
   });
 });
