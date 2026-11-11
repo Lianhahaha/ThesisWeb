@@ -264,6 +264,22 @@ const META = {
     label: "UPSpace (South Africa)", blurb: "University of Pretoria theses, articles and reports: education, health, veterinary science, engineering, economics", color: "#005baa",
     region: "South Africa", fields: ["education", "medicine", "engineering", "business", "agriculture"], kind: "repository", url: "https://repository.up.ac.za",
   },
+  thesesfr: {
+    label: "theses.fr", blurb: "Every French doctoral thesis, defended or in preparation: awarding university, discipline and DOI", color: "#1f4e79",
+    region: "France", fields: ["all"], kind: "theses", url: "https://theses.fr",
+  },
+  uottawa: {
+    label: "uOttawa Repository", blurb: "University of Ottawa theses and research, in French and English: health, law, education, engineering, social sciences", color: "#8c1d40",
+    region: "Canada", fields: ["all"], kind: "repository", url: "https://ruor.uottawa.ca",
+  },
+  usask: {
+    label: "USask HARVEST", blurb: "University of Saskatchewan theses and research: agriculture, health, engineering, education, Indigenous studies", color: "#00623b",
+    region: "Canada", fields: ["agriculture", "medicine", "engineering", "education", "social"], kind: "repository", url: "https://harvest.usask.ca",
+  },
+  adelaide: {
+    label: "Adelaide Repository", blurb: "University of Adelaide theses and research: agriculture and wine science, engineering, health and natural sciences", color: "#1f2b5b",
+    region: "Australia", fields: ["agriculture", "engineering", "medicine", "sciences"], kind: "repository", url: "https://digital.library.adelaide.edu.au",
+  },
   elib: {
     label: "Philippine eLib", blurb: "Union catalogue of the National Library of the Philippines, UP, DOST, DA and CHED: books, theses, government documents and Filipiniana from partner libraries (metadata free; full text for members)", color: "#7a4b12",
     region: "Philippines", fields: ["all"], kind: "index", url: "https://www.elib.gov.ph",

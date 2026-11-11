@@ -52,6 +52,10 @@ import { searchOpenStax } from "@/lib/sources/adapters/openstax";
 import { searchCore } from "@/lib/sources/adapters/core";
 import { searchNtu } from "@/lib/sources/adapters/ntu";
 import { searchUpspace } from "@/lib/sources/adapters/upspace";
+import { searchThesesFr } from "@/lib/sources/adapters/thesesfr";
+import { searchUottawa } from "@/lib/sources/adapters/uottawa";
+import { searchUsask } from "@/lib/sources/adapters/usask";
+import { searchAdelaide } from "@/lib/sources/adapters/adelaide";
 import { searchUpou } from "@/lib/sources/adapters/upou";
 import { searchElib } from "@/lib/sources/adapters/elib";
 import { searchUpv } from "@/lib/sources/adapters/upv";
@@ -191,6 +195,10 @@ export const ADAPTERS: Record<SourceId, AdapterEntry> = {
   core:            { run: searchCore, boolean: true },
   ntu:             { run: searchNtu, boolean: false, country: "Singapore" },
   upspace:         { run: searchUpspace, boolean: false, country: "South Africa" },
+  thesesfr:        { run: searchThesesFr, boolean: false, country: "France" },
+  uottawa:         { run: searchUottawa, boolean: false, country: "Canada" },
+  usask:           { run: searchUsask, boolean: false, country: "Canada" },
+  adelaide:        { run: searchAdelaide, boolean: false, country: "Australia" },
   elib:            { run: searchElib, boolean: false, country: "Philippines", deadlineMs: 22000 },
   upou:            { run: searchUpou, boolean: false, country: "Philippines" },
   upv:             { run: searchUpv, boolean: false, country: "Philippines" },
