@@ -4,7 +4,7 @@
 
 A free web app that helps thesis students find related literature (RRL), keep it organised, and cite it correctly.
 
-- **Search** — one topic, 90+ free academic databases at once, merged, de-duplicated and ranked, with preprint, retraction and expression-of-concern warnings. Save a search and the next time you open it, papers that weren't there before are marked *New*.
+- **Search** — one topic, 118 free academic databases at once, merged, de-duplicated and ranked, with preprint, retraction and expression-of-concern warnings. Save a search and the next time you open it, papers that weren't there before are marked *New*.
 - **Library** — save papers, group them by chapter, take notes, fill a synthesis matrix, or import a .bib/.ris file from Zotero, Mendeley or EndNote. Each paper is tagged **Local** or **Foreign** (guessed from the paper, changeable), to filter the library and split the exported reference list. **Share** a collection with your thesis group by link: they can read it, export it and copy it into their own library.
 - **Cite** — paste DOIs and get references in APA, MLA, IEEE or Chicago, or export your whole library.
 
@@ -244,7 +244,7 @@ firestore.rules      publish in the Firebase console after every change
 
 ## Data & privacy
 
-Signed out: papers live in that browser's IndexedDB. Signed in: papers/notes live in Firestore under your account. A forgotten password is reset by Firebase's email link; nothing about an account is readable by anyone else, except libraries you share by link. Preferences and search history stay in your browser. Search text and DOIs go to the databases above, and search words to Firebase Analytics, as the privacy page says.
+Signed out: papers live in that browser's IndexedDB. Signed in: papers/notes live in Firestore under your account. A forgotten password is reset by Firebase's email link; nothing about an account is readable by anyone else, except libraries you share by link. Preferences and search history stay in your browser. Search text and DOIs go to the databases above; analytics receive the number of results, never the search words.
 
 ## Ethics
 
