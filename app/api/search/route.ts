@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { rateLimit } from "@/lib/server/rate-limit";
 import { metaSearch, searchSources } from "@/lib/server/search";
-import { defaultFromYear, MIN_QUERY_LENGTH, parseSearchParams, PER_SOURCE } from "@/lib/search/params";
+import { defaultFromYear, MIN_QUERY_LENGTH, parseSearchParams, PER_SOURCE, shortenQuery } from "@/lib/search/params";
 
 export const dynamic = "force-dynamic";
 // Search fans out to every database in lib/sources/registry.ts; give the
@@ -40,6 +40,10 @@ export async function GET(req: NextRequest) {
     country: input.country ?? undefined,
     sourceMode: input.sourceMode,
   };
+  // A typed question is sent as its topic words, not as a sentence: the
+  // databases AND every word, so "how do … keep track of" would bury the
+  // records the student wants. Same function on the page, so ranking agrees.
+  const query = shortenQuery(input.query);
 
   // stream=1: one JSON line per database as it answers, then {"type":"done"},
   // so the page shows results in a second or two instead of after the
@@ -53,7 +57,7 @@ export async function GET(req: NextRequest) {
           if (!req.signal.aborted) controller.enqueue(encoder.encode(`${JSON.stringify(line)}\n`));
         };
         try {
-          await searchSources(input.query, opts, (s) => send({ type: "source", ...s }), req.signal);
+          await searchSources(query, opts, (s) => send({ type: "source", ...s }), req.signal);
           send({ type: "done", tookMs: Date.now() - started });
         } catch (e) {
           send({ type: "error", error: e instanceof Error ? e.message : "Search failed" });
@@ -76,7 +80,7 @@ export async function GET(req: NextRequest) {
   }
 
   try {
-    const result = await metaSearch(input.query, opts);
+    const result = await metaSearch(query, opts);
     return NextResponse.json(result);
   } catch (e) {
     return NextResponse.json(

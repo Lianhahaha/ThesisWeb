@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildSearchParams, canonicalCountry, parseSearchParams } from "@/lib/search/params";
+import { buildSearchParams, canonicalCountry, parseSearchParams, shortenQuery } from "@/lib/search/params";
 
 const defaults = { fromYear: 2022 };
 
@@ -36,5 +36,29 @@ describe("canonicalCountry", () => {
   it("matches case-insensitively and trims", () => {
     expect(canonicalCountry("  south korea ")).toBe("South Korea");
     expect(canonicalCountry(null)).toBeNull();
+  });
+});
+
+describe("shortenQuery", () => {
+  it("turns a typed question into its topic words", () => {
+    expect(shortenQuery("how do small shop owners keep track of stock")).toBe("small shop owners stock");
+  });
+
+  it("leaves a keyword query exactly as typed", () => {
+    expect(shortenQuery("reading comprehension strategies")).toBe("reading comprehension strategies");
+    expect(shortenQuery("teacher burnout public schools")).toBe("teacher burnout public schools");
+  });
+
+  it("keeps a long keyword query alone when there are no question words to drop", () => {
+    const q = "climate change adaptation coastal farming communities philippines 2024";
+    expect(shortenQuery(q)).toBe(q);
+  });
+
+  it("does not strip a query down to nothing", () => {
+    expect(shortenQuery("what is the impact of")).toBe("what is the impact of");
+  });
+
+  it("drops punctuation hanging off a word", () => {
+    expect(shortenQuery("how do sari-sari stores track stock?")).toBe("sari-sari stores stock");
   });
 });

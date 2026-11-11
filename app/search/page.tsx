@@ -17,7 +17,7 @@ import { SOURCE_COUNT } from "@/lib/sources/meta";
 import { addSearchHistory } from "@/lib/search/history";
 import { checkSavedSearch, isSearchSaved, removeSavedSearch, saveSearch, savedSearchKey } from "@/lib/search/saved";
 import { recallSearch, rememberSearch } from "@/lib/search/last-search";
-import { buildSearchParams, parseSearchParams, type SearchInput } from "@/lib/search/params";
+import { buildSearchParams, parseSearchParams, shortenQuery, type SearchInput } from "@/lib/search/params";
 import { fromYearFor, getPreferences } from "@/lib/preferences";
 import {
   NO_REFINEMENT,
@@ -175,7 +175,7 @@ export default function SearchPage() {
     // rather than only the total, which is dominated by the slowest source.
     let firstMs: number | undefined;
     const snapshot = (tookMs: number): SearchResult => ({
-      papers: rankResults(records, input.query, input),
+      papers: rankResults(records, shortenQuery(input.query), input),
       sources: { ...sources },
       errors: { ...errors },
       tookMs,

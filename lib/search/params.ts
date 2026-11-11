@@ -30,16 +30,50 @@ export const MIN_QUERY_LENGTH = 3;
 /** Longest query sent on to the databases. */
 export const MAX_QUERY_LENGTH = 300;
 /** Results asked of each database per search. */
-export const PER_SOURCE = 15;
-/**
+export const PER_SOURCE = 15;/**
  * Most papers one search can return (every database full, before duplicates
  * merge). Caches and checks that must cover a whole result set use this.
  */
 export const MAX_RESULTS = SOURCE_COUNT * PER_SOURCE;
 
+/**
+ * Words that ask the question rather than name the topic. People type a whole
+ * question ("how do small shop owners keep track of stock"), and the databases
+ * AND every word they receive, so the records they want are buried under
+ * "how", "do" and "keep". Dropping those is what takes that search from three
+ * results to dozens.
+ */
+const FILLER = new Set([
+  "how", "what", "why", "when", "where", "which", "who", "whom", "whose",
+  "is", "are", "was", "were", "be", "been", "being",
+  "do", "does", "did", "can", "could", "should", "would", "will", "shall",
+  "my", "our", "your", "their", "its", "his", "her", "i", "we", "you", "they",
+  "the", "a", "an", "of", "in", "on", "at", "to", "for", "with", "by", "from",
+  "about", "between", "among", "into", "over", "under", "that", "this", "these", "those",
+  "keep", "keeps", "track", "tracks", "make", "makes", "get", "gets", "use", "uses", "using",
+  "show", "shows", "find", "finds", "help", "helps", "need", "needs", "want", "wants",
+  "give", "gives", "take", "takes", "know", "knows", "see", "sees", "look", "looks",
+  "tell", "explain", "describe",
+]);
+
+/**
+ * The words actually sent to the databases. A typed question loses its
+ * question words and filler verbs, and a long query keeps its first `maxTerms`
+ * terms (people front-load the topic). A keyword query — three or four words,
+ * which is what the box asks for — comes back untouched.
+ */
+export function shortenQuery(query: string, maxTerms = 6): string {
+  const words = query.trim().split(/\s+/).filter(Boolean);
+  if (words.length <= 3) return query;
+  const cleaned = words.map((w) => w.replace(/^[^\p{L}\p{N}]+|[^\p{L}\p{N}]+$/gu, "")).filter(Boolean);
+  const kept = cleaned.filter((w) => !FILLER.has(w.toLowerCase()));
+  // Nothing to remove, or nothing left to search for: keep what was typed.
+  if (kept.length < 2 || kept.length === cleaned.length) return query;
+  return kept.slice(0, maxTerms).join(" ");
+}
+
 /** Default "Published since": the last 5 years, counting this one (2022+ in 2026). */
-export function defaultFromYear(currentYear = new Date().getFullYear()): number {
-  return currentYear - 4;
+export function defaultFromYear(currentYear = new Date().getFullYear()): number {  return currentYear - 4;
 }
 
 /** The list's spelling of a country name, matched case-insensitively; null if unknown. */
