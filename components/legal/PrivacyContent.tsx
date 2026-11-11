@@ -103,6 +103,19 @@ export function PrivacyContent() {
         or a private window will stop both, and the app works normally without them.
       </p>
 
+      <h2 className="mt-8 text-xl">Cookies and local storage</h2>
+      <p className="mt-2">
+        Thesisweb sets no advertising or tracking cookies of its own. What it keeps in your browser —
+        theme, layout preferences, the terms you accepted, and a copy of your library — is local
+        storage on your device, not a session on a server. Google sign-in and Firebase Analytics may
+        set their own cookies when you use them; a content blocker or a private window stops those,
+        and the app still works.
+      </p>
+      <p className="mt-2">
+        Search words go to the databases being searched and are not sent to analytics. No advertising
+        profile is built from them, and nothing is sold to anyone.
+      </p>
+
       <h2 className="mt-8 text-xl">Papers and data we did not create</h2>
       <p className="mt-2">
         Paper records come from the databases listed above. Most of that metadata is public domain
@@ -119,6 +132,12 @@ export function PrivacyContent() {
         <Link href="/settings" className="underline">Settings</Link>, or email{" "}
         <a href={`mailto:${CONTACT_EMAIL}`} className="underline">{CONTACT_EMAIL}</a> from the
         address on the account and it will be removed.
+      </p>
+      <p className="mt-2">
+        The app is run from the Philippines, so the Data Privacy Act of 2012 (RA 10173) applies; if
+        you are in the EU or UK, the GDPR gives you the same rights. Ask at the address above for a
+        copy of what is held about you, a correction, or deletion, and it will be handled within a
+        reasonable time.
       </p>
 
       <h2 className="mt-8 text-xl">Children</h2>
