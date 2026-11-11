@@ -14,7 +14,11 @@ if (dsn) {
     dsn,
     // Search fans out to ~118 databases; a sample of slow requests is enough
     // to find the slow ones without paying for every trace.
-    tracesSampleRate: 0.1,
+    // Error monitoring only: the Performance product is off, so a sampled
+    // transaction here would be discarded on arrival. Raise this (and enable
+    // Tracing in Sentry) to get timings.
+    tracesSampleRate: 0,
+
     // Errors from the rate limiter are expected traffic, not bugs.
     ignoreErrors: [/Too many requests/],
     environment: process.env.VERCEL_ENV ?? process.env.NODE_ENV,

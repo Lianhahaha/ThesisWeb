@@ -6,7 +6,11 @@ const dsn = process.env.SENTRY_DSN?.trim();
 if (dsn) {
   Sentry.init({
     dsn,
-    tracesSampleRate: 0.1,
+    // Error monitoring only: the Performance product is off, so a sampled
+    // transaction here would be discarded on arrival. Raise this (and enable
+    // Tracing in Sentry) to get timings.
+    tracesSampleRate: 0,
+
     ignoreErrors: [/Too many requests/],
     environment: process.env.VERCEL_ENV ?? process.env.NODE_ENV,
   });

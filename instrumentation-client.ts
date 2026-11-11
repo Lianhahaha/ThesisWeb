@@ -13,7 +13,11 @@ if (dsn) {
   void import("@sentry/nextjs").then((Sentry: typeof SentrySdk) => {
     Sentry.init({
       dsn,
-      tracesSampleRate: 0.1,
+    // Error monitoring only: the Performance product is off, so a sampled
+    // transaction here would be discarded on arrival. Raise this (and enable
+    // Tracing in Sentry) to get timings.
+    tracesSampleRate: 0,
+
       // The ad blockers and in-app browsers some students use fail requests all
       // day; those are noise, not bugs.
       ignoreErrors: [/Too many requests/, /Failed to fetch/, /NetworkError/],
