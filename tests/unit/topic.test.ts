@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { planTopic } from "@/lib/search/topic";
+import { planTopic, rankTopicPapers } from "@/lib/search/topic";
 import { groupIntoThemes } from "@/lib/search/themes";
 import type { Paper } from "@/lib/types";
 
@@ -79,5 +79,27 @@ describe("groupIntoThemes", () => {
 
   it("returns nothing for an empty result set", () => {
     expect(groupIntoThemes([], ["anything"])).toEqual([]);
+  });
+});
+
+describe("rankTopicPapers", () => {
+  const plan = planTopic("How small sari-sari store owners keep track of their stock")!;
+  const papers = [
+    paper({ id: "generic", title: "Inventory systems in large warehouses", abstract: "Stock control at scale." }),
+    paper({ id: "phrase", title: "Stock control practices of sari-sari store owners", abstract: "A survey." }),
+    paper({ id: "partial", title: "Record keeping among small retailers", abstract: "Notes on stock." }),
+  ];
+
+  it("puts the paper whose title carries the description's phrase first", () => {
+    expect(rankTopicPapers(papers, plan)[0].id).toBe("phrase");
+  });
+
+  it("keeps every paper (it reorders, never drops)", () => {
+    expect(rankTopicPapers(papers, plan)).toHaveLength(papers.length);
+  });
+
+  it("is stable when nothing matches beyond the query words", () => {
+    const same = papers.map((p) => ({ ...p, title: "Unrelated title", abstract: "" }));
+    expect(rankTopicPapers(same, plan).map((p) => p.id)).toEqual(["generic", "phrase", "partial"]);
   });
 });

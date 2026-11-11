@@ -3,7 +3,7 @@ import { readJsonRequest } from "@/lib/server/http";
 import { rateLimit } from "@/lib/server/rate-limit";
 import { metaSearch } from "@/lib/server/search";
 import { defaultFromYear, MIN_QUERY_LENGTH, PER_SOURCE } from "@/lib/search/params";
-import { planTopic } from "@/lib/search/topic";
+import { planTopic, rankTopicPapers } from "@/lib/search/topic";
 import { groupIntoThemes } from "@/lib/search/themes";
 
 export const dynamic = "force-dynamic";
@@ -68,7 +68,7 @@ export async function POST(req: NextRequest) {
       country: plan.country ?? undefined,
     });
 
-    const papers = result.papers.slice(0, MAX_THEMED_PAPERS);
+    const papers = rankTopicPapers(result.papers, plan).slice(0, MAX_THEMED_PAPERS);
     return NextResponse.json({
       query: plan.query,
       terms: plan.terms,

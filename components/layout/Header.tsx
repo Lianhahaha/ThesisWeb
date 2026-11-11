@@ -16,7 +16,8 @@ const NAV = [
   { href: "/topic", label: "Topics", icon: Sparkles },
   { href: "/library", label: "Library", icon: Library },
   { href: "/cite", label: "Cite", icon: Quote },
-  { href: "/suggestions", label: "Feedback", icon: MessageSquarePlus },
+  // Feedback stays in the header and the footer; six tabs squeeze a 320px bar.
+  { href: "/suggestions", label: "Feedback", icon: MessageSquarePlus, mobile: false },
 ];
 
 /** Count of saved papers, from whichever store this user is on. */
@@ -95,7 +96,7 @@ export function Header() {
         style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
         aria-label="Main"
       >
-        {NAV.map(({ href, label, icon: Icon }) => {
+        {NAV.filter((item) => item.mobile !== false).map(({ href, label, icon: Icon }) => {
           const on = isOn(href);
           return (
             <Link

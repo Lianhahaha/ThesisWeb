@@ -1,6 +1,5 @@
 /**
  * Turn a paragraph describing a topic into something the databases can answer.
- *
  * This is the "understand the question" half of topic search, and it is
  * deliberately deterministic: no model, no key, no per-request cost. What the
  * description adds over a keyword box is the *intent* — "I am writing about how
@@ -8,6 +7,8 @@
  * actually appear in titles and abstracts, plus the filters the sentence
  * implies (Philippines, open access).
  */
+
+import type { Paper } from "@/lib/types";
 
 /** Words that carry no topic, including the filler people type in a sentence. */
 const FILLER = new Set([
@@ -29,13 +30,15 @@ const FILLER = new Set([
 ]);
 
 /** Up to this many describing words are sent to the databases. */
-const MAX_TERMS = 8;
+const MAX_TERMS = 6;
 
 export interface TopicPlan {
   /** The query the databases receive. */
   query: string;
   /** The words that carried the topic, in the order they were written. */
   terms: string[];
+  /** Adjacent pairs of those words, e.g. "sari-sari owners". */
+  phrases: string[];
   /** Country filter the description asked for, if any. */
   country: string | null;
   /** True when the description asked for free full text. */
@@ -77,5 +80,47 @@ export function planTopic(description: string): TopicPlan | null {
   const country = COUNTRY_PATTERNS.find(([pattern]) => pattern.test(text))?.[1] ?? null;
   const openAccessOnly = /\bopen access\b|\bfree full text\b|\bfull text\b|\bpdf\b/i.test(text);
 
-  return { query: terms.join(" "), terms, country, openAccessOnly };
+  const phrases: string[] = [];
+  for (let i = 0; i < terms.length - 1; i++) {
+    phrases.push(`${terms[i].toLowerCase()} ${terms[i + 1].toLowerCase()}`);
+  }
+
+  return { query: terms.join(" "), terms, phrases, country, openAccessOnly };
+}
+
+/**
+ * Re-order what came back so the papers that actually answer the description
+ * sit on top. Retrieval was done with the six topic words (the databases AND
+ * them); this second pass weighs how much of the *description* a record
+ * covers, with a phrase in the title worth the most.
+ *
+ * It only reorders — nothing is dropped here, so a thin description can never
+ * empty the result set.
+ */
+export function rankTopicPapers(papers: Paper[], plan: TopicPlan): Paper[] {
+  const terms = plan.terms.map((t) => t.toLowerCase());
+  const score = (p: Paper): number => {
+    const title = (p.title || "").toLowerCase();
+    const body = `${p.abstract ?? ""} ${(p.keywords ?? []).join(" ")}`.toLowerCase();
+    let total = 0;
+    for (const term of terms) {
+      if (title.includes(term)) total += 3;
+      else if (body.includes(term)) total += 1;
+    }
+    for (const phrase of plan.phrases) {
+      if (title.includes(phrase)) total += 4;
+      else if (body.includes(phrase)) total += 2;
+    }
+    return total;
+  };
+
+  return papers
+    .map((paper, index) => ({ paper, index, score: score(paper) }))
+    .sort(
+      (a, b) =>
+        b.score - a.score ||
+        (b.paper.citedByCount ?? 0) - (a.paper.citedByCount ?? 0) ||
+        a.index - b.index
+    )
+    .map((entry) => entry.paper);
 }

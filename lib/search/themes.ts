@@ -88,6 +88,11 @@ export function groupIntoThemes(
 
   for (const [term] of candidates) {
     if (themes.length >= maxThemes - 1) break;
+    // "stores" after "store owners" adds nothing: skip phrases already covered.
+    const covered = themes.some(
+      (theme) => ` ${theme.terms[0]} `.includes(` ${term} `) || ` ${term} `.includes(` ${theme.terms[0]} `)
+    );
+    if (covered) continue;
     const parts = term.split(" ");
     const members = perPaper
       .map((set, i) => (parts.every((w) => set.has(w)) && !assigned.has(i) ? i : -1))
