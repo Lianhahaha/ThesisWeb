@@ -40,7 +40,8 @@ export async function searchThesesFr(query: string, opts: AdapterOptions = {}): 
   const res = await fetchWithTimeout(
     `${API}?${params}`,
     { headers: { "User-Agent": USER_AGENT, Accept: "application/json" } },
-    10000
+    // The API is occasionally slow under load; 10s cut real answers off.
+    12000
   );
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
   const data = await readJson<{ theses?: These[] }>(res);

@@ -195,7 +195,7 @@ export const ADAPTERS: Record<SourceId, AdapterEntry> = {
   core:            { run: searchCore, boolean: true },
   ntu:             { run: searchNtu, boolean: false, country: "Singapore" },
   upspace:         { run: searchUpspace, boolean: false, country: "South Africa" },
-  thesesfr:        { run: searchThesesFr, boolean: false, country: "France" },
+  thesesfr:        { run: searchThesesFr, boolean: false, country: "France", deadlineMs: 15_000 },
   uottawa:         { run: searchUottawa, boolean: false, country: "Canada" },
   usask:           { run: searchUsask, boolean: false, country: "Canada" },
   adelaide:        { run: searchAdelaide, boolean: false, country: "Australia" },
