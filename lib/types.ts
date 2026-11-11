@@ -111,4 +111,6 @@ export interface SearchResult {
   /** Short reason for each source that failed, e.g. "rate limited (429)". */
   errors?: Record<string, string>;
   tookMs: number;
+  /** When the first source with results answered, in ms from the start. */
+  firstMs?: number;
 }

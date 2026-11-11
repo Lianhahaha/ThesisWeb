@@ -171,11 +171,15 @@ export default function SearchPage() {
     const records: Paper[] = [];
     const sources: SearchResult["sources"] = {};
     const errors: Record<string, string> = {};
+    // When the first database answered, so the page can say "first results 1.2s"
+    // rather than only the total, which is dominated by the slowest source.
+    let firstMs: number | undefined;
     const snapshot = (tookMs: number): SearchResult => ({
       papers: rankResults(records, input.query, input),
       sources: { ...sources },
       errors: { ...errors },
       tookMs,
+      firstMs,
     });
     let lastPaint = 0;
     let paintTimer: ReturnType<typeof setTimeout> | undefined;
@@ -194,6 +198,7 @@ export default function SearchPage() {
       const { tookMs } = await streamSearch(input, {
         signal: controller.signal,
         onSource: (update) => {
+          if (update.papers.length && firstMs === undefined) firstMs = Date.now() - started;
           records.push(...update.papers);
           sources[update.id] = update.status;
           if (update.error) errors[update.id] = update.error;
@@ -322,7 +327,9 @@ export default function SearchPage() {
                 )}{" "}
                 {result.papers.length === 1 ? "paper" : "papers"}
                 <span className="ml-2 font-sans text-xs text-subtle">
-                  {(result.tookMs / 1000).toFixed(1)}s
+                  {result.firstMs != null && result.firstMs < result.tookMs
+                    ? `first ${(result.firstMs / 1000).toFixed(1)}s · all ${(result.tookMs / 1000).toFixed(1)}s`
+                    : `${(result.tookMs / 1000).toFixed(1)}s`}
                 </span>
               </h2>
 
