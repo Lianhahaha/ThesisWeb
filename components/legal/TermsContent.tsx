@@ -63,6 +63,26 @@ export function TermsContent() {
         works it lists. Your notes and matrix entries stay yours.
       </p>
 
+      <h2 id="copyright-takedown" className="mt-8 text-xl">
+        Copyright and takedown requests
+      </h2>
+      <p className="mt-2">
+        Thesisweb is an independent index, not a publisher. It shows bibliographic metadata
+        (titles, authors, abstracts, DOIs and links) that the databases on the{" "}
+        <Link href="/databases" className="underline">Databases</Link> page supply, and it links out
+        to full texts hosted by publishers, repositories and preprint servers. It does not upload,
+        store or serve PDFs of anyone&apos;s work.
+      </p>
+      <p className="mt-2">
+        If you hold the rights to a work and believe a record or link here infringes them, email{" "}
+        <a href={`mailto:${CONTACT_EMAIL}`} className="underline">{CONTACT_EMAIL}</a> with: the
+        record&apos;s link or DOI, the work it identifies, and the basis of the claim — for example,
+        that the linked copy is not open access. A notice under the DMCA or an equivalent law should
+        say so explicitly. We aim to answer within seven days and will remove or correct the record,
+        or the link, where the claim holds. Requests about a copy hosted by a publisher or a
+        repository should go to that host too: removing a link here does not remove their copy.
+      </p>
+
       <h2 className="mt-8 text-xl">No warranty</h2>
       <p className="mt-2">
         The app is provided <strong>&ldquo;as is&rdquo;</strong> and{" "}
