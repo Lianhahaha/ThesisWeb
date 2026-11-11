@@ -12,7 +12,7 @@ import {
   persistentMultipleTabManager,
   type Firestore,
 } from "firebase/firestore";
-import { getAnalytics, isSupported, type Analytics } from "firebase/analytics";
+import type { Analytics } from "firebase/analytics";
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -111,9 +111,11 @@ if (
   firebaseConfig.measurementId &&
   process.env.NEXT_PUBLIC_FIREBASE_EMULATORS !== "1"
 ) {
-  isSupported()
-    .then((ok) => {
-      if (ok) _analytics = getAnalytics(app);
+  // Imported on demand: the Analytics SDK is not needed for the page to work,
+  // and importing it statically put it in the bundle every visitor downloads.
+  void import("firebase/analytics")
+    .then(async (analytics) => {
+      if (await analytics.isSupported()) _analytics = analytics.getAnalytics(app);
     })
     .catch(() => {
       // Unsupported or blocked: analytics silently stays off.
