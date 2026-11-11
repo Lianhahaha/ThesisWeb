@@ -12,6 +12,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   const pages: { path: string; priority: number; changeFrequency: "weekly" | "monthly" | "yearly" }[] = [
     { path: "/", priority: 1, changeFrequency: "weekly" },
     { path: "/search", priority: 0.9, changeFrequency: "weekly" },
+    { path: "/topic", priority: 0.7, changeFrequency: "monthly" },
     { path: "/rrl", priority: 0.9, changeFrequency: "weekly" },
     ...RRL_GUIDES.map((g) => ({
       path: `/rrl/${g.slug}`,

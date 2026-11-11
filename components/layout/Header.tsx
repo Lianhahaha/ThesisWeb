@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Search, Library, Quote, Home, LogOut, Settings, MessageSquarePlus } from "lucide-react";
+import { Search, Library, Quote, Home, LogOut, Settings, MessageSquarePlus, Sparkles } from "lucide-react";
 import { useLiveQuery } from "dexie-react-hooks";
 import { LIBRARY_EVENT } from "@/lib/library/events";
 import { useAuth } from "@/lib/auth/store";
@@ -13,6 +13,7 @@ import { ThemeToggle } from "@/components/layout/ThemeToggle";
 const NAV = [
   { href: "/", label: "Home", icon: Home },
   { href: "/search", label: "Search", icon: Search },
+  { href: "/topic", label: "Topics", icon: Sparkles },
   { href: "/library", label: "Library", icon: Library },
   { href: "/cite", label: "Cite", icon: Quote },
   { href: "/suggestions", label: "Feedback", icon: MessageSquarePlus },

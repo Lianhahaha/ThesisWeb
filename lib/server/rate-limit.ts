@@ -42,6 +42,8 @@ const LIMITS = {
   summarize: { limit: 30, windowMs: 60_000, burst: { limit: 10, windowMs: 5_000 } },
   // One per search, plus one per opened paper.
   retractions: { limit: 40, windowMs: 60_000, burst: { limit: 10, windowMs: 5_000 } },
+  // Topic search is a full fan-out plus grouping: the tightest paid-for budget.
+  topics: { limit: 6, windowMs: 60_000, burst: { limit: 2, windowMs: 20_000 } },
   // Uptime monitors poll every 30s or so; anything faster than this is abuse.
   health: { limit: 60, windowMs: 60_000, burst: { limit: 10, windowMs: 5_000 } },
 } satisfies Record<string, RouteRule>;
@@ -60,6 +62,7 @@ const GLOBAL: Partial<Record<keyof typeof LIMITS, Rule>> = {
   abstract: { limit: 300, windowMs: 60_000 },
   summarize: { limit: 300, windowMs: 60_000 },
   retractions: { limit: 400, windowMs: 60_000 },
+  topics: { limit: 60, windowMs: 60_000 },
   health: { limit: 600, windowMs: 60_000 },
 };
 
