@@ -102,6 +102,13 @@ export function StatusClient() {
   // The daily report is a snapshot; it can predate sources added since it ran.
   const covered = report?.results.length ?? 0;
   const missing = Math.max(0, health.sources - covered);
+  // "empty" still means the database answered; it just had nothing for the probe topic.
+  const answering = report
+    ? report.results.filter((r) => r.status === "working" || r.status === "empty").length
+    : null;
+  const failing = report
+    ? report.results.filter((r) => r.status === "unavailable" || r.status === "failed").length
+    : 0;
 
   return (
     <div className="panel mt-6">
@@ -112,7 +119,9 @@ export function StatusClient() {
         </button>
       </div>
       <p className="mt-1 text-sm text-muted">
-        {health.sources} databases configured. Checked {new Date(health.time).toLocaleString("en-PH")}.
+        {health.sources} databases configured
+        {answering != null ? ` · ${answering} answered today's check` : ""}. Checked{" "}
+        {new Date(health.time).toLocaleString("en-PH")}.
       </p>
       <dl className="mt-4 grid gap-2 text-sm sm:grid-cols-2">
         {Object.entries(health.configured).map(([key, ok]) => {
@@ -149,10 +158,14 @@ export function StatusClient() {
         ) : (
           <>
             <p className="mt-1 text-sm text-muted">
-              {report.results.filter((r) => r.status === "working").length} working,{" "}
-              {report.results.filter((r) => r.status === "unavailable").length} unavailable,{" "}
-              {report.results.filter((r) => r.status === "skipped").length} without a key
+              {answering ?? 0} answering, {failing} unavailable,{" "}
+              {report.results.filter((r) => r.status === "skipped").length} not tested here
               {covered > 0 && covered !== health.sources ? ` — report covers ${covered} of ${health.sources} databases` : ""}.
+            </p>
+            <p className="mt-1 text-xs text-subtle">
+              &ldquo;Not tested here&rdquo; means the checker has no key for that source, not that this
+              deployment cannot use it. The keys panel above is what the app is running with; IEEE
+              Xplore is only listed as unavailable when its own key is rejected.
             </p>
             {missing > 0 && (
               <p className="mt-1 text-xs text-subtle">
