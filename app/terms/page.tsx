@@ -16,7 +16,7 @@ export default function TermsPage() {
       <p className="eyebrow">Legal</p>
       <h1 className="display mt-3 text-2xl sm:text-3xl">Terms of Use</h1>
       <p className="mt-2 text-sm text-muted">Last updated {LEGAL_UPDATED}</p>
-      <TermsContent />
+      <TermsContent anchors />
       <p className="mt-8 text-sm text-muted">
         See also the <Link href="/privacy" className="underline">Privacy Policy</Link>.
       </p>

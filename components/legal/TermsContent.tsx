@@ -3,9 +3,11 @@ import { CONTACT_EMAIL } from "@/lib/legal";
 
 /**
  * The body of the Terms of Use, shared by the /terms page and the acceptance
- * dialog so the two can never say different things.
+ * dialog so the two can never say different things. Only the page sets
+ * `anchors`: the footer links to #copyright-takedown, and the dialog renders a
+ * second copy that would otherwise duplicate that id.
  */
-export function TermsContent() {
+export function TermsContent({ anchors = false }: { anchors?: boolean }) {
   return (
     <>
       <p className="mt-6">
@@ -63,7 +65,7 @@ export function TermsContent() {
         works it lists. Your notes and matrix entries stay yours.
       </p>
 
-      <h2 id="copyright-takedown" className="mt-8 text-xl">
+      <h2 id={anchors ? "copyright-takedown" : undefined} className="mt-8 text-xl">
         Copyright and takedown requests
       </h2>
       <p className="mt-2">
