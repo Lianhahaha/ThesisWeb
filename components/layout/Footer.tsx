@@ -5,9 +5,8 @@ import { SOURCE_COUNT } from "@/lib/sources/meta";
 /**
  * Site footer. Two rows: where you can go, and the legal/attribution line that
  * says what this is (an independent index that links out), who to write to
- * about a bad record or a rights complaint, and where the code lives.
+ * about a bad record or a rights complaint, and the licence it runs under.
  */
-const REPO_URL = "https://github.com/Lianhahaha/ThesisWeb";
 
 const LINKS = [
   { href: "/rrl", label: "RRL by field" },
@@ -51,17 +50,7 @@ export function Footer() {
               Report a problem
             </a>
           </p>
-          <p className="shrink-0">
-            © {year} Thesisweb ·{" "}
-            <a
-              href={REPO_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="underline hover:text-text"
-            >
-              Source (MIT)
-            </a>
-          </p>
+          <p className="shrink-0">© {year} Thesisweb · MIT-licensed</p>
         </div>
       </div>
     </footer>
