@@ -103,3 +103,17 @@ describe("rankTopicPapers", () => {
     expect(rankTopicPapers(same, plan).map((p) => p.id)).toEqual(["generic", "phrase", "partial"]);
   });
 });
+
+describe("planTopic with two clauses", () => {
+  it("searches the first clause, not the commentary after it", () => {
+    const plan = planTopic(
+      "How do small shop owners keep track of stock and why do they resist adopting a digital record keeping app"
+    )!;
+    expect(plan.query).toBe("small shop owners stock");
+  });
+
+  it("keeps the whole description when the first clause is too thin", () => {
+    const plan = planTopic("AI. The impact of automation on entry level jobs")!;
+    expect(plan.terms).toContain("automation");
+  });
+});

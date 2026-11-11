@@ -53,11 +53,8 @@ const COUNTRY_PATTERNS: [RegExp, string][] = [
   [/\bthailand\b|\bthai\b/i, "Thailand"],
 ];
 
-/** The plan for a description, or null when it holds nothing searchable. */
-export function planTopic(description: string): TopicPlan | null {
-  const text = description.replace(/\s+/g, " ").trim().slice(0, 500);
-  if (!text) return null;
-
+/** The words worth searching for in a piece of text. */
+function pickTerms(text: string): string[] {
   const words = text
     .split(/[\s,;:.!?()"'“”‘’]+/)
     .map((w) => w.replace(/^[^\p{L}\p{N}-]+|[^\p{L}\p{N}-]+$/gu, ""))
@@ -75,6 +72,23 @@ export function planTopic(description: string): TopicPlan | null {
     }
     if (terms.length === MAX_TERMS) break;
   }
+  return terms;
+}
+
+const countTerms = (text: string): number => pickTerms(text).length;
+
+/** The plan for a description, or null when it holds nothing searchable. */
+export function planTopic(description: string): TopicPlan | null {
+  const text = description.replace(/\s+/g, " ").trim().slice(0, 500);
+  if (!text) return null;
+
+  // A description often carries a second clause ("… and why they resist an
+  // app"). The databases AND every word they get, so a clause that adds a verb
+  // costs real results. Search the first clause; fall back to the whole text
+  // when that clause is too thin.
+  const head = text.split(/[.;?]| and (?:why|how|what|which|when) /i)[0]?.trim() ?? "";
+  const source = countTerms(head) >= 2 ? head : text;
+  const terms = pickTerms(source);
   if (terms.length === 0) return null;
 
   const country = COUNTRY_PATTERNS.find(([pattern]) => pattern.test(text))?.[1] ?? null;
