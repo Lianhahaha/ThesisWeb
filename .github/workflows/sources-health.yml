@@ -38,6 +38,11 @@ jobs:
           CINII_APP_ID: ${{ secrets.CINII_APP_ID }}
           IEEE_XPLORE_API_KEY: ${{ secrets.IEEE_XPLORE_API_KEY }}
           UNPAYWALL_EMAIL: ${{ secrets.UNPAYWALL_EMAIL }}
+          SPRINGER_NATURE_API_KEY: ${{ secrets.SPRINGER_NATURE_API_KEY }}
+          NASA_ADS_TOKEN: ${{ secrets.NASA_ADS_TOKEN }}
+          COURTLISTENER_API_TOKEN: ${{ secrets.COURTLISTENER_API_TOKEN }}
+          EUROPEANA_API_KEY: ${{ secrets.EUROPEANA_API_KEY }}
+          DPLA_API_KEY: ${{ secrets.DPLA_API_KEY }}
           HEALTH_OUTPUT: public/source-health.json
       - name: Save health report
         if: always()
