@@ -1,8 +1,25 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
+import { rateLimit } from "@/lib/server/rate-limit";
 import { SOURCE_COUNT } from "@/lib/sources/meta";
 import { redisConfigured, redisPing } from "@/lib/server/redis";
 
 export const dynamic = "force-dynamic";
+
+/**
+ * A probe answered a few times a minute is enough for any monitor; this also
+ * keeps repeated hits from turning into one Redis round-trip each. Failures
+ * are cached too, so a down Redis isn't retried on every request.
+ */
+const REDIS_PROBE_TTL_MS = 10_000;
+let redisProbe = { at: 0, reachable: false };
+
+async function redisReachable(): Promise<boolean> {
+  if (!redisConfigured) return false;
+  const now = Date.now();
+  if (redisProbe.at && now - redisProbe.at < REDIS_PROBE_TTL_MS) return redisProbe.reachable;
+  redisProbe = { at: now, reachable: await redisPing() };
+  return redisProbe.reachable;
+}
 
 /**
  * Lightweight liveness/readiness probe for uptime monitors. It does not call
@@ -10,8 +27,11 @@ export const dynamic = "force-dynamic";
  * that the app is serving, which optional integrations are configured, and
  * whether Redis actually answers.
  */
-export async function GET() {
-  const reachable = { redis: redisConfigured ? await redisPing() : false };
+export async function GET(req: NextRequest) {
+  const limited = await rateLimit(req, "health");
+  if (limited) return limited;
+
+  const reachable = { redis: await redisReachable() };
   return NextResponse.json(
     {
       status: "ok",
