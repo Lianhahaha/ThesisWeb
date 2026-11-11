@@ -21,6 +21,8 @@ const csp = [
     "https://*.google-analytics.com https://*.analytics.google.com https://www.googletagmanager.com https://www.google.com",
     "https://content-firebaseappcheck.googleapis.com https://firebaseappcheck.googleapis.com https://www.gstatic.com",
     "https://va.vercel-scripts.com",
+    // Error reporting (Sentry); the region is part of the host, e.g. ingest.us.sentry.io.
+    "https://*.ingest.sentry.io https://*.ingest.us.sentry.io",
     ...(emulators || dev ? ["http://127.0.0.1:9099 http://127.0.0.1:8085 ws://127.0.0.1:8085"] : []),
     ...(dev ? ["ws://localhost:*"] : []),
   ].join(" "),
