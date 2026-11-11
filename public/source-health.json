@@ -1,5 +1,5 @@
 {
-  "checkedAt": "2026-11-10T04:03:12.918Z",
+  "checkedAt": "2026-11-11T01:48:24.452Z",
   "results": [
     {
       "id": "openalex",
@@ -283,8 +283,8 @@
     },
     {
       "id": "upv",
-      "status": "unavailable",
-      "detail": "The operation was aborted due to timeout"
+      "status": "working",
+      "count": 10
     },
     {
       "id": "plaridel",
@@ -348,8 +348,8 @@
     },
     {
       "id": "krishikosh",
-      "status": "unavailable",
-      "detail": "The operation was aborted due to timeout"
+      "status": "working",
+      "count": 10
     },
     {
       "id": "upd",
