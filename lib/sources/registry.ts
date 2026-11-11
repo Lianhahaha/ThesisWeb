@@ -201,7 +201,7 @@ export const ADAPTERS: Record<SourceId, AdapterEntry> = {
   uottawa:         { run: searchUottawa, boolean: false, country: "Canada" },
   usask:           { run: searchUsask, boolean: false, country: "Canada" },
   adelaide:        { run: searchAdelaide, boolean: false, country: "Australia" },
-  aalto:           { run: searchAalto, boolean: false, country: "Finland" },
+  aalto:           { run: searchAalto, boolean: false, country: "Finland", deadlineMs: 18_000 },
   wisc:            { run: searchWisconsin, boolean: false, country: "United States" },
   elib:            { run: searchElib, boolean: false, country: "Philippines", deadlineMs: 22000 },
   upou:            { run: searchUpou, boolean: false, country: "Philippines" },
