@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { readJsonRequest } from "@/lib/server/http";
 import { rateLimit } from "@/lib/server/rate-limit";
 import { checkIntegrity } from "@/lib/server/retractions";
 import { MAX_RESULTS } from "@/lib/search/params";
@@ -20,7 +21,11 @@ export async function POST(req: NextRequest) {
   const limited = await rateLimit(req, "retractions");
   if (limited) return limited;
 
-  const body = (await req.json().catch(() => null)) as { dois?: unknown } | null;
+  const parsed = await readJsonRequest<{ dois?: unknown } | null>(req);
+  if (!parsed.ok && parsed.tooLarge) {
+    return NextResponse.json({ error: "Too many DOIs in one request." }, { status: 413 });
+  }
+  const body = parsed.ok ? parsed.value : null;
   const dois = Array.isArray(body?.dois)
     ? body.dois.filter((d): d is string => typeof d === "string" && d.length <= 300).slice(0, MAX_DOIS)
     : [];

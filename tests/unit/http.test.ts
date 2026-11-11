@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { fetchWithTimeout, readJson, readText, sleep, waitTurn, withAbortSignal } from "@/lib/server/http";
+import { fetchWithTimeout, readJson, readJsonRequest, readText, sleep, waitTurn, withAbortSignal } from "@/lib/server/http";
 
 afterEach(() => {
   vi.unstubAllGlobals();
@@ -39,6 +39,30 @@ describe("readText", () => {
   it("refuses a page larger than the cap", async () => {
     const huge = new Response("abcdef", { headers: { "content-length": "999999" } });
     await expect(readText(huge, 50)).rejects.toThrow("too large");
+  });
+});
+
+describe("readJsonRequest", () => {
+  const post = (body: string) =>
+    new Request("http://localhost/api/summarize", {
+      method: "POST",
+      body,
+      headers: { "content-type": "application/json" },
+    });
+
+  it("parses the body of an incoming request", async () => {
+    expect(await readJsonRequest(post('{"text":"hi"}'))).toEqual({ ok: true, value: { text: "hi" } });
+  });
+
+  it("flags a body above the route's cap as too large", async () => {
+    expect(await readJsonRequest(post(JSON.stringify({ text: "x".repeat(500) })), 100)).toEqual({
+      ok: false,
+      tooLarge: true,
+    });
+  });
+
+  it("flags malformed JSON as such, not as too large", async () => {
+    expect(await readJsonRequest(post("not json"))).toEqual({ ok: false, tooLarge: false });
   });
 });
 

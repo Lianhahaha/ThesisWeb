@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { readJsonRequest } from "@/lib/server/http";
 import { rateLimit } from "@/lib/server/rate-limit";
 import { cacheGetJson, cacheSetJson } from "@/lib/server/redis-cache";
 import { getCrossrefByDoi } from "@/lib/sources/adapters/crossref";
@@ -11,6 +12,8 @@ export const dynamic = "force-dynamic";
 export const maxDuration = 30;
 
 const MAX_ITEMS = 25;
+/** 25 lines of at most 300 characters, plus the JSON around them. */
+const MAX_BODY_BYTES = 32_000;
 /** Concurrent DOI lookups; the rest queue, so one paste can't fan out 25 calls at once. */
 const LOOKUP_CONCURRENCY = 5;
 /** Metadata for a DOI changes rarely; a day is short enough to correct mistakes. */
@@ -48,8 +51,11 @@ export async function POST(req: NextRequest) {
   const limited = await rateLimit(req, "cite");
   if (limited) return limited;
 
-  const body = await req.json().catch(() => null);
-  const items: unknown = body?.items;
+  const parsed = await readJsonRequest<{ items?: unknown } | null>(req, MAX_BODY_BYTES);
+  if (!parsed.ok && parsed.tooLarge) {
+    return NextResponse.json({ error: `Up to ${MAX_ITEMS} at a time.` }, { status: 413 });
+  }
+  const items: unknown = parsed.ok ? parsed.value?.items : undefined;
   if (!Array.isArray(items) || items.some((i) => typeof i !== "string")) {
     return NextResponse.json({ error: "Send { items: string[] }" }, { status: 400 });
   }

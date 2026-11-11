@@ -126,9 +126,17 @@ const MAX_JSON_BYTES = 8_000_000;
 /** HTML/XML pages are smaller than JSON payloads; an unbounded page is a red flag. */
 const MAX_TEXT_BYTES = 5_000_000;
 
-async function readBody(res: Response, max: number): Promise<string> {
+/** Thrown when a body passes the caller's size limit; routes turn it into a 413. */
+export class BodyTooLargeError extends Error {
+  constructor() {
+    super("sent a response that is too large");
+    this.name = "BodyTooLargeError";
+  }
+}
+
+async function readBody(res: Response | Request, max: number): Promise<string> {
   const declared = Number(res.headers.get("content-length") ?? "");
-  if (Number.isFinite(declared) && declared > max) throw new Error("sent a response that is too large");
+  if (Number.isFinite(declared) && declared > max) throw new BodyTooLargeError();
   if (!res.body) return res.text();
 
   const reader = res.body.getReader();
@@ -140,7 +148,7 @@ async function readBody(res: Response, max: number): Promise<string> {
     size += value.byteLength;
     if (size > max) {
       await reader.cancel().catch(() => {});
-      throw new Error("sent a response that is too large");
+      throw new BodyTooLargeError();
     }
     chunks.push(value);
   }
@@ -170,5 +178,31 @@ export async function readJson<T = unknown>(res: Response, whenEmpty?: T): Promi
     throw new Error(
       /^\s*</.test(text) ? "sent a web page instead of data (blocked or down)" : "sent data that could not be read"
     );
+  }
+}
+
+/** Default cap for an incoming API body. Every POST route below asks for less. */
+const MAX_REQUEST_BYTES = 512_000;
+
+/**
+ * The JSON body of an incoming request, stopped at `max` bytes. Routes pass
+ * the size their own validation allows; anything larger is a 413 rather than
+ * time spent parsing a body we would reject anyway. `tooLarge` is false for a
+ * body that is merely malformed (or empty).
+ */
+export async function readJsonRequest<T = unknown>(
+  req: Request,
+  max = MAX_REQUEST_BYTES
+): Promise<{ ok: true; value: T } | { ok: false; tooLarge: boolean }> {
+  let text: string;
+  try {
+    text = await readBody(req, max);
+  } catch (e) {
+    return { ok: false, tooLarge: e instanceof BodyTooLargeError };
+  }
+  try {
+    return { ok: true, value: JSON.parse(text) as T };
+  } catch {
+    return { ok: false, tooLarge: false };
   }
 }
