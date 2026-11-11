@@ -57,6 +57,70 @@ function cleanDoi(v: unknown): string | null {
   return extractDoi(s);
 }
 
+/** Words that say nothing about what a record is about. */
+const FILLER = new Set([
+  "the", "a", "an", "of", "and", "in", "on", "for", "to", "with", "at", "by", "from",
+  "its", "their", "this", "that", "as", "is", "are", "was", "were", "be", "or",
+]);
+
+const contentWords = (s: string): string[] =>
+  s
+    .toLowerCase()
+    .normalize("NFKD")
+    .replace(/[^\p{L}\p{N}]+/gu, " ")
+    .split(/\s+/)
+    .filter((w) => w && !FILLER.has(w));
+
+const squash = (s: string) => s.toLowerCase().replace(/[^\p{L}\p{N}]+/gu, " ").trim();
+
+/**
+ * Some repositories put the whole record in the abstract field: the journal
+ * line, then the title again, then the author list. That is not a summary, and
+ * a paper page that shows it looks broken. Trim the echoes, and drop the field
+ * when what is left is the metadata restated rather than a description.
+ */
+export function cleanAbstract(
+  raw: string | null,
+  record: { title: string; venue?: string | null; authors?: string[] }
+): string | null {
+  if (!raw) return null;
+  let text = raw.replace(/^\s*abstract[:\s\-–—]+/i, "").trim();
+  const original = text.length;
+
+  const stripEcho = (prefix?: string | null) => {
+    const want = prefix?.trim();
+    // Short fragments match too much to be an echo worth removing.
+    if (!want || want.length < 8) return;
+    if (squash(text.slice(0, want.length)) === squash(want)) {
+      text = text.slice(want.length).replace(/^[\s.,:;–—-]+/, "").trim();
+    }
+  };
+  stripEcho(record.title);
+  stripEcho(record.venue);
+
+  // "Vol. V, Issue XII (December 2025), pp.68-76" — the citation line a
+  // repository prepends before repeating the title.
+  text = text.replace(/^\s*(?:vol\.?|volume|no\.?|issue)\s[^.]{0,80}?\bpp?\.\s*\d+[-–]?\d*\s*/i, "").trim();
+  stripEcho(record.title);
+
+  // "…Gerald S. Berdida Emily Espinosa Janine N. Olis" — the author list.
+  for (const author of record.authors ?? []) stripEcho(author);
+
+  if (!text) return null;
+  // Most of the field was other fields repeated: this is a record, not a summary.
+  if (original >= 80 && text.length / original < 0.4) return null;
+
+  // A short field made mostly of words already in the title, venue and author
+  // list is the record again, not an abstract.
+  const metadata = new Set(contentWords([record.title, record.venue ?? "", ...(record.authors ?? [])].join(" ")));
+  const own = contentWords(text);
+  if (own.length >= 8) {
+    const overlap = own.filter((w) => metadata.has(w)).length / own.length;
+    if (overlap > 0.6) return null;
+  }
+  return text;
+}
+
 /** A clean copy of `p`, or null if it has no usable title. */
 export function normalizePaper(p: Paper, sourceId: string): Paper | null {
   const title = cleanText(p?.title, 1000);
@@ -66,6 +130,8 @@ export function normalizePaper(p: Paper, sourceId: string): Paper | null {
   const doi = cleanDoi(p.doi);
   const sources = strings(p.sources, 50, 50);
   if (!sources.includes(sourceId)) sources.push(sourceId);
+  const authors = strings(p.authors, 50).map(stripHtml).filter(Boolean);
+  const venue = cleanText(p.venue, 500);
 
   return {
     ...p,
@@ -73,17 +139,17 @@ export function normalizePaper(p: Paper, sourceId: string): Paper | null {
     // id every other source gives the paper.
     id: paperId(doi, title),
     title,
-    authors: strings(p.authors, 50).map(stripHtml).filter(Boolean),
+    authors,
     year: safeYear(p.year),
     publishedDate: str(p.publishedDate, 40),
-    venue: cleanText(p.venue, 500),
+    venue,
     type: WORK_TYPES.includes(p.type as WorkType) ? p.type : undefined,
     volume: label(p.volume, 40),
     issue: label(p.issue, 40),
     pages: label(p.pages, 40),
     publisher: cleanText(p.publisher, 300),
     doi,
-    abstract: cleanText(p.abstract, 40000),
+    abstract: cleanAbstract(cleanText(p.abstract, 40000), { title, venue, authors }),
     tldr: cleanText(p.tldr, 2000),
     // A record counts as free only with a link to the free copy, and a link is
     // shown as free only when the source says it is: "Free full text only"

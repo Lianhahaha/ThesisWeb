@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { normalizePaper } from "@/lib/sources/normalize";
+import { cleanAbstract, normalizePaper } from "@/lib/sources/normalize";
 import type { Paper } from "@/lib/types";
 
 const raw = (over: Record<string, unknown>) =>
@@ -61,5 +61,41 @@ describe("normalizePaper", () => {
 
   it("always names its source", () => {
     expect(normalizePaper(raw({ sources: undefined }), "src")?.sources).toEqual(["src"]);
+  });
+});
+
+describe("cleanAbstract", () => {
+  const record = {
+    title: "Awareness and practices on inventory management among sari-sari store owners",
+    venue: "World Education Connect Multidisciplinary e-Publication",
+    authors: ["Gerald S. Berdida", "Emily Espinosa"],
+  };
+
+  it("keeps a real abstract", () => {
+    const text =
+      "This study examined how small retailers track stock. A survey of 120 owners found that most rely on notebooks, and that stockouts follow unrecorded deliveries.";
+    expect(cleanAbstract(text, record)).toBe(text);
+  });
+
+  it("drops the label a repository puts in front", () => {
+    expect(cleanAbstract("Abstract: This study examined stock control in small shops across the province.", record)).toBe(
+      "This study examined stock control in small shops across the province."
+    );
+  });
+
+  it("removes a title echoed at the start", () => {
+    const text =
+      "Awareness and practices on inventory management among sari-sari store owners This study examined how small retailers track stock across two provinces.";
+    expect(cleanAbstract(text, record)).toBe(
+      "This study examined how small retailers track stock across two provinces."
+    );
+  });
+
+  it("drops a field that is only the record repeated", () => {
+    const blob =
+      "World Education Connect Multidisciplinary e-Publication, Vol. V, Issue XII (December 2025), pp.68-76 " +
+      "Awareness and practices on inventory management among sari-sari store owners Gerald S. Berdida " +
+      "Emily Espinosa Biliran Province State University";
+    expect(cleanAbstract(blob, record)).toBeNull();
   });
 });
