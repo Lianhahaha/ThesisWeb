@@ -50,6 +50,8 @@ const securityHeaders = [
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+  // Don't advertise the framework in every response; it only helps fingerprinting.
+  poweredByHeader: false,
   async headers() {
     return [
       { source: "/:path*", headers: securityHeaders },
