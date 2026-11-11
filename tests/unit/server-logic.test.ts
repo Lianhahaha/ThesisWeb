@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { NextRequest } from "next/server";
-import { dedupePapers, scoreRelevance } from "@/lib/search/rank";
+import { dedupePapers, matchesQuery, scoreRelevance } from "@/lib/search/rank";
 import { extractDoi } from "@/lib/text";
 import { rateLimit } from "@/lib/server/rate-limit";
 import type { Paper } from "@/lib/types";
@@ -31,6 +31,20 @@ describe("extractDoi", () => {
 });
 
 describe("scoreRelevance", () => {
+  it("keeps a record that says 'stock control' when the query says 'inventory management'", () => {
+    const p = paper({
+      id: "s",
+      title: "Stock control practices in small shops",
+      abstract: "How retailers keep track of what is on the shelf.",
+    });
+    expect(matchesQuery(p, "inventory management")).toBe(true);
+  });
+
+  it("still drops a record that shares nothing but a synonym-shaped word", () => {
+    const p = paper({ id: "q", title: "Quantum entanglement in cold gases", abstract: "A physics experiment." });
+    expect(matchesQuery(p, "inventory management")).toBe(false);
+  });
+
   it("does not push a borderline uncited paper out because a famous one is in the set", () => {
     const borderline = paper({ id: "x", title: "Public schools funding", year: 2015 });
     const classic = paper({ id: "y", title: "Teacher burnout in public schools", year: 2015, citedByCount: 20000 });

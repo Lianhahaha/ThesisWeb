@@ -163,6 +163,56 @@ const STOP_WORDS = new Set([
   "just", "don", "now",
 ]);
 
+// ─── Near-synonyms ──────────────────────────────────────────────────────────
+
+/**
+ * Words that stand in for each other in academic writing, so a record that
+ * says "stock control in small shops" is not thrown away for a query about
+ * "inventory management in retailers". Only pairs that really are
+ * interchangeable belong here: a wrong pair lets noise in, which costs more
+ * than the recall it buys. A synonym match counts for less than the word
+ * itself (see SYNONYM_WEIGHT).
+ */
+const SYNONYM_GROUPS: string[][] = [
+  ["inventory", "stock", "stockpile"],
+  ["shop", "store", "retailer", "vendor"],
+  ["customer", "client", "consumer", "buyer"],
+  ["teacher", "educator", "instructor", "tutor"],
+  ["student", "learner", "pupil"],
+  ["teaching", "instruction", "pedagogy"],
+  ["strategy", "approach", "technique"],
+  ["performance", "achievement", "outcome"],
+  ["assessment", "evaluation", "examination"],
+  ["curriculum", "syllabus"],
+  ["barrier", "obstacle", "challenge"],
+  ["implementation", "adoption", "deployment"],
+  ["agriculture", "farming", "agrarian"],
+  ["rice", "paddy"],
+  ["poverty", "deprivation", "destitution"],
+  ["rural", "village", "countryside"],
+  ["urban", "city", "municipal"],
+  ["covid", "coronavirus", "pandemic"],
+  ["energy", "power", "electricity"],
+  ["motivation", "incentive"],
+  ["filipino", "philippines", "philippine"],
+  ["entrepreneur", "businessman", "businesswoman"],
+  ["sme", "microenterprise"],
+];
+
+/** Stemmed token -> the other stemmed words that mean it. */
+const SYNONYMS = new Map<string, Set<string>>();
+for (const group of SYNONYM_GROUPS) {
+  const stems = group.flatMap((word) => [word, stem(word)]);
+  for (const key of stems) {
+    const others = SYNONYMS.get(key) ?? new Set<string>();
+    for (const other of stems) if (other !== key) others.add(other);
+    SYNONYMS.set(key, others);
+  }
+}
+
+/** A synonym is the same idea, not the same word: it counts, but for less. */
+const SYNONYM_WEIGHT = 0.6;
+
 // ─── Simple stemmer ─────────────────────────────────────────────────────────
 
 /**
@@ -250,14 +300,18 @@ function bigrams(text: string): string[] {
 
 // ─── Relevance scoring ──────────────────────────────────────────────────────
 
-/** Share of the query's words (exact or stemmed) found in the title and in the abstract. */
+/** Share of the query's words (exact, stemmed or a near-synonym) found in the title and in the abstract. */
 function coverage(p: Paper, qTerms: string[]): { title: number; abstract: number } {
   const share = (text: string) => {
     const norm = normalizeForMatch(text);
     const tokens = stemTokenize(norm);
-    const hits = qTerms.filter(
-      (t) => tokens.has(t) || tokens.has(stem(t)) || (/[^\x00-\x7F]/.test(t) && norm.includes(t))
-    ).length;
+    const hits = qTerms.reduce((sum, t) => {
+      if (tokens.has(t) || tokens.has(stem(t)) || (/[^\x00-\x7F]/.test(t) && norm.includes(t))) return sum + 1;
+      // "stock control" answers a question about "inventory": partial credit.
+      const alternatives = SYNONYMS.get(stem(t));
+      if (alternatives && [...alternatives].some((alt) => tokens.has(alt))) return sum + SYNONYM_WEIGHT;
+      return sum;
+    }, 0);
     return hits / qTerms.length;
   };
   return { title: share(p.title || ""), abstract: share(p.abstract || "") };
