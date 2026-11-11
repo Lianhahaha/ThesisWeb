@@ -166,7 +166,7 @@ Rules restrict each user to their own `users/{uid}` data, cap field sizes, and a
 **Deploy:** import to Vercel → add the env vars → add the Vercel domain to Firebase authorized domains → redeploy.
 
 **Production operations:**
-- `/api/health` is the liveness probe; `/status` shows the app, integration state and the latest per-database health report (`public/source-health.json`, refreshed by the daily workflow).
+- `/api/health` is the liveness probe the uptime workflow calls. The daily per-database report is still written to `public/source-health.json` by the workflow (machine-readable; no page renders it any more).
 - GitHub Actions runs lint, types, unit tests, Playwright smoke/accessibility checks and a production build on every push and PR (`.github/workflows/ci.yml`).
 - The daily database health check remains `.github/workflows/sources-health.yml` and commits the report it produces.
 - Dependabot, CodeQL and `npm audit --omit=dev --audit-level=high` run automatically.

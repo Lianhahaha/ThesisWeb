@@ -13,7 +13,6 @@ const LINKS = [
   { href: "/guides", label: "Guides" },
   { href: "/databases", label: "Databases" },
   { href: "/about", label: "About" },
-  { href: "/status", label: "Status" },
   { href: "/suggestions", label: "Feedback" },
   { href: "/privacy", label: "Privacy" },
   { href: "/terms", label: "Terms" },

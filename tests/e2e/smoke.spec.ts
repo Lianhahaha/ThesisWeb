@@ -11,8 +11,7 @@ const PAGES = [
   { path: "/about", heading: /what this tool is/i },
   { path: "/databases", heading: /databases/i },
   { path: "/login", heading: /sign in/i },
-  { path: "/status", heading: /service status/i },
-  { path: "/suggestions", heading: /problems and suggestions/i },
+  { path: "/suggestions", heading: /problems and feedback/i },
   { path: "/terms", heading: /terms of use/i },
   { path: "/privacy", heading: /privacy policy/i },
 ];
@@ -110,7 +109,7 @@ test("phone navigation includes the suggestions board", async ({ page }) => {
 test("public pages fit a phone viewport without sideways scrolling", async ({ page }) => {
   await page.setViewportSize({ width: 320, height: 800 });
   for (const path of [
-    "/", "/search", "/library", "/cite", "/settings", "/status", "/suggestions", "/databases", "/about",
+    "/", "/search", "/library", "/cite", "/settings", "/suggestions", "/databases", "/about",
     "/terms", "/privacy",
   ]) {
     await page.goto(path);

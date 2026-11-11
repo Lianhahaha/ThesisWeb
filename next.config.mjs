@@ -54,6 +54,12 @@ const nextConfig = {
   reactStrictMode: true,
   // Don't advertise the framework in every response; it only helps fingerprinting.
   poweredByHeader: false,
+  async redirects() {
+    // The status page was retired: a database being down for an hour is not
+    // something a student can act on, and "3 unavailable" read as "the app is
+    // broken". Bookmarks land on the page that explains coverage instead.
+    return [{ source: "/status", destination: "/about", permanent: true }];
+  },
   async headers() {
     return [
       { source: "/:path*", headers: securityHeaders },
