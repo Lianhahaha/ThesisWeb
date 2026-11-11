@@ -15,7 +15,7 @@ const NAV = [
   { href: "/search", label: "Search", icon: Search },
   { href: "/library", label: "Library", icon: Library },
   { href: "/cite", label: "Cite", icon: Quote },
-  { href: "/suggestions", label: "Suggestions", icon: MessageSquarePlus },
+  { href: "/suggestions", label: "Feedback", icon: MessageSquarePlus },
 ];
 
 /** Count of saved papers, from whichever store this user is on. */

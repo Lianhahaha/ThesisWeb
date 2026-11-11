@@ -85,7 +85,7 @@ export function PrivacyContent() {
       <h2 className="mt-8 text-xl">Public feedback board</h2>
       <p className="mt-2">
         You can leave a problem report or suggestion on the{" "}
-        <Link href="/suggestions" className="underline">Suggestions</Link> page. Those comments and
+        <Link href="/suggestions" className="underline">Feedback</Link> page. Those comments and
         their replies are public: anyone can read them, and they are not private messages. Each
         comment or reply stores an internal account id so you can delete your own entries later; that
         id is not shown on the board, and deleting an entry removes it for everyone. Your account name

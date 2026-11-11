@@ -43,7 +43,7 @@ export function TermsContent({ anchors = false }: { anchors?: boolean }) {
 
       <h2 className="mt-8 text-xl">Public comments</h2>
       <p className="mt-2">
-        The <Link href="/suggestions" className="underline">Suggestions</Link> board is public.
+        The <Link href="/suggestions" className="underline">Feedback</Link> board is public.
         Anyone can read a comment or reply, including entries made anonymously, so do not put private
         or personal information there. Comments and replies that are abusive, spam or unrelated may
         be removed.

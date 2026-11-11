@@ -102,9 +102,9 @@ test("phone navigation includes the suggestions board", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/");
   const nav = page.getByRole("navigation", { name: "Main" }).last();
-  await nav.getByRole("link", { name: "Suggestions" }).click();
+  await nav.getByRole("link", { name: "Feedback" }).click();
   await expect(page).toHaveURL(/\/suggestions$/);
-  await expect(page.getByRole("heading", { level: 1, name: /problems and suggestions/i })).toBeVisible();
+  await expect(page.getByRole("heading", { level: 1, name: /problems and feedback/i })).toBeVisible();
 });
 
 test("public pages fit a phone viewport without sideways scrolling", async ({ page }) => {

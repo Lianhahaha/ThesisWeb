@@ -288,7 +288,7 @@ export function SuggestionsClient() {
     <div className="mx-auto max-w-3xl space-y-8">
       <header>
         <p className="eyebrow">Feedback</p>
-        <h1 className="mt-2 text-2xl font-semibold tracking-tight sm:text-3xl">Problems and suggestions</h1>
+        <h1 className="mt-2 text-2xl font-semibold tracking-tight sm:text-3xl">Problems and feedback</h1>
         <p className="mt-2 text-muted">
           Report a broken result, a wrong link, or an idea for the site. Comments are public so everyone
           can follow the response. Do not include private or personal details.
