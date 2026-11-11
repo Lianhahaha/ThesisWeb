@@ -280,10 +280,6 @@ const META = {
     label: "Adelaide Repository", blurb: "University of Adelaide theses and research: agriculture and wine science, engineering, health and natural sciences", color: "#1f2b5b",
     region: "Australia", fields: ["agriculture", "engineering", "medicine", "sciences"], kind: "repository", url: "https://digital.library.adelaide.edu.au",
   },
-  aalto: {
-    label: "Aaltodoc (Finland)", blurb: "Aalto University theses and technical reports: computing, software and electrical engineering, design, business", color: "#00549f",
-    region: "Finland", fields: ["computing", "engineering", "sciences", "business"], kind: "repository", url: "https://aaltodoc.aalto.fi",
-  },
   wisc: {
     label: "MINDS@UW (US)", blurb: "University of Wisconsin theses and technical reports: computing, engineering, sciences and education", color: "#c5050c",
     region: "United States", fields: ["computing", "engineering", "sciences", "education"], kind: "repository", url: "https://minds.wisconsin.edu",

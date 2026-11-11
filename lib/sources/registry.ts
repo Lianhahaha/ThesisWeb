@@ -56,7 +56,6 @@ import { searchThesesFr } from "@/lib/sources/adapters/thesesfr";
 import { searchUottawa } from "@/lib/sources/adapters/uottawa";
 import { searchUsask } from "@/lib/sources/adapters/usask";
 import { searchAdelaide } from "@/lib/sources/adapters/adelaide";
-import { searchAalto } from "@/lib/sources/adapters/aalto";
 import { searchWisconsin } from "@/lib/sources/adapters/wisc";
 import { searchUpou } from "@/lib/sources/adapters/upou";
 import { searchElib } from "@/lib/sources/adapters/elib";
@@ -201,7 +200,6 @@ export const ADAPTERS: Record<SourceId, AdapterEntry> = {
   uottawa:         { run: searchUottawa, boolean: false, country: "Canada" },
   usask:           { run: searchUsask, boolean: false, country: "Canada" },
   adelaide:        { run: searchAdelaide, boolean: false, country: "Australia" },
-  aalto:           { run: searchAalto, boolean: false, country: "Finland", deadlineMs: 18_000 },
   wisc:            { run: searchWisconsin, boolean: false, country: "United States" },
   elib:            { run: searchElib, boolean: false, country: "Philippines", deadlineMs: 22000 },
   upou:            { run: searchUpou, boolean: false, country: "Philippines" },

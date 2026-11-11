@@ -67,7 +67,7 @@ const PROBES: Record<SourceId, string> = {
   seafdec: "shrimp", bsu: "rice", paho: "dengue", who: "dengue", nber: "inflation", openlibrary: "statistics",
   core: "climate change", ntu: "engineering", upspace: "education", elib: "education", upou: "distance education", upv: "fisheries",
   thesesfr: "education", uottawa: "education", usask: "agriculture", adelaide: "agriculture",
-  aalto: "software engineering", wisc: "software engineering",
+  wisc: "software engineering",
   googlebooks: "education",
   openstax: "algebra",
   herdin: "dengue", serpp: "poverty", krishikosh: "rice", upd: "education",
