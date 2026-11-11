@@ -7,6 +7,7 @@ import { ArrowLeft } from "lucide-react";
 import { auth } from "@/lib/firebase";
 import { toast } from "@/components/Toaster";
 import { authMessage } from "@/lib/auth/errors";
+import { recordAttempt, retryAfterSeconds, waitMessage } from "@/lib/auth/throttle";
 
 /**
  * Forgotten password: Firebase emails a reset link to the address. The page
@@ -22,6 +23,14 @@ export default function ForgotPasswordPage() {
     e.preventDefault();
     const address = email.trim().toLowerCase();
     if (!address) return;
+    // Each send counts, so one address can't be used to flood an inbox or
+    // burn the project's daily email quota.
+    const key = `reset:${address}`;
+    const waiting = retryAfterSeconds(key);
+    if (waiting > 0) {
+      toast(`A reset link was just sent. Try again in ${waitMessage(waiting)}.`, "info");
+      return;
+    }
     setLoading(true);
     try {
       await sendPasswordResetEmail(auth, address, { url: `${window.location.origin}/login` });
@@ -32,6 +41,7 @@ export default function ForgotPasswordPage() {
       if (code === "auth/user-not-found") setSentTo(address);
       else toast(authMessage(err, "Could not send the reset link. Try again."), "error");
     } finally {
+      recordAttempt(key);
       setLoading(false);
     }
   }

@@ -12,6 +12,7 @@ import { cacheUsername } from "@/lib/auth/username-cache";
 import { toast } from "@/components/Toaster";
 import { trackEvent } from "@/lib/analytics-events";
 import { authMessage } from "@/lib/auth/errors";
+import { clearAttempts, recordAttempt, retryAfterSeconds, waitMessage } from "@/lib/auth/throttle";
 import { finishGoogleRedirect, googleErrorMessage, isInAppBrowser, signInWithGoogle } from "@/lib/auth/google";
 import { GoogleButton } from "@/components/GoogleButton";
 
@@ -92,10 +93,18 @@ export default function LoginPage() {
       return;
     }
 
+    const attemptKey = `signin:${email.trim().toLowerCase()}`;
+    const waiting = retryAfterSeconds(attemptKey);
+    if (waiting > 0) {
+      toast(`Too many attempts. Try again in ${waitMessage(waiting)}.`, "error");
+      return;
+    }
+
     setLoading(true);
     try {
       if (mode === "login") {
         await signInWithEmailAndPassword(auth, email, password);
+        clearAttempts(attemptKey);
         toast("Signed in", "success");
         trackEvent("login", { method: "password" });
         router.push("/library");
@@ -123,7 +132,22 @@ export default function LoginPage() {
         router.push("/library");
       }
     } catch (err) {
-      toast(authMessage(err, "Sign-in failed. Try again."), "error");
+      // Only a wrong password counts. An outage, or a provider turned off in
+      // the console, must not lock someone out of their own account.
+      const code = (err as { code?: string })?.code ?? "";
+      const wrongPassword = [
+        "auth/invalid-credential",
+        "auth/invalid-login-credentials",
+        "auth/wrong-password",
+        "auth/user-not-found",
+      ].includes(code);
+      const cooldown = mode === "login" && wrongPassword ? recordAttempt(attemptKey) : 0;
+      toast(
+        cooldown
+          ? `Wrong email or password. Try again in ${waitMessage(cooldown)}.`
+          : authMessage(err, "Sign-in failed. Try again."),
+        "error"
+      );
     } finally {
       setLoading(false);
     }
