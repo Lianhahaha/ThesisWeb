@@ -97,11 +97,14 @@ test("a missing page shows the custom 404", async ({ page }) => {
   await expect(page.getByRole("heading", { level: 1, name: /page not found/i })).toBeVisible();
 });
 
-test("phone navigation includes the suggestions board", async ({ page }) => {
+test("phone navigation keeps five tabs and reaches the feedback board from the footer", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/");
   const nav = page.getByRole("navigation", { name: "Main" }).last();
-  await nav.getByRole("link", { name: "Feedback" }).click();
+  // Six tabs cramped a 320px bar, so Feedback lives in the footer on phones.
+  await expect(nav.getByRole("link")).toHaveCount(5);
+  await expect(nav.getByRole("link", { name: "Topics" })).toBeVisible();
+  await page.getByRole("contentinfo").getByRole("link", { name: "Feedback" }).click();
   await expect(page).toHaveURL(/\/suggestions$/);
   await expect(page.getByRole("heading", { level: 1, name: /problems and feedback/i })).toBeVisible();
 });
