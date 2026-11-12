@@ -1,5 +1,5 @@
 {
-  "checkedAt": "2026-11-11T04:26:38.203Z",
+  "checkedAt": "2026-11-12T02:49:10.274Z",
   "results": [
     {
       "id": "openalex",
@@ -38,8 +38,8 @@
     },
     {
       "id": "arxiv",
-      "status": "unavailable",
-      "detail": "The operation was aborted due to timeout"
+      "status": "working",
+      "count": 10
     },
     {
       "id": "eric",
@@ -58,13 +58,13 @@
     },
     {
       "id": "openreview",
-      "status": "working",
-      "count": 10
+      "status": "unavailable",
+      "detail": "HTTP 403"
     },
     {
       "id": "zbmath",
-      "status": "working",
-      "count": 10
+      "status": "unavailable",
+      "detail": "The operation was aborted due to timeout"
     },
     {
       "id": "zenodo",
@@ -214,7 +214,7 @@
     {
       "id": "bsu",
       "status": "unavailable",
-      "detail": "HTTP 500"
+      "detail": "fetch failed"
     },
     {
       "id": "seafdec",
@@ -268,6 +268,31 @@
     },
     {
       "id": "upspace",
+      "status": "working",
+      "count": 10
+    },
+    {
+      "id": "thesesfr",
+      "status": "unavailable",
+      "detail": "fetch failed"
+    },
+    {
+      "id": "uottawa",
+      "status": "working",
+      "count": 10
+    },
+    {
+      "id": "usask",
+      "status": "working",
+      "count": 10
+    },
+    {
+      "id": "adelaide",
+      "status": "working",
+      "count": 10
+    },
+    {
+      "id": "wisc",
       "status": "working",
       "count": 10
     },
@@ -348,8 +373,8 @@
     },
     {
       "id": "krishikosh",
-      "status": "working",
-      "count": 10
+      "status": "unavailable",
+      "detail": "The operation was aborted due to timeout"
     },
     {
       "id": "upd",
@@ -435,11 +460,6 @@
       "id": "clinicaltrials",
       "status": "working",
       "count": 10
-    },
-    {
-      "id": "eurlex",
-      "status": "empty",
-      "count": 0
     },
     {
       "id": "federalregister",
