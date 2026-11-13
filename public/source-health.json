@@ -1,5 +1,5 @@
 {
-  "checkedAt": "2026-11-12T02:49:10.274Z",
+  "checkedAt": "2026-11-13T02:32:43.066Z",
   "results": [
     {
       "id": "openalex",
@@ -13,8 +13,8 @@
     },
     {
       "id": "semanticscholar",
-      "status": "working",
-      "count": 10
+      "status": "unavailable",
+      "detail": "rate limited (429)"
     },
     {
       "id": "springer",
@@ -58,13 +58,13 @@
     },
     {
       "id": "openreview",
-      "status": "unavailable",
-      "detail": "HTTP 403"
+      "status": "working",
+      "count": 10
     },
     {
       "id": "zbmath",
-      "status": "unavailable",
-      "detail": "The operation was aborted due to timeout"
+      "status": "working",
+      "count": 10
     },
     {
       "id": "zenodo",
@@ -373,8 +373,8 @@
     },
     {
       "id": "krishikosh",
-      "status": "unavailable",
-      "detail": "The operation was aborted due to timeout"
+      "status": "working",
+      "count": 10
     },
     {
       "id": "upd",
