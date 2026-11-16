@@ -1,5 +1,5 @@
 {
-  "checkedAt": "2026-11-15T01:38:16.836Z",
+  "checkedAt": "2026-11-16T01:42:57.644Z",
   "results": [
     {
       "id": "openalex",
@@ -28,8 +28,8 @@
     },
     {
       "id": "europepmc",
-      "status": "unavailable",
-      "detail": "The operation was aborted due to timeout"
+      "status": "working",
+      "count": 10
     },
     {
       "id": "pubmed",
@@ -38,8 +38,8 @@
     },
     {
       "id": "arxiv",
-      "status": "working",
-      "count": 10
+      "status": "unavailable",
+      "detail": "rate limited (429)"
     },
     {
       "id": "eric",
@@ -63,8 +63,8 @@
     },
     {
       "id": "zbmath",
-      "status": "unavailable",
-      "detail": "The operation was aborted due to timeout"
+      "status": "working",
+      "count": 10
     },
     {
       "id": "zenodo",
@@ -83,8 +83,8 @@
     },
     {
       "id": "ads",
-      "status": "working",
-      "count": 10
+      "status": "unavailable",
+      "detail": "The operation was aborted due to timeout"
     },
     {
       "id": "inspire",
@@ -258,8 +258,8 @@
     },
     {
       "id": "core",
-      "status": "unavailable",
-      "detail": "The operation was aborted due to timeout"
+      "status": "working",
+      "count": 10
     },
     {
       "id": "ntu",
@@ -348,8 +348,8 @@
     },
     {
       "id": "vietnamjol",
-      "status": "unavailable",
-      "detail": "The operation was aborted due to timeout"
+      "status": "working",
+      "count": 10
     },
     {
       "id": "courtlistener",
@@ -558,8 +558,8 @@
     },
     {
       "id": "auckland",
-      "status": "unavailable",
-      "detail": "HTTP 502"
+      "status": "working",
+      "count": 10
     },
     {
       "id": "caltech",
@@ -598,8 +598,8 @@
     },
     {
       "id": "pedro",
-      "status": "working",
-      "count": 6
+      "status": "unavailable",
+      "detail": "The operation was aborted due to timeout"
     },
     {
       "id": "philpolitics",
