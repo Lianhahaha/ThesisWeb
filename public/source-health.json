@@ -1,5 +1,5 @@
 {
-  "checkedAt": "2026-11-16T01:42:57.644Z",
+  "checkedAt": "2026-11-17T04:25:57.471Z",
   "results": [
     {
       "id": "openalex",
@@ -38,8 +38,8 @@
     },
     {
       "id": "arxiv",
-      "status": "unavailable",
-      "detail": "rate limited (429)"
+      "status": "working",
+      "count": 10
     },
     {
       "id": "eric",
@@ -83,8 +83,8 @@
     },
     {
       "id": "ads",
-      "status": "unavailable",
-      "detail": "The operation was aborted due to timeout"
+      "status": "working",
+      "count": 10
     },
     {
       "id": "inspire",
@@ -218,8 +218,8 @@
     },
     {
       "id": "seafdec",
-      "status": "working",
-      "count": 10
+      "status": "unavailable",
+      "detail": "HTTP 403"
     },
     {
       "id": "nice",
@@ -293,8 +293,8 @@
     },
     {
       "id": "wisc",
-      "status": "working",
-      "count": 10
+      "status": "unavailable",
+      "detail": "The operation was aborted due to timeout"
     },
     {
       "id": "elib",
@@ -488,8 +488,8 @@
     },
     {
       "id": "gatech",
-      "status": "working",
-      "count": 10
+      "status": "unavailable",
+      "detail": "The operation was aborted due to timeout"
     },
     {
       "id": "toronto",
@@ -543,8 +543,8 @@
     },
     {
       "id": "harvard",
-      "status": "working",
-      "count": 10
+      "status": "unavailable",
+      "detail": "HTTP 429"
     },
     {
       "id": "melbourne",
@@ -583,8 +583,8 @@
     },
     {
       "id": "nvd",
-      "status": "unavailable",
-      "detail": "NVD 503"
+      "status": "working",
+      "count": 10
     },
     {
       "id": "cisakev",
@@ -598,8 +598,8 @@
     },
     {
       "id": "pedro",
-      "status": "unavailable",
-      "detail": "The operation was aborted due to timeout"
+      "status": "working",
+      "count": 6
     },
     {
       "id": "philpolitics",
