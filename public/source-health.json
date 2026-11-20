@@ -1,5 +1,5 @@
 {
-  "checkedAt": "2026-11-19T03:03:00.893Z",
+  "checkedAt": "2026-11-20T02:57:11.358Z",
   "results": [
     {
       "id": "openalex",
@@ -63,8 +63,8 @@
     },
     {
       "id": "zbmath",
-      "status": "unavailable",
-      "detail": "The operation was aborted due to timeout"
+      "status": "working",
+      "count": 10
     },
     {
       "id": "zenodo",
@@ -73,8 +73,8 @@
     },
     {
       "id": "hal",
-      "status": "unavailable",
-      "detail": "The operation was aborted due to timeout"
+      "status": "working",
+      "count": 10
     },
     {
       "id": "openaire",
@@ -377,8 +377,8 @@
     },
     {
       "id": "upd",
-      "status": "unavailable",
-      "detail": "The operation was aborted due to timeout"
+      "status": "working",
+      "count": 10
     },
     {
       "id": "aiias",
@@ -517,8 +517,8 @@
     },
     {
       "id": "arizona",
-      "status": "working",
-      "count": 10
+      "status": "unavailable",
+      "detail": "fetch failed"
     },
     {
       "id": "unsw",
@@ -542,8 +542,8 @@
     },
     {
       "id": "harvard",
-      "status": "working",
-      "count": 10
+      "status": "unavailable",
+      "detail": "HTTP 429"
     },
     {
       "id": "melbourne",
