@@ -1,5 +1,5 @@
 {
-  "checkedAt": "2026-11-20T02:57:11.358Z",
+  "checkedAt": "2026-11-21T03:05:03.335Z",
   "results": [
     {
       "id": "openalex",
@@ -13,8 +13,8 @@
     },
     {
       "id": "semanticscholar",
-      "status": "working",
-      "count": 10
+      "status": "unavailable",
+      "detail": "rate limited (429)"
     },
     {
       "id": "springer",
@@ -28,8 +28,8 @@
     },
     {
       "id": "europepmc",
-      "status": "working",
-      "count": 10
+      "status": "unavailable",
+      "detail": "The operation was aborted due to timeout"
     },
     {
       "id": "pubmed",
@@ -98,8 +98,8 @@
     },
     {
       "id": "datacite",
-      "status": "working",
-      "count": 10
+      "status": "unavailable",
+      "detail": "The operation was aborted due to timeout"
     },
     {
       "id": "nist",
@@ -198,8 +198,8 @@
     },
     {
       "id": "bdtd",
-      "status": "working",
-      "count": 10
+      "status": "unavailable",
+      "detail": "The operation was aborted due to timeout"
     },
     {
       "id": "ndltd",
@@ -417,8 +417,8 @@
     },
     {
       "id": "pcaarrd",
-      "status": "working",
-      "count": 10
+      "status": "unavailable",
+      "detail": "The operation was aborted due to timeout"
     },
     {
       "id": "scielo",
@@ -517,8 +517,8 @@
     },
     {
       "id": "arizona",
-      "status": "unavailable",
-      "detail": "fetch failed"
+      "status": "working",
+      "count": 10
     },
     {
       "id": "unsw",
