@@ -1,5 +1,5 @@
 {
-  "checkedAt": "2026-11-24T05:50:47.972Z",
+  "checkedAt": "2026-11-25T04:52:20.331Z",
   "results": [
     {
       "id": "openalex",
@@ -28,8 +28,8 @@
     },
     {
       "id": "europepmc",
-      "status": "unavailable",
-      "detail": "The operation was aborted due to timeout"
+      "status": "working",
+      "count": 10
     },
     {
       "id": "pubmed",
@@ -78,8 +78,8 @@
     },
     {
       "id": "openaire",
-      "status": "working",
-      "count": 10
+      "status": "failed",
+      "detail": "OpenAIRE 405"
     },
     {
       "id": "ads",
@@ -118,8 +118,8 @@
     },
     {
       "id": "jstage",
-      "status": "working",
-      "count": 10
+      "status": "unavailable",
+      "detail": "J-STAGE 502"
     },
     {
       "id": "figshare",
@@ -148,8 +148,8 @@
     },
     {
       "id": "pmc",
-      "status": "empty",
-      "count": 0
+      "status": "working",
+      "count": 10
     },
     {
       "id": "ntrs",
@@ -273,8 +273,8 @@
     },
     {
       "id": "thesesfr",
-      "status": "unavailable",
-      "detail": "fetch failed"
+      "status": "working",
+      "count": 10
     },
     {
       "id": "uottawa",
@@ -288,8 +288,8 @@
     },
     {
       "id": "adelaide",
-      "status": "unavailable",
-      "detail": "HTTP 502"
+      "status": "working",
+      "count": 10
     },
     {
       "id": "wisc",
@@ -307,13 +307,13 @@
     },
     {
       "id": "upv",
-      "status": "unavailable",
-      "detail": "The operation was aborted due to timeout"
+      "status": "working",
+      "count": 10
     },
     {
       "id": "plaridel",
-      "status": "working",
-      "count": 4
+      "status": "unavailable",
+      "detail": "The operation was aborted due to timeout"
     },
     {
       "id": "philjournals",
@@ -412,8 +412,8 @@
     },
     {
       "id": "searca",
-      "status": "working",
-      "count": 10
+      "status": "unavailable",
+      "detail": "fetch failed"
     },
     {
       "id": "pcaarrd",
@@ -477,8 +477,8 @@
     },
     {
       "id": "mit",
-      "status": "working",
-      "count": 10
+      "status": "unavailable",
+      "detail": "HTTP 429"
     },
     {
       "id": "epfl",
@@ -552,8 +552,8 @@
     },
     {
       "id": "digitalnz",
-      "status": "unavailable",
-      "detail": "HTTP 403"
+      "status": "working",
+      "count": 10
     },
     {
       "id": "auckland",
